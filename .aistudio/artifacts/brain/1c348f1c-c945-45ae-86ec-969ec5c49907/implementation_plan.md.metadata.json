@@ -1,0 +1,6 @@
+{
+  "summary":  "Plano de implementação detalhado para a plataforma web de assistência psicológica (PsicoConecta / SerPsi), com autenticação segura por login e senha para psicólogos e pacientes, gestão de disponibilidade de horários, agendamento de consultas, sala de teleconsulta com vídeo/chat e prontuário eletrônico confidencial.",
+  "updatedAt":  "2026-10-21T18:47:20.076806506Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}

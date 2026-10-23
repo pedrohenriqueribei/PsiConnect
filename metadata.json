@@ -1,0 +1,11 @@
+{
+  "name": "PsiConnect - Plataforma de Assistência Psicológica",
+  "description": "Plataforma web segura de assistência psicológica online com cadastro de psicólogos, gestão de horários, agendamento de consultas, teleatendimento e prontuário confidencial.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
