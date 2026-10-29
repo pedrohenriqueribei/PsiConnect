@@ -1,9 +1,27 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { storage } from '../services/storage';
-import { Appointment, MedicalRecord } from '../types';
+import {
+  Appointment,
+  MedicalRecord,
+  ProfessionalType,
+  PROFESSIONAL_TYPES_CONFIG,
+  AgeGroup,
+  MaritalStatus,
+  PatientMatchResult,
+  ProfessionalMatchingProfile,
+  User,
+} from '../types';
 import { AvailabilityManager } from './AvailabilityManager';
 import { MedicalRecordModal } from './MedicalRecordModal';
+import { PatientInviteModal } from './PatientInviteModal';
+import {
+  getRecommendedPatientsForProfessional,
+  PROFESSIONAL_AFFINITY_TAGS,
+  AGE_GROUP_LABELS,
+  MARITAL_STATUS_LABELS,
+  REASONS_FOR_CARE_LIST,
+} from '../services/matchingEngine';
 import {
   Calendar,
   Clock,
@@ -11,13 +29,24 @@ import {
   FileText,
   User as UserIcon,
   CheckCircle2,
-  AlertCircle,
   ExternalLink,
   Users,
   DollarSign,
-  TrendingUp,
-  Search,
-  Filter
+  Building2,
+  Brain,
+  Leaf,
+  Compass,
+  BookOpen,
+  HeartHandshake,
+  Sparkles,
+  Tag,
+  Filter,
+  Award,
+  ChevronRight,
+  MessageSquare,
+  Check,
+  Flame,
+  ShieldCheck,
 } from 'lucide-react';
 
 interface PsychologistDashboardProps {
@@ -30,28 +59,79 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
   activeSubTab = 'agenda',
 }) => {
   const { user, updateProfile } = useAuth();
-  const [currentTab, setCurrentTab] = useState<'agenda' | 'availability' | 'records' | 'profile'>(
+  const [currentTab, setCurrentTab] = useState<'agenda' | 'availability' | 'records' | 'matching' | 'profile'>(
     (activeSubTab as any) || 'agenda'
   );
+
+  const pType: ProfessionalType = (user?.professionalType ||
+    (user?.role === 'pastor'
+      ? 'pastor'
+      : user?.role === 'therapist'
+      ? 'therapist'
+      : user?.role === 'psychoanalyst'
+      ? 'psychoanalyst'
+      : 'psychologist')) as ProfessionalType;
+
+  const currentProfConfig = PROFESSIONAL_TYPES_CONFIG[pType] || PROFESSIONAL_TYPES_CONFIG.psychologist;
 
   // Appointments
   const [appointments, setAppointments] = useState<Appointment[]>(() =>
     user ? storage.getAppointments(user.id, 'psychologist') : []
   );
 
-  // Selected appointment for Medical Record Modal
+  // Selected appointment for Medical/Pastoral Record Modal
   const [recordAppointment, setRecordAppointment] = useState<Appointment | null>(null);
 
   // Filter state for appointments
   const [statusFilter, setStatusFilter] = useState<'all' | 'scheduled' | 'completed' | 'cancelled'>('all');
 
+  // Matching & Suggestions states
+  const [allPatients, setAllPatients] = useState<User[]>(() => storage.getAllPatients());
+  const [selectedInviteMatch, setSelectedInviteMatch] = useState<PatientMatchResult | null>(null);
+  const [minScoreFilter, setMinScoreFilter] = useState<'all' | '80' | '90'>('all');
+  const [reasonFilter, setReasonFilter] = useState<string>('all');
+  const [ageGroupFilter, setAgeGroupFilter] = useState<string>('all');
+
+  // Professional Matching Profile states
+  const existingProfProfile = user?.professionalProfile;
+  const [profAgeGroup, setProfAgeGroup] = useState<AgeGroup>(
+    existingProfProfile?.ageGroup || '36-50'
+  );
+  const [profApproximateAge, setProfApproximateAge] = useState<string>(
+    existingProfProfile?.approximateAge ? String(existingProfProfile.approximateAge) : '44'
+  );
+  const [profMaritalStatus, setProfMaritalStatus] = useState<MaritalStatus>(
+    existingProfProfile?.maritalStatus || 'married'
+  );
+  const [profHasChildren, setProfHasChildren] = useState<boolean>(
+    existingProfProfile?.hasChildren ?? true
+  );
+  const [profYearsOfExp, setProfYearsOfExp] = useState<string>(
+    existingProfProfile?.yearsOfExperience ? String(existingProfProfile.yearsOfExperience) : '12'
+  );
+  const [selectedAffinityTags, setSelectedAffinityTags] = useState<string[]>(
+    existingProfProfile?.affinityTags || [
+      'Crise de Meia-Idade',
+      'Casamento & Terapia de Casal',
+      'Maternidade Real & Puerpério',
+      'Família & Pais com Filhos',
+      'Ansiedade & Regulação Emocional',
+      'Burnout & Saúde Ocupacional',
+    ]
+  );
+  const [welcomeIntro, setWelcomeIntro] = useState<string>(
+    existingProfProfile?.welcomeIntro || ''
+  );
+
   // Profile edit states
   const [bio, setBio] = useState(user?.bio || '');
-  const [crp, setCrp] = useState(user?.crp || '');
-  const [hourlyRate, setHourlyRate] = useState(user?.hourlyRate || 180);
+  const [registrationNumber, setRegistrationNumber] = useState(user?.registrationNumber || user?.crp || '');
+  const [ministryOrChurch, setMinistryOrChurch] = useState(user?.ministryOrChurch || '');
+  const [hourlyRate, setHourlyRate] = useState(user?.hourlyRate || currentProfConfig.defaultRate);
   const [phone, setPhone] = useState(user?.phone || '');
+  const [selectedType, setSelectedType] = useState<ProfessionalType>(pType);
   const [approachesText, setApproachesText] = useState(
-    user?.approaches?.join(', ') || 'TCC, Ansiedade, Mindfulness'
+    user?.approaches?.join(', ') || currentProfConfig.defaultApproaches.join(', ')
   );
   const [profileSuccess, setProfileSuccess] = useState(false);
 
@@ -67,16 +147,46 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
     refreshAppointments();
   };
 
+  const toggleAffinityTag = (tag: string) => {
+    setSelectedAffinityTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+  };
+
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) return;
+
     const appArray = approachesText.split(',').map(s => s.trim()).filter(Boolean);
+    const careCategory = selectedType === 'pastor' ? 'biblical' : 'therapy';
+
+    const updatedProfProfile: ProfessionalMatchingProfile = {
+      ageGroup: profAgeGroup,
+      approximateAge: profApproximateAge ? parseInt(profApproximateAge, 10) : undefined,
+      maritalStatus: profMaritalStatus,
+      hasChildren: profHasChildren,
+      yearsOfExperience: profYearsOfExp ? parseInt(profYearsOfExp, 10) : undefined,
+      affinityTags: selectedAffinityTags,
+      welcomeIntro: welcomeIntro.trim(),
+      updatedAt: new Date().toISOString(),
+    };
+
+    storage.saveProfessionalMatchingProfile(user.id, updatedProfProfile);
+
     updateProfile({
       bio,
-      crp,
+      crp: registrationNumber,
+      registrationNumber,
+      ministryOrChurch: selectedType === 'pastor' ? ministryOrChurch : undefined,
+      professionalType: selectedType,
+      role: selectedType,
+      careCategory,
       hourlyRate: Number(hourlyRate),
       phone,
       approaches: appArray,
+      professionalProfile: updatedProfProfile,
     });
+
     setProfileSuccess(true);
     setTimeout(() => setProfileSuccess(false), 3000);
   };
@@ -84,9 +194,10 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
   // KPIs
   const todayStr = new Date().toISOString().split('T')[0];
   const todayApts = appointments.filter(a => a.date === todayStr && a.status === 'scheduled');
-  const totalCompleted = appointments.filter(a => a.status === 'completed').length;
   const uniquePatients = new Set(appointments.map(a => a.patientId)).size;
-  const activeSlots = user ? storage.getAvailabilitySlots(user.id).filter(s => s.isActive).length : 0;
+  const userSlots = user ? storage.getAvailabilitySlots(user.id) : [];
+  const activeSlots = userSlots.filter(s => s.isActive).length;
+  const activeSocialSlots = userSlots.filter(s => s.isActive && s.isSocial).length;
 
   // Filtered appointments
   const filteredAppointments = appointments.filter(a => {
@@ -94,11 +205,59 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
     return a.status === statusFilter;
   });
 
-  // All medical records for psychologist
+  // All medical / counseling records for professional
   const allRecords: MedicalRecord[] = user ? storage.getMedicalRecords(user.id) : [];
 
+  // Recommended Patients based on intelligent matching
+  const recommendedPatients: PatientMatchResult[] = user
+    ? getRecommendedPatientsForProfessional(user, allPatients)
+    : [];
+
+  const highMatchCount = recommendedPatients.filter(r => r.score >= 80).length;
+
+  const filteredMatches = recommendedPatients.filter(r => {
+    if (minScoreFilter === '80' && r.score < 80) return false;
+    if (minScoreFilter === '90' && r.score < 90) return false;
+    if (ageGroupFilter !== 'all' && r.patient.patientProfile?.ageGroup !== ageGroupFilter) return false;
+    if (reasonFilter !== 'all') {
+      const hasReason = r.patient.patientProfile?.reasonsForCare.some(rc =>
+        rc.toLowerCase().includes(reasonFilter.toLowerCase())
+      );
+      if (!hasReason) return false;
+    }
+    return true;
+  });
+
+  const getPortalTitle = () => {
+    switch (pType) {
+      case 'pastor':
+        return 'Portal do Pastor & Conselheiro Bíblico';
+      case 'therapist':
+        return 'Portal do Terapeuta Integrativo & Emocional';
+      case 'psychoanalyst':
+        return 'Portal do Psicanalista Clínico';
+      case 'psychologist':
+      default:
+        return 'Portal do Psicólogo Clínico';
+    }
+  };
+
+  const getBadgeIcon = () => {
+    switch (pType) {
+      case 'pastor':
+        return <BookOpen className="w-3.5 h-3.5 text-amber-700" />;
+      case 'therapist':
+        return <Leaf className="w-3.5 h-3.5 text-emerald-700" />;
+      case 'psychoanalyst':
+        return <Compass className="w-3.5 h-3.5 text-purple-700" />;
+      case 'psychologist':
+      default:
+        return <Brain className="w-3.5 h-3.5 text-sky-700" />;
+    }
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-6 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
       {/* Welcome Banner */}
       <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
@@ -107,24 +266,31 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
               src={user.avatar}
               alt={user.name}
               referrerPolicy="no-referrer"
-              className="w-16 h-16 rounded-xl object-cover border border-slate-200 shadow-xs"
+              className="w-16 h-16 rounded-2xl object-cover border border-slate-200 shadow-xs"
             />
           ) : (
-            <div className="w-16 h-16 rounded-xl bg-sky-100 text-sky-800 font-bold flex items-center justify-center text-xl">
+            <div className="w-16 h-16 rounded-2xl bg-sky-100 text-sky-800 font-bold flex items-center justify-center text-xl">
               {user?.name.charAt(0)}
             </div>
           )}
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
                 {user?.name}
               </h1>
-              <span className="text-[11px] font-semibold text-sky-800 bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full">
-                {user?.crp || 'CRP Ativo'}
+              <span className="text-[11px] font-semibold text-sky-800 bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                {getBadgeIcon()}
+                <span>{currentProfConfig.label}</span>
               </span>
+              {user?.ministryOrChurch && (
+                <span className="text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <Building2 className="w-3 h-3 text-amber-600" />
+                  {user.ministryOrChurch}
+                </span>
+              )}
             </div>
             <p className="text-xs text-slate-500 mt-1 max-w-xl">
-              Portal do Psicólogo Clínico · Atendimento ético, teleconsultas e gestão de prontuários em conformidade com o CFP.
+              {getPortalTitle()} · Atendimento seguro por teleconferência, gestão de grade e registros confidenciais.
             </p>
           </div>
         </div>
@@ -140,6 +306,20 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
             Agenda ({todayApts.length} hoje)
           </button>
           <button
+            onClick={() => setCurrentTab('matching')}
+            className={`px-3.5 py-2 rounded-lg transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              currentTab === 'matching' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5 text-sky-700" />
+            <span>Pacientes Sugeridos</span>
+            {highMatchCount > 0 && (
+              <span className="px-1.5 py-0.5 bg-sky-100 text-sky-800 rounded-full text-[10px] font-bold">
+                {highMatchCount}
+              </span>
+            )}
+          </button>
+          <button
             onClick={() => setCurrentTab('availability')}
             className={`px-3.5 py-2 rounded-lg transition-all whitespace-nowrap ${
               currentTab === 'availability' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
@@ -153,7 +333,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
               currentTab === 'records' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Prontuários ({allRecords.length})
+            {pType === 'pastor' ? `Fichas Pastorais (${allRecords.length})` : `Prontuários (${allRecords.length})`}
           </button>
           <button
             onClick={() => setCurrentTab('profile')}
@@ -161,14 +341,14 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
               currentTab === 'profile' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            Editar Perfil
+            Editar Perfil & Tags
           </button>
         </div>
       </div>
 
       {/* KPI Cards Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-2">
             <span className="text-xs font-medium">Sessões Hoje</span>
             <Calendar className="w-4 h-4 text-sky-700" />
@@ -179,31 +359,39 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
           </span>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-medium">Pacientes Ativos</span>
+            <span className="text-xs font-medium">Pessoas Atendidas</span>
             <Users className="w-4 h-4 text-sky-700" />
           </div>
           <span className="text-2xl font-bold text-slate-900 tabular-nums">{uniquePatients}</span>
-          <span className="block text-[11px] text-slate-400 mt-1">Pacientes cadastrados na sua base</span>
+          <span className="block text-[11px] text-slate-400 mt-1">Pacientes / assessorados cadastrados</span>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-2">
-            <span className="text-xs font-medium">Vagas na Grade</span>
+            <span className="text-xs font-medium">Horários na Grade</span>
             <Clock className="w-4 h-4 text-sky-700" />
           </div>
           <span className="text-2xl font-bold text-slate-900 tabular-nums">{activeSlots}</span>
-          <span className="block text-[11px] text-slate-400 mt-1">Horários semanais abertos</span>
+          <span className="block text-[11px] text-slate-400 mt-1">
+            {activeSocialSlots > 0 ? (
+              <span className="text-emerald-700 font-semibold">
+                {activeSocialSlots} {activeSocialSlots === 1 ? 'vaga social' : 'vagas sociais'} ativas
+              </span>
+            ) : (
+              'Horários semanais abertos'
+            )}
+          </span>
         </div>
 
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
           <div className="flex items-center justify-between text-slate-500 mb-2">
             <span className="text-xs font-medium">Honorário / Sessão</span>
             <DollarSign className="w-4 h-4 text-sky-700" />
           </div>
           <span className="text-2xl font-bold text-slate-900 tabular-nums">
-            R$ {user?.hourlyRate || 180}
+            R$ {user?.hourlyRate || currentProfConfig.defaultRate}
           </span>
           <span className="block text-[11px] text-slate-400 mt-1">Duração média de 50 minutos</span>
         </div>
@@ -211,14 +399,14 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
 
       {/* Tab 1: Agenda de Consultas */}
       {currentTab === 'agenda' && (
-        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
             <div>
               <h2 className="text-lg font-bold text-slate-900 tracking-tight">
                 Agenda de Atendimentos
               </h2>
               <p className="text-xs text-slate-500">
-                Gerencie suas teleconsultas, acesse as salas virtuais e anote evoluções nos prontuários.
+                Gerencie suas teleconsultas, acerte horários e acesse as salas virtuais seguras.
               </p>
             </div>
 
@@ -256,7 +444,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
               <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-2" />
               <p className="text-sm font-semibold text-slate-700">Nenhuma consulta encontrada neste filtro</p>
               <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                Quando os pacientes agendarem horários livres na sua grade semanal, as consultas aparecerão aqui.
+                Quando pessoas agendarem horários livres na sua grade semanal, as consultas aparecerão aqui.
               </p>
             </div>
           ) : (
@@ -298,6 +486,14 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                           >
                             {apt.status === 'scheduled' ? 'Agendada' : apt.status === 'completed' ? 'Concluída' : 'Cancelada'}
                           </span>
+                          {apt.isSocial && (
+                            <span className="text-[11px] font-bold bg-emerald-50 text-emerald-900 border border-emerald-200 px-2 py-0.5 rounded-md inline-flex items-center gap-1 shadow-2xs">
+                              <HeartHandshake className="w-3.5 h-3.5 text-emerald-600" />
+                              <span>
+                                Atendimento Social{apt.socialRate !== undefined ? ` (R$ ${apt.socialRate})` : ''}
+                              </span>
+                            </span>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-3 text-xs text-slate-600 tabular-nums">
@@ -318,7 +514,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
 
                         {apt.notesFromPatient && (
                           <p className="text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-100 max-w-2xl">
-                            <strong className="text-slate-700">Demanda do paciente:</strong> {apt.notesFromPatient}
+                            <strong className="text-slate-700">Demanda informada:</strong> {apt.notesFromPatient}
                           </p>
                         )}
                       </div>
@@ -352,7 +548,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                           className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-700 hover:text-sky-800 border border-slate-200 rounded-lg hover:bg-sky-50 transition-colors"
                         >
                           <FileText className="w-3.5 h-3.5 text-sky-700" />
-                          Prontuário (PEP)
+                          {pType === 'pastor' ? 'Ficha de Aconselhamento' : 'Prontuário (PEP)'}
                         </button>
 
                         {apt.status === 'scheduled' && (
@@ -377,16 +573,18 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
       {/* Tab 2: Gestão de Disponibilidade */}
       {currentTab === 'availability' && <AvailabilityManager />}
 
-      {/* Tab 3: Prontuário Geral do Paciente (PEP) */}
+      {/* Tab 3: Prontuário Geral / Fichas Pastorais */}
       {currentTab === 'records' && (
-        <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs space-y-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div>
               <h2 className="text-lg font-bold text-slate-900 tracking-tight">
-                Prontuários Eletrônicos de Pacientes
+                {pType === 'pastor'
+                  ? 'Fichas de Acompanhamento Pastoral Confidencial'
+                  : 'Prontuários Eletrônicos de Pacientes (PEP)'}
               </h2>
               <p className="text-xs text-slate-500">
-                Registros protegidos, anotações de evolução clínica e histórico confidencial por paciente.
+                Registros protegidos, anotações de evolução e histórico confidencial por paciente/assessorado.
               </p>
             </div>
           </div>
@@ -394,9 +592,9 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
           {allRecords.length === 0 ? (
             <div className="py-16 text-center">
               <FileText className="w-12 h-12 text-slate-300 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-slate-700">Nenhum prontuário registrado ainda</p>
+              <p className="text-sm font-semibold text-slate-700">Nenhum registro arquivado ainda</p>
               <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                Após realizar as primeiras sessões de teleconsulta, registre as evoluções clínicas diretamente pela agenda ou durante a consulta online.
+                Após realizar as primeiras sessões de atendimento, registre as anotações diretamente pela agenda de consultas.
               </p>
             </div>
           ) : (
@@ -418,14 +616,14 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
 
                   <div>
                     <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-1">
-                      Queixa Principal:
+                      {pType === 'pastor' ? 'Motivo do Aconselhamento:' : 'Queixa Principal:'}
                     </span>
                     <p className="text-xs text-slate-600 line-clamp-2">{rec.chiefComplaint}</p>
                   </div>
 
                   <div>
                     <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-1">
-                      Evolução Clínica:
+                      {pType === 'pastor' ? 'Anotações do Acolhimento Bíblico:' : 'Evolução Clínica:'}
                     </span>
                     <p className="text-xs text-slate-600 line-clamp-3">{rec.clinicalEvolution}</p>
                   </div>
@@ -436,6 +634,13 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                         Anotações Confidenciais:
                       </strong>
                       <p className="line-clamp-2">{rec.privateNotes}</p>
+                    </div>
+                  )}
+
+                  {rec.recommendations && (
+                    <div className="text-xs text-slate-600">
+                      <strong>{pType === 'pastor' ? 'Passagens & Orientações:' : 'Tarefas Intersessão:'}</strong>{' '}
+                      {rec.recommendations}
                     </div>
                   )}
 
@@ -470,39 +675,553 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
         </div>
       )}
 
-      {/* Tab 4: Editar Perfil */}
+      {/* Tab Matching: Pacientes Sugeridos por Inteligência de Afinidade */}
+      {currentTab === 'matching' && (
+        <div className="space-y-6">
+          {/* Header & Methodology Info */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-xs">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-600 to-indigo-700 text-white flex items-center justify-center shrink-0 shadow-xs">
+                  <Sparkles className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                    <span>Pacientes Recomendados por Afinidade</span>
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 border border-sky-200">
+                      Metodologia Inteligente
+                    </span>
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
+                    União inteligente entre a sua vivência pessoal (faixa etária, casamento, filhos), abordagem clínica e tags de identificação com o formulário de acolhimento preenchido pelos pacientes.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setCurrentTab('profile')}
+                className="px-4 py-2 text-xs font-semibold text-sky-800 bg-sky-50 border border-sky-200 hover:bg-sky-100 rounded-xl transition-colors whitespace-nowrap self-start md:self-auto flex items-center gap-1.5"
+              >
+                <Tag className="w-3.5 h-3.5" />
+                <span>Configurar Minhas Tags ({selectedAffinityTags.length})</span>
+              </button>
+            </div>
+
+            {/* Active Professional Matching Profile Context Bar */}
+            <div className="mt-5 p-4 rounded-xl bg-slate-50 border border-slate-200/80 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+              <div>
+                <span className="text-slate-400 font-medium block text-[11px]">Sua Vivência Pessoal:</span>
+                <span className="font-semibold text-slate-800">
+                  {AGE_GROUP_LABELS[profAgeGroup]} ({profApproximateAge} anos) · {MARITAL_STATUS_LABELS[profMaritalStatus]}
+                </span>
+                <span className="block text-slate-500 text-[11px] mt-0.5">
+                  {profHasChildren ? 'Com filhos' : 'Sem filhos'} · {profYearsOfExp} anos de prática clínica
+                </span>
+              </div>
+
+              <div className="md:col-span-2">
+                <span className="text-slate-400 font-medium block text-[11px] mb-1">
+                  Tags de Identificação com as quais você mais se identifica:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {selectedAffinityTags.map(tag => (
+                    <span
+                      key={tag}
+                      className="px-2 py-0.5 bg-white border border-slate-200 rounded-md text-[11px] font-medium text-slate-700 shadow-2xs"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Sub-Filters */}
+            <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-2 flex-wrap text-xs">
+                <span className="text-slate-500 font-medium flex items-center gap-1">
+                  <Filter className="w-3.5 h-3.5" />
+                  Filtrar por Afinidade:
+                </span>
+                <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+                  <button
+                    onClick={() => setMinScoreFilter('all')}
+                    className={`px-3 py-1 rounded-md transition-colors ${
+                      minScoreFilter === 'all'
+                        ? 'bg-white text-slate-900 font-bold shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Todos ({recommendedPatients.length})
+                  </button>
+                  <button
+                    onClick={() => setMinScoreFilter('80')}
+                    className={`px-3 py-1 rounded-md transition-colors ${
+                      minScoreFilter === '80'
+                        ? 'bg-white text-sky-900 font-bold shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Alta Afinidade (80%+)
+                  </button>
+                  <button
+                    onClick={() => setMinScoreFilter('90')}
+                    className={`px-3 py-1 rounded-md transition-colors ${
+                      minScoreFilter === '90'
+                        ? 'bg-white text-emerald-900 font-bold shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Máxima Afinidade (90%+)
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 text-xs">
+                <select
+                  value={ageGroupFilter}
+                  onChange={e => setAgeGroupFilter(e.target.value)}
+                  className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-600"
+                >
+                  <option value="all">Todas as faixas etárias</option>
+                  <option value="18-25">18 a 25 anos (Jovens)</option>
+                  <option value="26-35">26 a 35 anos</option>
+                  <option value="36-50">36 a 50 anos (Meia-Idade)</option>
+                  <option value="51+">Acima de 50 anos</option>
+                </select>
+
+                <select
+                  value={reasonFilter}
+                  onChange={e => setReasonFilter(e.target.value)}
+                  className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-600 max-w-xs truncate"
+                >
+                  <option value="all">Todas as queixas de busca</option>
+                  {REASONS_FOR_CARE_LIST.map(r => (
+                    <option key={r.id} value={r.label}>
+                      {r.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Matches List */}
+          {filteredMatches.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
+              <Users className="w-12 h-12 text-slate-300 mx-auto" />
+              <h3 className="text-base font-bold text-slate-800">
+                Nenhum paciente encontrado com estes filtros
+              </h3>
+              <p className="text-xs text-slate-500 max-w-md mx-auto">
+                Tente ajustar os filtros de pontuação mínima ou alterar as tags selecionadas no seu perfil profissional.
+              </p>
+              <button
+                onClick={() => {
+                  setMinScoreFilter('all');
+                  setAgeGroupFilter('all');
+                  setReasonFilter('all');
+                }}
+                className="px-4 py-2 text-xs font-semibold text-sky-800 bg-sky-50 rounded-lg hover:bg-sky-100 transition-colors"
+              >
+                Limpar Filtros
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-5">
+              {filteredMatches.map(match => {
+                const patient = match.patient;
+                const profile = patient.patientProfile;
+                const isHighMatch = match.score >= 85;
+
+                return (
+                  <div
+                    key={patient.id}
+                    className={`bg-white rounded-2xl border transition-all p-6 shadow-xs hover:shadow-md ${
+                      isHighMatch ? 'border-sky-300 ring-1 ring-sky-200/60' : 'border-slate-200'
+                    }`}
+                  >
+                    <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-5">
+                      {/* Left: Patient Info & Match Score */}
+                      <div className="space-y-4 flex-1">
+                        <div className="flex items-start justify-between sm:justify-start sm:gap-4 flex-wrap">
+                          <div className="flex items-center gap-3">
+                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 text-slate-800 flex items-center justify-center font-bold text-base border border-slate-200/80 shrink-0">
+                              {patient.name.charAt(0)}
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <h3 className="text-base font-bold text-slate-900">
+                                  {patient.name}
+                                </h3>
+                                <span
+                                  className={`px-2.5 py-0.5 rounded-full text-xs font-bold tabular-nums inline-flex items-center gap-1 border ${
+                                    match.score >= 90
+                                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                      : match.score >= 80
+                                      ? 'bg-sky-50 text-sky-800 border-sky-200'
+                                      : 'bg-slate-50 text-slate-700 border-slate-200'
+                                  }`}
+                                >
+                                  {match.score >= 90 && <Flame className="w-3.5 h-3.5 text-emerald-600" />}
+                                  {match.score}% de Afinidade
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-slate-500 mt-1 flex-wrap">
+                                <span>{profile?.approximateAge ? `${profile.approximateAge} anos` : 'Idade informada'}</span>
+                                <span aria-hidden="true">·</span>
+                                <span>{profile ? AGE_GROUP_LABELS[profile.ageGroup] : 'Faixa etária não declarada'}</span>
+                                <span aria-hidden="true">·</span>
+                                <span>{profile ? MARITAL_STATUS_LABELS[profile.maritalStatus] : ''}</span>
+                                {profile?.hasChildren && (
+                                  <>
+                                    <span aria-hidden="true">·</span>
+                                    <span className="text-sky-800 font-medium">
+                                      {profile.childrenDetails || 'Tem filhos'}
+                                    </span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Match Highlights Badge Area */}
+                        <div className="p-3.5 rounded-xl bg-sky-50/70 border border-sky-100 space-y-1.5">
+                          <span className="text-[11px] font-bold text-sky-950 uppercase tracking-wider block">
+                            Por que este perfil combina com você:
+                          </span>
+                          <ul className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 text-xs text-sky-900">
+                            {match.matchHighlights.map((hl, i) => (
+                              <li key={i} className="flex items-center gap-1.5">
+                                <Check className="w-3.5 h-3.5 text-sky-700 shrink-0" />
+                                <span>{hl}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        {/* Patient Personal Demand Narrative */}
+                        {profile?.personalNote && (
+                          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-1">
+                              Relato Pessoal do Paciente:
+                            </span>
+                            <p className="text-xs text-slate-700 italic leading-relaxed">
+                              "{profile.personalNote}"
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Reasons for seeking care tags */}
+                        {profile?.reasonsForCare && profile.reasonsForCare.length > 0 && (
+                          <div>
+                            <span className="text-[11px] font-medium text-slate-500 block mb-1.5">
+                              Queixas e Motivos Selecionados pelo Paciente:
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {profile.reasonsForCare.map(reason => {
+                                const isShared = match.sharedTags.includes(reason);
+                                return (
+                                  <span
+                                    key={reason}
+                                    className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
+                                      isShared
+                                        ? 'bg-sky-100 text-sky-900 font-semibold border border-sky-200'
+                                        : 'bg-slate-100 text-slate-700 border border-slate-200'
+                                    }`}
+                                  >
+                                    {reason} {isShared && '✓'}
+                                  </span>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Right: Actions */}
+                      <div className="lg:w-60 flex flex-col justify-between gap-4 pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l lg:border-slate-100 lg:pl-6 shrink-0">
+                        <div className="space-y-2">
+                          <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                            <div className="flex items-center justify-between text-slate-500 text-[11px]">
+                              <span>Modalidade Desejada:</span>
+                              <span className="font-semibold text-slate-800">
+                                {profile?.preferredCareCategory === 'biblical'
+                                  ? 'Aconselhamento Bíblico'
+                                  : profile?.preferredCareCategory === 'both'
+                                  ? 'Aberto a ambos'
+                                  : 'Terapia Psicológica'}
+                              </span>
+                            </div>
+                            <div className="flex items-center justify-between text-slate-500 text-[11px]">
+                              <span>Cadastrado em:</span>
+                              <span className="tabular-nums text-slate-700">
+                                {patient.joinedAt.split('T')[0]}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => setSelectedInviteMatch(match)}
+                          className="w-full py-2.5 px-4 text-xs font-bold text-white bg-sky-700 hover:bg-sky-800 rounded-xl shadow-xs transition-colors flex items-center justify-center gap-2"
+                        >
+                          <MessageSquare className="w-4 h-4" />
+                          <span>Acolher & Convidar</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Tab Profile: Editar Perfil e Configurar Tags de Matching */}
       {currentTab === 'profile' && (
-        <div className="bg-white rounded-xl border border-slate-200 p-6 md:p-8 shadow-xs max-w-3xl space-y-6">
+        <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-xs max-w-4xl space-y-6">
           <div className="pb-4 border-b border-slate-100">
             <h2 className="text-lg font-bold text-slate-900 tracking-tight">
-              Perfil Profissional e Credenciais
+              Perfil Profissional, Vivência Pessoal e Tags de Identificação
             </h2>
             <p className="text-xs text-slate-500">
-              Mantenha suas informações cadastrais e registro no CRP atualizados para os pacientes.
+              Configure seus dados profissionais e as tags de afinidade com as quais mais se identifica para potencializar o motor de matching inteligente com pacientes.
             </p>
           </div>
 
           {profileSuccess && (
             <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-lg flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-              <span>Perfil profissional atualizado com sucesso!</span>
+              <span>Perfil e tags de afinidade atualizados com sucesso!</span>
             </div>
           )}
 
-          <form onSubmit={handleSaveProfile} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <form onSubmit={handleSaveProfile} className="space-y-6">
+            {/* Seção Nova de Matching: Vivência Pessoal e Tags */}
+            <div className="p-5 rounded-2xl bg-sky-50/60 border border-sky-100 space-y-4">
+              <div className="border-b border-sky-200/60 pb-2">
+                <h3 className="text-sm font-bold text-sky-950 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-sky-700" />
+                  Critérios de Afinidade & Vivência Pessoal (Motor de Matching)
+                </h3>
+                <p className="text-xs text-sky-800/80 mt-0.5">
+                  Estes dados permitem conectar você a pessoas em fases de vida afins (ex: psicóloga de meia-idade e mãe de família sugerida para pacientes com demandas e idades compatíveis).
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Sua Faixa Etária
+                  </label>
+                  <select
+                    value={profAgeGroup}
+                    onChange={e => setProfAgeGroup(e.target.value as AgeGroup)}
+                    className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-600"
+                  >
+                    {(Object.keys(AGE_GROUP_LABELS) as AgeGroup[]).map(ag => (
+                      <option key={ag} value={ag}>
+                        {AGE_GROUP_LABELS[ag]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Idade Exata
+                  </label>
+                  <input
+                    type="number"
+                    min={20}
+                    max={100}
+                    value={profApproximateAge}
+                    onChange={e => setProfApproximateAge(e.target.value)}
+                    placeholder="Ex: 44"
+                    className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Estado Civil
+                  </label>
+                  <select
+                    value={profMaritalStatus}
+                    onChange={e => setProfMaritalStatus(e.target.value as MaritalStatus)}
+                    className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-600"
+                  >
+                    {(Object.keys(MARITAL_STATUS_LABELS) as MaritalStatus[]).map(ms => (
+                      <option key={ms} value={ms}>
+                        {MARITAL_STATUS_LABELS[ms]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Tem Filhos?
+                  </label>
+                  <div className="flex items-center gap-2 pt-0.5">
+                    <button
+                      type="button"
+                      onClick={() => setProfHasChildren(true)}
+                      className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${
+                        profHasChildren
+                          ? 'bg-sky-700 text-white border-sky-700'
+                          : 'bg-white text-slate-700 border-slate-200'
+                      }`}
+                    >
+                      Sim
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setProfHasChildren(false)}
+                      className={`flex-1 py-1.5 text-xs font-semibold rounded-lg border transition-colors ${
+                        !profHasChildren
+                          ? 'bg-sky-700 text-white border-sky-700'
+                          : 'bg-white text-slate-700 border-slate-200'
+                      }`}
+                    >
+                      Não
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
-                  Registro Profissional (CRP)
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  Tags de Identificação que Você Mais se Identifica (Selecione para o Matching):
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {PROFESSIONAL_AFFINITY_TAGS.map(tag => {
+                    const isSelected = selectedAffinityTags.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => toggleAffinityTag(tag)}
+                        className={`text-left px-3 py-2 rounded-xl text-xs transition-all flex items-center justify-between border ${
+                          isSelected
+                            ? 'bg-sky-700 text-white border-sky-700 font-semibold shadow-xs'
+                            : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                        }`}
+                      >
+                        <span className="truncate">{tag}</span>
+                        {isSelected && <Check className="w-3.5 h-3.5 text-sky-200 shrink-0 ml-1" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Mensagem de Acolhimento Prévia para Pacientes Sugeridos
                 </label>
                 <input
                   type="text"
-                  required
-                  value={crp}
-                  onChange={e => setCrp(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
+                  value={welcomeIntro}
+                  onChange={e => setWelcomeIntro(e.target.value)}
+                  placeholder="Ex: Acolho mulheres e casais na meia-idade enfrentando sobrecarga emocional e transições familiares."
+                  className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-600"
                 />
               </div>
+            </div>
+
+            {/* Modalidade / Tipo de Atuação */}
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1">
+                Modalidade de Atuação Profissional
+              </label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedType('psychologist')}
+                  className={`p-2 rounded-lg border text-xs font-semibold transition-all ${
+                    selectedType === 'psychologist'
+                      ? 'border-sky-600 bg-sky-50 text-sky-950 ring-1 ring-sky-600'
+                      : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  🧠 Psicólogo(a)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedType('therapist')}
+                  className={`p-2 rounded-lg border text-xs font-semibold transition-all ${
+                    selectedType === 'therapist'
+                      ? 'border-emerald-600 bg-emerald-50 text-emerald-950 ring-1 ring-emerald-600'
+                      : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  🌿 Terapeuta
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedType('psychoanalyst')}
+                  className={`p-2 rounded-lg border text-xs font-semibold transition-all ${
+                    selectedType === 'psychoanalyst'
+                      ? 'border-purple-600 bg-purple-50 text-purple-950 ring-1 ring-purple-600'
+                      : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  🔍 Psicanalista
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedType('pastor')}
+                  className={`p-2 rounded-lg border text-xs font-semibold transition-all ${
+                    selectedType === 'pastor'
+                      ? 'border-amber-600 bg-amber-50 text-amber-950 ring-1 ring-amber-600'
+                      : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  📖 Pastor(a)
+                </button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {selectedType === 'psychologist' && (
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Registro Profissional CRP (Conselho Regional de Psicologia) <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={registrationNumber}
+                    onChange={e => setRegistrationNumber(e.target.value)}
+                    placeholder="Ex: CRP 06/138420"
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
+                  />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Exigido para atuação ética em psicologia clínica (CFP).
+                  </p>
+                </div>
+              )}
+
+              {selectedType === 'pastor' && (
+                <div>
+                  <label className="block text-xs font-medium text-slate-700 mb-1">
+                    Igreja, Denominação ou Ministério
+                  </label>
+                  <input
+                    type="text"
+                    value={ministryOrChurch}
+                    onChange={e => setMinistryOrChurch(e.target.value)}
+                    placeholder="Ex: Comunidade da Graça / Igreja Batista"
+                    className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
+                  />
+                </div>
+              )}
 
               <div>
                 <label className="block text-xs font-medium text-slate-700 mb-1">
@@ -515,44 +1234,46 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                   className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
                 />
               </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-700 mb-1">
+                  Honorário por Sessão de 50 min (R$)
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  max={1000}
+                  value={hourlyRate}
+                  onChange={e => setHourlyRate(Number(e.target.value))}
+                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
+                />
+              </div>
             </div>
 
             <div>
               <label className="block text-xs font-medium text-slate-700 mb-1">
-                Valor da Sessão (R$)
-              </label>
-              <input
-                type="number"
-                min={50}
-                max={1000}
-                value={hourlyRate}
-                onChange={e => setHourlyRate(Number(e.target.value))}
-                className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">
-                Abordagens e Especialidades (Separadas por vírgula)
+                {selectedType === 'pastor'
+                  ? 'Áreas de Aconselhamento Bíblico (Separadas por vírgula)'
+                  : 'Abordagens e Especialidades Gerais (Separadas por vírgula)'}
               </label>
               <input
                 type="text"
                 value={approachesText}
                 onChange={e => setApproachesText(e.target.value)}
-                placeholder="Ex: TCC, Ansiedade, Mindfulness, Psicanálise"
+                placeholder="Ex: TCC, Ansiedade, Mindfulness ou Aconselhamento Bíblico, Família"
                 className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
               />
             </div>
 
             <div>
               <label className="block text-xs font-medium text-slate-700 mb-1">
-                Apresentação Profissional e Biografia
+                Biografia e Apresentação para Pacientes / Buscadores
               </label>
               <textarea
                 rows={4}
                 value={bio}
                 onChange={e => setBio(e.target.value)}
-                placeholder="Escreva sobre sua formação acadêmica, anos de experiência e forma de trabalho..."
+                placeholder="Escreva sobre sua formação acadêmica, experiência ministerial ou clínica e forma de acolhimento..."
                 className="w-full p-3 text-xs border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600 leading-relaxed font-sans"
               />
             </div>
@@ -562,14 +1283,14 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                 type="submit"
                 className="px-5 py-2.5 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 rounded-lg shadow-xs transition-colors"
               >
-                Salvar Alterações
+                Salvar Alterações e Tags do Perfil
               </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* Modal de Prontuário Médico */}
+      {/* Modal de Prontuário Médico / Pastoral */}
       {recordAppointment && (
         <MedicalRecordModal
           isOpen={!!recordAppointment}
@@ -578,6 +1299,15 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
             refreshAppointments();
           }}
           appointment={recordAppointment}
+        />
+      )}
+
+      {/* Modal de Convite & Acolhimento de Paciente */}
+      {selectedInviteMatch && (
+        <PatientInviteModal
+          isOpen={!!selectedInviteMatch}
+          onClose={() => setSelectedInviteMatch(null)}
+          matchResult={selectedInviteMatch}
         />
       )}
     </div>

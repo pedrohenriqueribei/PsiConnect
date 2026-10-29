@@ -6,27 +6,35 @@ import { PsychologistDashboard } from './components/PsychologistDashboard';
 import { PatientDashboard } from './components/PatientDashboard';
 import { LandingHero } from './components/LandingHero';
 import { VirtualRoom } from './components/VirtualRoom';
+import { PatientMatchingModal } from './components/PatientMatchingModal';
 import { Appointment } from './types';
 import { Shield, Heart, PhoneCall, CheckCircle2 } from 'lucide-react';
+import { isProfessionalRole, UserRole } from './types';
 
 const MainApp: React.FC = () => {
   const { user, role } = useAuth();
+  const isProf = isProfessionalRole(role);
 
-  // Tab state
-  const [activeTab, setActiveTab] = useState<string>(() => {
-    if (role === 'psychologist') return 'agenda';
-    if (role === 'patient') return 'catalog';
-    return 'home';
-  });
+  // Tab state: defaults to 'home'
+  const [activeTab, setActiveTab] = useState<string>('home');
 
   // Modal Auth state
   const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [initialAuthRole, setInitialAuthRole] = useState<'patient' | 'psychologist'>('patient');
+  const [initialAuthRole, setInitialAuthRole] = useState<UserRole>('patient');
+  const [initialAuthMode, setInitialAuthMode] = useState<'login' | 'register'>('login');
+  const [patientMatchingModalOpen, setPatientMatchingModalOpen] = useState(false);
 
   // Active Virtual Room
   const [activeRoomAppointment, setActiveRoomAppointment] = useState<Appointment | null>(null);
 
-  const handleOpenAuth = (defaultRole: 'patient' | 'psychologist' = 'patient') => {
+  const handleOpenLogin = () => {
+    setInitialAuthMode('login');
+    setInitialAuthRole('patient');
+    setAuthModalOpen(true);
+  };
+
+  const handleOpenRegister = (defaultRole: UserRole = 'patient') => {
+    setInitialAuthMode('register');
     setInitialAuthRole(defaultRole);
     setAuthModalOpen(true);
   };
@@ -41,19 +49,62 @@ const MainApp: React.FC = () => {
     );
   }
 
+  const getUserRoleLabel = () => {
+    if (!user) return '';
+    if (user.role === 'pastor' || user.professionalType === 'pastor') return 'Pastor / Conselheiro Bíblico';
+    if (user.role === 'therapist' || user.professionalType === 'therapist') return 'Terapeuta';
+    if (user.role === 'psychoanalyst' || user.professionalType === 'psychoanalyst') return 'Psicanalista';
+    if (user.role === 'psychologist' || user.professionalType === 'psychologist') return 'Psicólogo(a)';
+    return 'Paciente';
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
       {/* Top Navigation */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onOpenAuth={() => handleOpenAuth('patient')}
+        onOpenLogin={handleOpenLogin}
+        onOpenRegister={handleOpenRegister}
       />
 
       {/* Main View Router */}
       <main className="flex-1">
         {user ? (
-          role === 'psychologist' ? (
+          activeTab === 'home' ? (
+            <div className="space-y-6">
+              {/* Logged in welcome helper banner */}
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
+                <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 text-sky-900">
+                    <div className="w-9 h-9 rounded-full bg-sky-700 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                      {user.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-xs font-semibold">
+                        Olá, {user.name} ({getUserRoleLabel()})
+                      </p>
+                      <p className="text-[11px] text-sky-700">
+                        Você está autenticado no PsiConnect. Deseja acessar seu painel principal?
+                      </p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setActiveTab(isProf ? 'agenda' : 'catalog')}
+                    className="px-4 py-2 text-xs font-bold text-white bg-sky-700 hover:bg-sky-800 rounded-lg transition-colors whitespace-nowrap shadow-xs"
+                  >
+                    Ir para meu Painel
+                  </button>
+                </div>
+              </div>
+              <LandingHero
+                onFindPsychologist={() => setActiveTab('catalog')}
+                onRegisterPsychologist={() => handleOpenRegister('psychologist')}
+                onRegisterPatient={() => handleOpenRegister('patient')}
+                onOpenLogin={handleOpenLogin}
+              />
+            </div>
+          ) : isProf ? (
             <PsychologistDashboard
               onJoinRoom={apt => setActiveRoomAppointment(apt)}
               activeSubTab={activeTab}
@@ -61,7 +112,7 @@ const MainApp: React.FC = () => {
           ) : (
             <PatientDashboard
               onJoinRoom={apt => setActiveRoomAppointment(apt)}
-              onOpenAuth={() => handleOpenAuth('patient')}
+              onOpenAuth={handleOpenLogin}
               activeSubTab={activeTab}
             />
           )
@@ -70,14 +121,15 @@ const MainApp: React.FC = () => {
             {activeTab === 'catalog' ? (
               <PatientDashboard
                 onJoinRoom={apt => setActiveRoomAppointment(apt)}
-                onOpenAuth={() => handleOpenAuth('patient')}
+                onOpenAuth={handleOpenLogin}
                 activeSubTab="catalog"
               />
             ) : (
               <LandingHero
                 onFindPsychologist={() => setActiveTab('catalog')}
-                onRegisterPsychologist={() => handleOpenAuth('psychologist')}
-                onOpenAuth={() => handleOpenAuth('patient')}
+                onRegisterPsychologist={() => handleOpenRegister('psychologist')}
+                onRegisterPatient={() => handleOpenRegister('patient')}
+                onOpenLogin={handleOpenLogin}
               />
             )}
           </>
@@ -143,9 +195,20 @@ const MainApp: React.FC = () => {
         isOpen={authModalOpen}
         onClose={() => setAuthModalOpen(false)}
         initialRole={initialAuthRole}
+        initialMode={initialAuthMode}
+        onPatientRegistered={() => {
+          setPatientMatchingModalOpen(true);
+        }}
         onAuthSuccess={() => {
           setActiveTab(initialAuthRole === 'psychologist' ? 'agenda' : 'catalog');
         }}
+      />
+
+      {/* Patient Intake Onboarding Modal after registration */}
+      <PatientMatchingModal
+        isOpen={patientMatchingModalOpen}
+        isInitialOnboarding={true}
+        onClose={() => setPatientMatchingModalOpen(false)}
       />
     </div>
   );

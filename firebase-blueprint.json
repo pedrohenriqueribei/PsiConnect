@@ -1,0 +1,136 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile for professionals (psychologists, therapists, psychoanalysts, pastors) and patients on Psiconnect",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "email": { "type": "string", "format": "email", "maxLength": 120 },
+        "role": { "type": "string", "enum": ["patient", "psychologist", "therapist", "psychoanalyst", "pastor", "professional"] },
+        "professionalType": { "type": "string", "enum": ["psychologist", "therapist", "psychoanalyst", "pastor"] },
+        "careCategory": { "type": "string", "enum": ["therapy", "biblical"] },
+        "phone": { "type": "string", "maxLength": 30 },
+        "crp": { "type": "string", "maxLength": 50 },
+        "registrationNumber": { "type": "string", "maxLength": 50 },
+        "ministryOrChurch": { "type": "string", "maxLength": 100 },
+        "bio": { "type": "string", "maxLength": 1000 },
+        "hourlyRate": { "type": "number" },
+        "sessionDuration": { "type": "number" },
+        "avatar": { "type": "string", "maxLength": 500 },
+        "city": { "type": "string", "maxLength": 100 },
+        "state": { "type": "string", "maxLength": 10 },
+        "defaultMeetingType": { "type": "string", "enum": ["native", "external"] },
+        "externalMeetingUrl": { "type": "string", "maxLength": 500 },
+        "joinedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "email", "role", "joinedAt"]
+    },
+    "AvailabilitySlot": {
+      "title": "AvailabilitySlot",
+      "description": "Availability slot for a professional, supports periods and social care",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "psychologistId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "dayOfWeek": { "type": "number" },
+        "startTime": { "type": "string", "minLength": 4, "maxLength": 10 },
+        "endTime": { "type": "string", "minLength": 4, "maxLength": 10 },
+        "isActive": { "type": "boolean" },
+        "startDate": { "type": "string", "maxLength": 10 },
+        "endDate": { "type": "string", "maxLength": 10 },
+        "isSocial": { "type": "boolean" },
+        "socialRate": { "type": "number" }
+      },
+      "required": ["id", "psychologistId", "dayOfWeek", "startTime", "endTime", "isActive"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "Telehealth appointment booking between patient and professional",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "psychologistId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "psychologistName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "psychologistAvatar": { "type": "string", "maxLength": 500 },
+        "psychologistCrp": { "type": "string", "maxLength": 50 },
+        "professionalType": { "type": "string", "enum": ["psychologist", "therapist", "psychoanalyst", "pastor"] },
+        "careCategory": { "type": "string", "enum": ["therapy", "biblical"] },
+        "patientId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "patientName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "patientEmail": { "type": "string", "format": "email", "maxLength": 120 },
+        "patientPhone": { "type": "string", "maxLength": 30 },
+        "date": { "type": "string", "minLength": 10, "maxLength": 10 },
+        "time": { "type": "string", "minLength": 4, "maxLength": 10 },
+        "endTime": { "type": "string", "minLength": 4, "maxLength": 10 },
+        "status": { "type": "string", "enum": ["scheduled", "in_progress", "completed", "cancelled"] },
+        "meetingType": { "type": "string", "enum": ["native", "external"] },
+        "meetingUrl": { "type": "string", "maxLength": 500 },
+        "notesFromPatient": { "type": "string", "maxLength": 1000 },
+        "isSocial": { "type": "boolean" },
+        "socialRate": { "type": "number" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["id", "psychologistId", "psychologistName", "patientId", "patientName", "patientEmail", "date", "time", "endTime", "status", "meetingType", "createdAt"]
+    },
+    "MedicalRecord": {
+      "title": "MedicalRecord",
+      "description": "Confidential electronic patient health or pastoral counseling record managed by the professional",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "appointmentId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "patientId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "patientName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "psychologistId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "professionalType": { "type": "string", "enum": ["psychologist", "therapist", "psychoanalyst", "pastor"] },
+        "careCategory": { "type": "string", "enum": ["therapy", "biblical"] },
+        "sessionDate": { "type": "string", "minLength": 10, "maxLength": 10 },
+        "chiefComplaint": { "type": "string", "maxLength": 2000 },
+        "clinicalEvolution": { "type": "string", "maxLength": 4000 },
+        "privateNotes": { "type": "string", "maxLength": 4000 },
+        "recommendations": { "type": "string", "maxLength": 2000 },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "appointmentId", "patientId", "patientName", "psychologistId", "sessionDate", "chiefComplaint", "clinicalEvolution", "privateNotes", "updatedAt"]
+    },
+    "ChatMessage": {
+      "title": "ChatMessage",
+      "description": "Live session text message between patient and professional",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "appointmentId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "senderId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "senderName": { "type": "string", "minLength": 1, "maxLength": 100 },
+        "senderRole": { "type": "string", "enum": ["patient", "psychologist", "therapist", "psychoanalyst", "pastor", "professional"] },
+        "text": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "timestamp": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["id", "appointmentId", "senderId", "senderName", "senderRole", "text", "timestamp"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "User profiles for registered professionals and patients"
+    },
+    "/slots/{slotId}": {
+      "schema": "AvailabilitySlot",
+      "description": "Weekly calendar slots published by professionals"
+    },
+    "/appointments/{appointmentId}": {
+      "schema": "Appointment",
+      "description": "Scheduled therapy and biblical counseling appointments"
+    },
+    "/medicalRecords/{recordId}": {
+      "schema": "MedicalRecord",
+      "description": "Confidential medical record documents (PEP) and pastoral records managed by professionals"
+    },
+    "/messages/{messageId}": {
+      "schema": "ChatMessage",
+      "description": "Real-time consultation chat messages"
+    }
+  }
+}

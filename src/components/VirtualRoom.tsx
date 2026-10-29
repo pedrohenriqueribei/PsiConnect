@@ -18,6 +18,8 @@ import {
   CheckCircle2
 } from 'lucide-react';
 
+import { isProfessionalRole } from '../types';
+
 interface VirtualRoomProps {
   appointment: Appointment;
   onLeave: () => void;
@@ -25,7 +27,7 @@ interface VirtualRoomProps {
 
 export const VirtualRoom: React.FC<VirtualRoomProps> = ({ appointment, onLeave }) => {
   const { user } = useAuth();
-  const isPsychologist = user?.role === 'psychologist';
+  const isProfessional = isProfessionalRole(user?.role);
 
   // Media streams & controls
   const [micActive, setMicActive] = useState(true);
@@ -59,6 +61,14 @@ export const VirtualRoom: React.FC<VirtualRoomProps> = ({ appointment, onLeave }
 
     return () => clearInterval(interval);
   }, []);
+
+  // Real-time Firestore chat sync
+  useEffect(() => {
+    const unsub = storage.subscribeChat(appointment.id, updatedMsgs => {
+      setMessages(updatedMsgs);
+    });
+    return () => unsub();
+  }, [appointment.id]);
 
   // Request actual camera & mic
   useEffect(() => {
@@ -134,7 +144,7 @@ export const VirtualRoom: React.FC<VirtualRoomProps> = ({ appointment, onLeave }
 
   // Save in-session note to medical record
   const handleSaveNotes = () => {
-    if (!sessionNotes.trim() || !isPsychologist) return;
+    if (!sessionNotes.trim() || !isProfessional) return;
 
     const existingRecord = storage.getRecordByAppointment(appointment.id);
     storage.saveMedicalRecord({
@@ -143,6 +153,8 @@ export const VirtualRoom: React.FC<VirtualRoomProps> = ({ appointment, onLeave }
       patientId: appointment.patientId,
       patientName: appointment.patientName,
       psychologistId: appointment.psychologistId,
+      professionalType: appointment.professionalType,
+      careCategory: appointment.careCategory,
       sessionDate: appointment.date,
       chiefComplaint: existingRecord?.chiefComplaint || appointment.notesFromPatient || 'Sessão online',
       clinicalEvolution: (existingRecord?.clinicalEvolution ? existingRecord.clinicalEvolution + '\n' : '') + sessionNotes,
@@ -183,7 +195,7 @@ export const VirtualRoom: React.FC<VirtualRoomProps> = ({ appointment, onLeave }
           </div>
           <span className="text-slate-600">·</span>
           <span className="text-xs text-slate-400">
-            {isPsychologist ? `Paciente: ${appointment.patientName}` : `Psicólogo(a): ${appointment.psychologistName}`}
+            {isProfessional ? `Paciente: ${appointment.patientName}` : `Especialista: ${appointment.psychologistName}`}
           </span>
         </div>
 
@@ -225,7 +237,7 @@ export const VirtualRoom: React.FC<VirtualRoomProps> = ({ appointment, onLeave }
             {/* Box 1: Remote Participant */}
             <div className="relative rounded-2xl bg-slate-900 border border-slate-800 overflow-hidden flex flex-col items-center justify-center shadow-lg">
               <div className="w-28 h-28 rounded-full overflow-hidden border-2 border-slate-700 shadow-md mb-3">
-                {isPsychologist ? (
+                {isProfessional ? (
                   <div className="w-full h-full bg-sky-900/60 flex items-center justify-center text-sky-200 text-3xl font-bold">
                     {appointment.patientName.charAt(0)}
                   </div>
@@ -240,10 +252,10 @@ export const VirtualRoom: React.FC<VirtualRoomProps> = ({ appointment, onLeave }
               </div>
 
               <span className="text-sm font-semibold text-slate-200">
-                {isPsychologist ? appointment.patientName : appointment.psychologistName}
+                {isProfessional ? appointment.patientName : appointment.psychologistName}
               </span>
               <span className="text-xs text-slate-500 mt-0.5">
-                {isPsychologist ? 'Paciente em atendimento' : (appointment.psychologistCrp || 'Psicólogo Clínico')}
+                {isProfessional ? 'Paciente em atendimento' : (appointment.psychologistCrp || 'Especialista')}
               </span>
 
               {/* Pulsing audio simulated indicator */}
@@ -254,7 +266,7 @@ export const VirtualRoom: React.FC<VirtualRoomProps> = ({ appointment, onLeave }
               </div>
 
               <div className="absolute bottom-3 left-3 bg-slate-950/70 backdrop-blur-xs px-2.5 py-1 rounded text-[11px] text-slate-300">
-                {isPsychologist ? appointment.patientName : appointment.psychologistName}
+                {isProfessional ? appointment.patientName : appointment.psychologistName}
               </div>
             </div>
 
@@ -294,7 +306,7 @@ export const VirtualRoom: React.FC<VirtualRoomProps> = ({ appointment, onLeave }
               )}
 
               <div className="absolute bottom-3 left-3 bg-slate-950/70 backdrop-blur-xs px-2.5 py-1 rounded text-[11px] text-slate-300 flex items-center gap-2">
-                <span>Você ({isPsychologist ? 'Psicólogo' : 'Paciente'})</span>
+                <span>Você ({isProfessional ? 'Especialista' : 'Paciente'})</span>
                 {!micActive && <MicOff className="w-3 h-3 text-red-400" />}
               </div>
             </div>
@@ -338,7 +350,7 @@ export const VirtualRoom: React.FC<VirtualRoomProps> = ({ appointment, onLeave }
               <MessageSquare className="w-5 h-5" />
             </button>
 
-            {isPsychologist && (
+            {isProfessional && (
               <button
                 onClick={() => setNotesOpen(!notesOpen)}
                 className={`p-3 rounded-full transition-colors ${
@@ -346,7 +358,7 @@ export const VirtualRoom: React.FC<VirtualRoomProps> = ({ appointment, onLeave }
                     ? 'bg-amber-600 hover:bg-amber-700 text-white'
                     : 'bg-slate-800 hover:bg-slate-700 text-slate-200'
                 }`}
-                title="Anotações Clínicas Imediatas"
+                title="Anotações Imediatas da Sessão"
               >
                 <FileEdit className="w-5 h-5" />
               </button>
@@ -362,7 +374,7 @@ export const VirtualRoom: React.FC<VirtualRoomProps> = ({ appointment, onLeave }
           </div>
         </div>
 
-        {/* Right Sidebar: Chat or Psychologist In-Session Notes */}
+        {/* Right Sidebar: Chat or Professional In-Session Notes */}
         {(chatOpen || notesOpen) && (
           <div className="w-80 md:w-96 border-l border-slate-800 bg-slate-900 flex flex-col shrink-0">
             {/* Switcher Tab */}
@@ -378,7 +390,7 @@ export const VirtualRoom: React.FC<VirtualRoomProps> = ({ appointment, onLeave }
               >
                 Chat da Sessão ({messages.length})
               </button>
-              {isPsychologist && (
+              {isProfessional && (
                 <button
                   onClick={() => {
                     setNotesOpen(true);
@@ -388,7 +400,7 @@ export const VirtualRoom: React.FC<VirtualRoomProps> = ({ appointment, onLeave }
                     notesOpen ? 'border-b-2 border-amber-500 text-white bg-slate-800/40' : 'text-slate-400 hover:text-slate-200'
                   }`}
                 >
-                  Anotações do Prontuário
+                  Anotações da Sessão
                 </button>
               )}
             </div>
@@ -448,15 +460,15 @@ export const VirtualRoom: React.FC<VirtualRoomProps> = ({ appointment, onLeave }
               </>
             )}
 
-            {/* In-Session Notes (Psychologist Only) */}
-            {notesOpen && isPsychologist && (
+            {/* In-Session Notes (Professional Only) */}
+            {notesOpen && isProfessional && (
               <div className="flex-1 p-4 flex flex-col text-xs">
                 <div className="mb-2">
                   <span className="font-bold text-slate-200 block">
-                    Bloco de Anotações Clínicas
+                    Bloco de Anotações da Sessão
                   </span>
                   <span className="text-[11px] text-slate-400 block">
-                    Estas anotações serão automaticamente anexadas à evolução do prontuário do paciente.
+                    Estas anotações serão automaticamente anexadas ao registro / prontuário do paciente.
                   </span>
                 </div>
 

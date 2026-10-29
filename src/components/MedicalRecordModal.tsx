@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { storage } from '../services/storage';
 import { Appointment, MedicalRecord } from '../types';
-import { X, Shield, Save, FileText, Clock, User as UserIcon, CheckCircle2, Printer } from 'lucide-react';
+import { X, Shield, Save, FileText, Clock, User as UserIcon, CheckCircle2, Printer, BookOpen } from 'lucide-react';
 
 interface MedicalRecordModalProps {
   isOpen: boolean;
@@ -20,6 +20,8 @@ export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
   const [privateNotes, setPrivateNotes] = useState('');
   const [recommendations, setRecommendations] = useState('');
   const [savedSuccess, setSavedSuccess] = useState(false);
+
+  const isPastor = appointment.careCategory === 'biblical' || appointment.professionalType === 'pastor';
 
   // Load existing records or past records for this patient
   const [pastRecords, setPastRecords] = useState<MedicalRecord[]>([]);
@@ -58,6 +60,8 @@ export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
       patientId: appointment.patientId,
       patientName: appointment.patientName,
       psychologistId: appointment.psychologistId,
+      professionalType: appointment.professionalType,
+      careCategory: appointment.careCategory,
       sessionDate: appointment.date,
       chiefComplaint,
       clinicalEvolution,
@@ -76,22 +80,24 @@ export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-3xl bg-white rounded-xl shadow-2xl border border-slate-200 overflow-hidden my-6">
+      <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-6">
         {/* Top Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/80">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-sky-100 text-sky-800 flex items-center justify-center">
-              <Shield className="w-4 h-4" />
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isPastor ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}`}>
+              {isPastor ? <BookOpen className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
             </div>
             <div>
               <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-                Prontuário Eletrônico do Paciente (PEP)
-                <span className="text-[10px] font-semibold text-sky-800 bg-sky-50 border border-sky-200 px-2 py-0.5 rounded">
-                  Sigilo CFP Res. 001/2009
+                {isPastor ? 'Ficha de Acompanhamento Pastoral Confidencial' : 'Prontuário Eletrônico do Paciente (PEP)'}
+                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${isPastor ? 'bg-amber-50 text-amber-900 border-amber-200' : 'bg-sky-50 text-sky-800 border-sky-200'}`}>
+                  {isPastor ? 'Sigilo Pastoral & Espiritual' : 'Sigilo Ético Profissional'}
                 </span>
               </h3>
               <p className="text-xs text-slate-500">
-                Acesso restrito e criptografado exclusivo ao psicólogo responsável.
+                {isPastor
+                  ? 'Acesso restrito e confidencial exclusivo ao conselheiro pastoral.'
+                  : 'Acesso restrito e criptografado exclusivo ao profissional responsável.'}
               </p>
             </div>
           </div>
@@ -128,34 +134,34 @@ export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
           {savedSuccess && (
             <div className="flex items-center gap-2 p-3 text-xs text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg">
               <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-              <span>Registro de prontuário e evolução clínica salvos com sucesso!</span>
+              <span>{isPastor ? 'Ficha de aconselhamento pastoral salva com sucesso!' : 'Registro de prontuário e evolução clínica salvos com sucesso!'}</span>
             </div>
           )}
 
-          {/* Queixa Principal */}
+          {/* Queixa Principal / Assunto do Aconselhamento */}
           <div>
             <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
-              1. Queixa Principal e Demandas Apresentadas
+              {isPastor ? '1. Assunto Apresentado e Motivo da Busca' : '1. Queixa Principal e Demandas Apresentadas'}
             </label>
             <textarea
               rows={2}
               value={chiefComplaint}
               onChange={e => setChiefComplaint(e.target.value)}
-              placeholder="Descreva a queixa que motivou a sessão ou relatos do paciente..."
+              placeholder={isPastor ? 'Descreva o tema do aconselhamento pastoral, dilema familiar ou espiritual...' : 'Descreva a queixa que motivou a sessão ou relatos do paciente...'}
               className="w-full p-3 text-xs border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
             />
           </div>
 
-          {/* Evolução Clínica */}
+          {/* Evolução Clínica / Registro do Aconselhamento */}
           <div>
             <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
-              2. Registro de Evolução Clínica e Hipóteses Diagnósticas
+              {isPastor ? '2. Registro do Aconselhamento Bíblico e Intervenções' : '2. Registro de Evolução Clínica e Hipóteses'}
             </label>
             <textarea
               rows={4}
               value={clinicalEvolution}
               onChange={e => setClinicalEvolution(e.target.value)}
-              placeholder="Descreva as intervenções realizadas, respostas cognitivo-emocionais, insights e postura clínica..."
+              placeholder={isPastor ? 'Descreva a escuta realizada, princípios bíblicos abordados, aconselhamento prático e oração...' : 'Descreva as intervenções realizadas, respostas cognitivo-emocionais, insights e postura clínica...'}
               className="w-full p-3 text-xs border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600 font-sans leading-relaxed"
             />
           </div>
@@ -163,7 +169,7 @@ export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
           {/* Anotações Confidenciais */}
           <div>
             <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5 flex items-center justify-between">
-              <span>3. Anotações Confidenciais do Terapeuta</span>
+              <span>{isPastor ? '3. Anotações Confidenciais do Pastor' : '3. Anotações Confidenciais do Terapeuta'}</span>
               <span className="text-[10px] text-amber-700 font-normal">
                 Visível apenas para você (nunca compartilhado)
               </span>
@@ -172,21 +178,21 @@ export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
               rows={3}
               value={privateNotes}
               onChange={e => setPrivateNotes(e.target.value)}
-              placeholder="Observações de transferência, contratransferência, riscos ou pontos para a supervisão clínica..."
+              placeholder="Observações particulares, pontos de atenção para a próxima conversa..."
               className="w-full p-3 text-xs border border-amber-200 bg-amber-50/30 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-amber-500 font-sans"
             />
           </div>
 
-          {/* Recomendações e Tarefas Intersessão */}
+          {/* Recomendações e Passagens Bíblicas */}
           <div>
             <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
-              4. Orientações, Leituras ou Tarefas Intersessão
+              {isPastor ? '4. Passagens das Escrituras, Oração e Recomendações' : '4. Orientações, Leituras ou Tarefas Intersessão'}
             </label>
             <textarea
               rows={2}
               value={recommendations}
               onChange={e => setRecommendations(e.target.value)}
-              placeholder="Exercícios de respiração, registros comportamentais ou orientações combinadas..."
+              placeholder={isPastor ? 'Passagens bíblicas para meditação, motivos de oração ou atitudes combinadas...' : 'Exercícios de respiração, registros comportamentais ou orientações combinadas...'}
               className="w-full p-3 text-xs border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
             />
           </div>
@@ -196,7 +202,7 @@ export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
             <div className="pt-4 border-t border-slate-200">
               <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                 <FileText className="w-3.5 h-3.5 text-slate-500" />
-                Histórico de Sessões Anteriores ({pastRecords.length})
+                Histórico de Encontros Anteriores ({pastRecords.length})
               </h4>
               <div className="space-y-2">
                 {pastRecords.map(pr => (
@@ -237,7 +243,7 @@ export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
                 className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 rounded-lg shadow-xs transition-colors"
               >
                 <Save className="w-3.5 h-3.5" />
-                Salvar Prontuário
+                {isPastor ? 'Salvar Ficha Pastoral' : 'Salvar Prontuário'}
               </button>
             </div>
           </div>
