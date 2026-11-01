@@ -137,11 +137,39 @@ export interface ProfessionalMatchingProfile {
   updatedAt: string;
 }
 
+export const CLINICAL_EXPERIENCE_TAGS = [
+  'Ansiedade',
+  'Luto',
+  'Relacionamentos',
+  'Depressão',
+  'Burnout & Estresse',
+  'Conflitos Conjugais',
+  'Maternidade & Paternidade',
+  'Crise de Meia-Idade',
+  'Autoestima',
+  'Transições de Carreira',
+  'Trauma & TEPT',
+  'Regulação Emocional',
+  'Família & Filhos',
+  'Fobias & Pânico',
+  'Desenvolvimento Pessoal',
+] as const;
+
+export interface MatchScoreBreakdown {
+  ageGroupScore: number;    // Peso: 30% (máximo 30 pontos)
+  reasonsScore: number;     // Peso: 30% (máximo 30 pontos)
+  maritalScore: number;     // Peso: 20% (máximo 20 pontos)
+  childrenScore: number;    // Peso: 20% (máximo 20 pontos)
+  totalScore: number;       // Score total: 100% (máximo 100 pontos)
+}
+
 export interface PatientMatchResult {
   patient: User;
   score: number; // 0 to 100
+  scoreBreakdown: MatchScoreBreakdown;
   matchHighlights: string[]; // Motivos claros da afinidade (ex: "Mesma faixa etária", "Ambos casados com filhos")
   sharedTags: string[];
+  matchedClinicalTags?: string[]; // Tags de experiência clínica que coincidem com as demandas do paciente
 }
 
 export interface User {
@@ -160,6 +188,7 @@ export interface User {
   hourlyRate?: number;
   sessionDuration?: number; // em minutos (ex: 50)
   approaches?: string[];
+  clinicalTags?: string[]; // Tags de experiência clínica (ex: Ansiedade, Luto, Relacionamentos)
   avatar?: string;
   city?: string;
   state?: string;
@@ -235,3 +264,5 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
 }
+
+export * from './psychologicalRecord';

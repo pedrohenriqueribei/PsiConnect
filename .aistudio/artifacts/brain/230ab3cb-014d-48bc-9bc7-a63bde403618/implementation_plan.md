@@ -50,10 +50,12 @@ Sistema inteligente de afinidade e direcionamento clínico para unir pacientes a
 
 ## 3. Key Product Decisions & Trade-Offs
 
-- **Algoritmo de Matching Ponderado:**
-  - *Vivência Pessoal (45%):* Faixa etária compatível (evitando descompasso entre novatas e demandas complexas de meia-idade), estado civil e experiência com filhos.
-  - *Demanda Clínica vs Tags (45%):* Intersecção exata entre os motivos preenchidos pelo paciente e as tags/abordagens selecionadas pelo profissional.
-  - *Modalidade & Categoria de Atendimento (10%):* Categoria de atendimento preferida (Terapia Científica ou Aconselhamento Bíblico).
+- **Algoritmo de Matching Ponderado por Pesos Específicos (Total: 100% / 100 pontos):**
+  - *Faixa Etária (30% - até 30 pontos):* 30 pts para mesma faixa etária; 15 pts para faixas etárias adjacentes na escala geracional.
+  - *Motivos do Atendimento & Experiência Clínica (30% - até 30 pontos):* Proporção de queixas atendidas (até 22 pts) combinada com bônus por tags de experiência clínica explícitas declaradas pelo psicólogo (Ansiedade, Luto, Relacionamentos, Depressão, etc. - até 8 pts).
+  - *Estado Civil (20% - até 20 pontos):* 20 pts para mesmo estado civil; 18 pts para vivência conjugal síncrona (casados / união estável); 12 pts para situação independente compartilhada.
+  - *Filhos (20% - até 20 pontos):* 20 pts para ambos com filhos (parentalidade compartilhada); 16 pts para ambos sem filhos no momento de vida.
+- **Decomposição Transparente no Painel:** O psicólogo visualiza o score total (0 a 100%) acompanhado de barra de progresso quadrisegmentada e 4 métricas individuais detalhando cada dimensão no card do paciente sugerido.
 - **Privacidade & Ética:** O profissional vê o primeiro nome, iniciais do sobrenome, faixa etária e a demanda clínica geral, preservando dados sensíveis de contato direto até que haja agendamento ou aceite mútuo.
 
 ---

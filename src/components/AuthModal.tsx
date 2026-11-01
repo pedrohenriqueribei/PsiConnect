@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { UserRole, ProfessionalType, PROFESSIONAL_TYPES_CONFIG } from '../types';
+import { UserRole, ProfessionalType, PROFESSIONAL_TYPES_CONFIG, CLINICAL_EXPERIENCE_TAGS } from '../types';
 import {
   X,
   Lock,
@@ -16,7 +16,10 @@ import {
   Leaf,
   Compass,
   Building2,
-  Info
+  Info,
+  Tag,
+  Plus,
+  Check,
 } from 'lucide-react';
 
 interface AuthModalProps {
@@ -62,6 +65,28 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [hourlyRate, setHourlyRate] = useState<number>(180);
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // Clinical tags multi-selection state (ex: Ansiedade, Luto, Relacionamentos)
+  const [selectedClinicalTags, setSelectedClinicalTags] = useState<string[]>([
+    'Ansiedade',
+    'Luto',
+    'Relacionamentos',
+  ]);
+  const [customTagInput, setCustomTagInput] = useState('');
+
+  const toggleClinicalTag = (tag: string) => {
+    setSelectedClinicalTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+  };
+
+  const handleAddCustomTag = () => {
+    const trimmed = customTagInput.trim();
+    if (trimmed && !selectedClinicalTags.includes(trimmed)) {
+      setSelectedClinicalTags(prev => [...prev, trimmed]);
+      setCustomTagInput('');
+    }
+  };
 
   // Update default approach and rate when professional type changes
   React.useEffect(() => {
@@ -140,6 +165,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         const careCategory = selectedProfessionalType === 'pastor' ? 'biblical' : 'therapy';
         const finalCrp = selectedProfessionalType === 'psychologist' ? registrationNumber.trim() : undefined;
 
+        // Combina a abordagem principal com as tags de experiência clínica
+        const combinedApproaches = Array.from(
+          new Set([approach, ...selectedClinicalTags])
+        );
+
         const res = register({
           name,
           email,
@@ -151,7 +181,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           crp: finalCrp,
           registrationNumber: finalCrp,
           ministryOrChurch: selectedProfessionalType === 'pastor' ? ministryOrChurch : undefined,
-          approaches: [approach],
+          approaches: combinedApproaches,
+          clinicalTags: selectedClinicalTags,
+          professionalProfile: {
+            ageGroup: '36-50',
+            approximateAge: 38,
+            maritalStatus: 'married',
+            hasChildren: false,
+            yearsOfExperience: 5,
+            affinityTags: selectedClinicalTags.length > 0 ? selectedClinicalTags : [approach],
+            acceptsNewMatchedPatients: true,
+            updatedAt: new Date().toISOString(),
+          },
           hourlyRate: Number(hourlyRate),
           sessionDuration: 50,
           defaultMeetingType: 'native',
@@ -669,6 +710,79 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                       className="w-full pl-8 pr-2 py-2 text-xs border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
                     />
                   </div>
+                </div>
+              </div>
+
+              {/* Multi-seleção de Tags de Experiência Clínica (Matching Inteligente) */}
+              <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-sky-700" />
+                    <label className="text-xs font-bold text-slate-800">
+                      Experiência Clínica & Foco de Atuação (Matching)
+                    </label>
+                  </div>
+                  <span className="text-[11px] font-semibold text-sky-800 bg-sky-100/80 border border-sky-200 px-2 py-0.5 rounded-full">
+                    {selectedClinicalTags.length} selecionada(s)
+                  </span>
+                </div>
+
+                <p className="text-[11px] text-slate-500 leading-snug">
+                  Selecione as queixas e temas com os quais você tem maior experiência (ex: <strong>Ansiedade</strong>, <strong>Luto</strong>, <strong>Relacionamentos</strong>). O algoritmo de matching utilizará essas tags para refinar a compatibilidade e sugerir pacientes com demandas clínicas afins.
+                </p>
+
+                {/* Chips de Multiseleção */}
+                <div className="flex flex-wrap gap-1.5 pt-0.5 max-h-36 overflow-y-auto pr-1">
+                  {Array.from(new Set([...CLINICAL_EXPERIENCE_TAGS, ...selectedClinicalTags])).map(tag => {
+                    const isSelected = selectedClinicalTags.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => toggleClinicalTag(tag)}
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg border transition-all ${
+                          isSelected
+                            ? 'bg-sky-700 text-white border-sky-700 shadow-2xs font-semibold'
+                            : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-100/80'
+                        }`}
+                      >
+                        <span>{tag}</span>
+                        {isSelected ? (
+                          <Check className="w-3 h-3 text-sky-200 shrink-0" />
+                        ) : (
+                          <Plus className="w-3 h-3 text-slate-400 shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Inserção de Tag Personalizada */}
+                <div className="pt-1 flex items-center gap-2">
+                  <div className="relative flex-1">
+                    <Tag className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-slate-400" />
+                    <input
+                      type="text"
+                      value={customTagInput}
+                      onChange={e => setCustomTagInput(e.target.value)}
+                      onKeyDown={e => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddCustomTag();
+                        }
+                      }}
+                      placeholder="Adicionar outra tag (ex: Síndrome do Pânico, TDAH)..."
+                      className="w-full pl-8 pr-2 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddCustomTag}
+                    disabled={!customTagInput.trim()}
+                    className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 disabled:opacity-40 border border-slate-200 rounded-lg transition-colors whitespace-nowrap"
+                  >
+                    Adicionar
+                  </button>
                 </div>
               </div>
             </>

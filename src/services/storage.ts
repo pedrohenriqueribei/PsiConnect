@@ -48,6 +48,7 @@ const INITIAL_USERS: User[] = [
     hourlyRate: 180,
     sessionDuration: 50,
     approaches: ['Terapia Cognitivo-Comportamental (TCC)', 'Transtornos de Ansiedade', 'Mindfulness', 'Burnout & Estresse', 'Crise de Meia-Idade'],
+    clinicalTags: ['Ansiedade', 'Burnout & Estresse', 'Relacionamentos', 'Crise de Meia-Idade', 'Maternidade & Paternidade'],
     avatar: '/src/assets/images/avatar_psico_clara_1792608795986.jpg',
     city: 'São Paulo',
     state: 'SP',
@@ -89,6 +90,7 @@ const INITIAL_USERS: User[] = [
     hourlyRate: 195,
     sessionDuration: 50,
     approaches: ['Gestalt-terapia', 'Fenomenologia Existencial', 'Relacionamentos Interpessoais', 'Autoconhecimento'],
+    clinicalTags: ['Crise de Meia-Idade', 'Luto', 'Relacionamentos', 'Transições de Carreira', 'Autoestima'],
     avatar: '/src/assets/images/avatar_psico_marcos_1792608796718.jpg',
     city: 'Campinas',
     state: 'SP',
@@ -126,6 +128,7 @@ const INITIAL_USERS: User[] = [
     hourlyRate: 220,
     sessionDuration: 50,
     approaches: ['Psicanálise Freudiana & Lacaniana', 'Elaboração de Luto & Perdas', 'Depressão & Vazio', 'Conflitos Inconscientes'],
+    clinicalTags: ['Luto', 'Depressão', 'Relacionamentos', 'Trauma & TEPT'],
     avatar: '/src/assets/images/avatar_psico_renata_1792608797120.jpg',
     city: 'Rio de Janeiro',
     state: 'RJ',
@@ -162,6 +165,7 @@ const INITIAL_USERS: User[] = [
     hourlyRate: 150,
     sessionDuration: 50,
     approaches: ['Terapia Emocional e Comportamental', 'Inteligência Emocional', 'Mindfulness & Respiração', 'Gestão do Estresse'],
+    clinicalTags: ['Ansiedade', 'Regulação Emocional', 'Autoestima', 'Burnout & Estresse'],
     avatar: '/src/assets/images/avatar_terapeuta_camila_1793309224240.jpg',
     city: 'Belo Horizonte',
     state: 'MG',
@@ -200,6 +204,7 @@ const INITIAL_USERS: User[] = [
     hourlyRate: 120,
     sessionDuration: 50,
     approaches: ['Aconselhamento Bíblico das Escrituras', 'Orientação Conjugal & Familiar', 'Princípios Bíblicos de Vida', 'Acolhimento Espiritual & Luto'],
+    clinicalTags: ['Aconselhamento Bíblico', 'Relacionamentos', 'Conflitos Conjugais', 'Luto', 'Família & Filhos'],
     avatar: '/src/assets/images/avatar_pastor_david_1793309212629.jpg',
     city: 'São Paulo',
     state: 'SP',
@@ -524,6 +529,7 @@ class StorageService {
         ...(user.externalMeetingUrl ? { externalMeetingUrl: user.externalMeetingUrl } : {}),
         ...(user.patientProfile ? { patientProfile: user.patientProfile } : {}),
         ...(user.professionalProfile ? { professionalProfile: user.professionalProfile } : {}),
+        ...(user.clinicalTags ? { clinicalTags: user.clinicalTags } : {}),
       });
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, `users/${user.id}`);
@@ -583,6 +589,7 @@ class StorageService {
         ...(updated.externalMeetingUrl !== undefined ? { externalMeetingUrl: updated.externalMeetingUrl } : {}),
         ...(updated.patientProfile !== undefined ? { patientProfile: updated.patientProfile } : {}),
         ...(updated.professionalProfile !== undefined ? { professionalProfile: updated.professionalProfile } : {}),
+        ...(updated.clinicalTags !== undefined ? { clinicalTags: updated.clinicalTags } : {}),
       }).catch(error => {
         handleFirestoreError(error, OperationType.UPDATE, path);
       });

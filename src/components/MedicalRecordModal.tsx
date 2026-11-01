@@ -7,12 +7,14 @@ interface MedicalRecordModalProps {
   isOpen: boolean;
   onClose: () => void;
   appointment: Appointment;
+  onOpenFullRecord?: (patientId: string) => void;
 }
 
 export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
   isOpen,
   onClose,
   appointment,
+  onOpenFullRecord,
 }) => {
   const [record, setRecord] = useState<MedicalRecord | null>(null);
   const [chiefComplaint, setChiefComplaint] = useState('');
@@ -123,9 +125,21 @@ export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
               </>
             )}
           </div>
-          <div className="flex items-center gap-2 text-slate-600 tabular-nums">
-            <Clock className="w-3.5 h-3.5 text-slate-400" />
-            <span>Sessão: {appointment.date} às {appointment.time}</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-slate-600 tabular-nums">
+              <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <span>Sessão: {appointment.date} às {appointment.time}</span>
+            </div>
+            {onOpenFullRecord && (
+              <button
+                type="button"
+                onClick={() => onOpenFullRecord(appointment.patientId)}
+                className="flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-sky-800 bg-sky-100 hover:bg-sky-200 border border-sky-300 rounded-lg transition-colors"
+              >
+                <FileText className="w-3.5 h-3.5" />
+                <span>Prontuário Completo (PEP)</span>
+              </button>
+            )}
           </div>
         </div>
 

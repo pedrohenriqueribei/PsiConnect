@@ -93,14 +93,36 @@ export const PatientInviteModal: React.FC<PatientInviteModalProps> = ({
         {/* Content */}
         <div className="p-6 space-y-5">
           {/* Match summary badge */}
-          <div className="p-3.5 bg-sky-50/80 rounded-xl border border-sky-100 space-y-2">
+          <div className="p-3.5 bg-sky-50/80 rounded-xl border border-sky-100 space-y-2.5">
             <div className="flex items-center justify-between text-xs font-semibold text-sky-950">
-              <span>Critérios de Afinidade Atendidos:</span>
+              <span>Score de Compatibilidade Ponderado:</span>
               <span className="px-2 py-0.5 rounded-md bg-sky-700 text-white text-[11px] font-bold">
-                {matchResult.score}% Compatível
+                {matchResult.score}% ({matchResult.scoreBreakdown?.totalScore ?? matchResult.score}/100 pts)
               </span>
             </div>
-            <ul className="text-xs text-sky-900/90 space-y-1">
+
+            {matchResult.scoreBreakdown && (
+              <div className="grid grid-cols-4 gap-1.5 text-center pt-0.5">
+                <div className="p-1.5 rounded-lg bg-white border border-sky-100 shadow-2xs">
+                  <span className="text-[9px] text-slate-500 block font-medium">Faixa (30%)</span>
+                  <span className="text-xs font-bold text-indigo-900">{matchResult.scoreBreakdown.ageGroupScore} pts</span>
+                </div>
+                <div className="p-1.5 rounded-lg bg-white border border-sky-100 shadow-2xs">
+                  <span className="text-[9px] text-slate-500 block font-medium">Motivos (30%)</span>
+                  <span className="text-xs font-bold text-sky-900">{matchResult.scoreBreakdown.reasonsScore} pts</span>
+                </div>
+                <div className="p-1.5 rounded-lg bg-white border border-sky-100 shadow-2xs">
+                  <span className="text-[9px] text-slate-500 block font-medium">Civil (20%)</span>
+                  <span className="text-xs font-bold text-amber-900">{matchResult.scoreBreakdown.maritalScore} pts</span>
+                </div>
+                <div className="p-1.5 rounded-lg bg-white border border-sky-100 shadow-2xs">
+                  <span className="text-[9px] text-slate-500 block font-medium">Filhos (20%)</span>
+                  <span className="text-xs font-bold text-emerald-900">{matchResult.scoreBreakdown.childrenScore} pts</span>
+                </div>
+              </div>
+            )}
+
+            <ul className="text-xs text-sky-900/90 space-y-1 pt-1 border-t border-sky-200/50">
               {matchResult.matchHighlights.slice(0, 3).map((h, i) => (
                 <li key={i} className="flex items-center gap-1.5">
                   <Check className="w-3.5 h-3.5 text-sky-700 shrink-0" />

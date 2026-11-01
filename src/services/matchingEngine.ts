@@ -3,9 +3,17 @@ import {
   PatientMatchingProfile,
   ProfessionalMatchingProfile,
   PatientMatchResult,
+  MatchScoreBreakdown,
   AgeGroup,
   MaritalStatus,
 } from '../types';
+
+export const MATCHING_WEIGHTS = {
+  AGE_GROUP: 30,      // 30% da pontuação total (Faixa Etária)
+  REASONS: 30,        // 30% da pontuação total (Motivos do Atendimento)
+  MARITAL_STATUS: 20, // 20% da pontuação total (Estado Civil)
+  CHILDREN: 20,       // 20% da pontuação total (Filhos)
+} as const;
 
 export const REASONS_FOR_CARE_LIST = [
   { id: 'midlife_crisis', label: 'Crise de Meia-Idade e Sentido de Vida', category: 'life_stage' },
@@ -50,144 +58,282 @@ export const MARITAL_STATUS_LABELS: Record<MaritalStatus, string> = {
   widowed: 'Viúvo(a)',
 };
 
-// Mapa semântico de motivos do paciente para tags do profissional
+import { CLINICAL_EXPERIENCE_TAGS } from '../types';
+export { CLINICAL_EXPERIENCE_TAGS };
+
+// Mapa semântico de motivos do paciente para tags do profissional e termos clínicos
 const REASON_TO_TAG_MAP: Record<string, string[]> = {
-  'Crise de Meia-Idade e Sentido de Vida': ['Crise de Meia-Idade', 'Transição de Carreira & Maturidade', 'Luto & Conflitos Existenciais'],
-  'Conflitos Conjugais & Casamento': ['Casamento & Terapia de Casal', 'Família & Pais com Filhos'],
-  'Maternidade, Paternidade & Filhos': ['Maternidade Real & Puerpério', 'Família & Pais com Filhos', 'Casamento & Terapia de Casal'],
-  'Ansiedade, Estresse Crônico & Pânico': ['Ansiedade & Regulação Emocional', 'Burnout & Saúde Ocupacional'],
-  'Burnout & Pressão Profissional': ['Burnout & Saúde Ocupacional', 'Ansiedade & Regulação Emocional', 'Transição de Carreira & Maturidade'],
-  'Luto, Perdas e Separação': ['Luto & Conflitos Existenciais', 'Casamento & Terapia de Casal'],
-  'Depressão e Vazio Existencial': ['Depressão & Reestruturação Cognitiva', 'Luto & Conflitos Existenciais'],
-  'Transições de Vida e Carreira': ['Transição de Carreira & Maturidade', 'Jovens Adultos & Identidade', 'Crise de Meia-Idade'],
-  'Orientação Bíblica & Fé Familiar': ['Aconselhamento Bíblico & Família', 'Casamento & Terapia de Casal'],
-  'Autoestima & Relações Interpessoais': ['Gestalt & Autoconhecimento', 'Jovens Adultos & Identidade'],
+  'Crise de Meia-Idade e Sentido de Vida': [
+    'Crise de Meia-Idade',
+    'Transições de Carreira',
+    'Transição de Carreira & Maturidade',
+    'Luto & Conflitos Existenciais',
+    'Luto',
+    'Autoestima',
+  ],
+  'Conflitos Conjugais & Casamento': [
+    'Casamento & Terapia de Casal',
+    'Conflitos Conjugais',
+    'Relacionamentos',
+    'Família & Pais com Filhos',
+    'Família & Filhos',
+  ],
+  'Maternidade, Paternidade & Filhos': [
+    'Maternidade Real & Puerpério',
+    'Maternidade & Paternidade',
+    'Família & Pais com Filhos',
+    'Família & Filhos',
+    'Casamento & Terapia de Casal',
+    'Relacionamentos',
+  ],
+  'Ansiedade, Estresse Crônico & Pânico': [
+    'Ansiedade',
+    'Ansiedade & Regulação Emocional',
+    'Burnout & Saúde Ocupacional',
+    'Burnout & Estresse',
+    'Regulação Emocional',
+    'Fobias & Pânico',
+  ],
+  'Burnout & Pressão Profissional': [
+    'Burnout & Saúde Ocupacional',
+    'Burnout & Estresse',
+    'Ansiedade',
+    'Ansiedade & Regulação Emocional',
+    'Transições de Carreira',
+    'Transição de Carreira & Maturidade',
+  ],
+  'Luto, Perdas e Separação': [
+    'Luto',
+    'Luto & Conflitos Existenciais',
+    'Relacionamentos',
+    'Casamento & Terapia de Casal',
+    'Trauma & TEPT',
+    'Depressão',
+  ],
+  'Depressão e Vazio Existencial': [
+    'Depressão',
+    'Depressão & Reestruturação Cognitiva',
+    'Luto',
+    'Luto & Conflitos Existenciais',
+    'Regulação Emocional',
+    'Autoestima',
+  ],
+  'Transições de Vida e Carreira': [
+    'Transições de Carreira',
+    'Transição de Carreira & Maturidade',
+    'Jovens Adultos & Identidade',
+    'Crise de Meia-Idade',
+    'Desenvolvimento Pessoal',
+    'Autoestima',
+  ],
+  'Orientação Bíblica & Fé Familiar': [
+    'Aconselhamento Bíblico & Família',
+    'Aconselhamento Bíblico',
+    'Casamento & Terapia de Casal',
+    'Conflitos Conjugais',
+    'Família & Filhos',
+  ],
+  'Autoestima & Relações Interpessoais': [
+    'Autoestima',
+    'Relacionamentos',
+    'Gestalt & Autoconhecimento',
+    'Jovens Adultos & Identidade',
+    'Desenvolvimento Pessoal',
+    'Regulação Emocional',
+  ],
 };
 
 /**
  * Calcula a compatibilidade entre o perfil do profissional e as respostas do formulário do paciente.
- * Dá ênfase expressa ao exemplo do usuário:
- * "uma psicóloga de meia-idade, seja para ela sugerida pacientes que tenham ali a sua mesma idade,
- * que seja casada, que tenha filho, para que uma paciente de meia-idade não possa ser sugerida para uma psicóloga novata."
+ * Refina a compatibilidade com base na experiência clínica e vivência pessoal.
+ */
+/**
+ * Calcula a compatibilidade entre o perfil do profissional e as respostas do formulário do paciente.
+ * Aplica pesos estritos conforme especificação:
+ * - Faixa etária: 30% (máximo 30 pontos)
+ * - Motivos do atendimento: 30% (máximo 30 pontos)
+ * - Estado civil: 20% (máximo 20 pontos)
+ * - Filhos: 20% (máximo 20 pontos)
+ * Total: 100% (máximo 100 pontos)
  */
 export function calculateMatchScore(
   professional: User,
   patient: User
-): { score: number; highlights: string[]; sharedTags: string[] } {
+): {
+  score: number;
+  scoreBreakdown: MatchScoreBreakdown;
+  highlights: string[];
+  sharedTags: string[];
+  matchedClinicalTags: string[];
+} {
   const profProfile: ProfessionalMatchingProfile = professional.professionalProfile || {
     ageGroup: '36-50',
     approximateAge: 44,
     maritalStatus: 'married',
     hasChildren: true,
-    affinityTags: professional.approaches || [],
+    affinityTags: professional.clinicalTags || professional.approaches || [],
     updatedAt: new Date().toISOString(),
   };
 
   const patProfile: PatientMatchingProfile | undefined = patient.patientProfile;
 
   if (!patProfile) {
+    const fallbackBreakdown: MatchScoreBreakdown = {
+      ageGroupScore: 15,
+      reasonsScore: 15,
+      maritalScore: 10,
+      childrenScore: 10,
+      totalScore: 50,
+    };
     return {
       score: 50,
+      scoreBreakdown: fallbackBreakdown,
       highlights: ['Perfil preliminar sem questionário de acolhimento completo'],
       sharedTags: [],
+      matchedClinicalTags: [],
     };
   }
 
-  let points = 0;
-  const maxPoints = 100;
   const highlights: string[] = [];
   const sharedTags: string[] = [];
+  const matchedClinicalTags: string[] = [];
 
-  // 1. Compatibilidade de Faixa Etária e Momento de Vida (Peso: até 35 pontos)
+  // 1. Faixa Etária (Peso: 30% - máximo 30 pontos)
+  let ageGroupScore = 0;
   if (profProfile.ageGroup === patProfile.ageGroup) {
-    points += 35;
+    ageGroupScore = 30;
     if (patProfile.ageGroup === '36-50') {
-      highlights.push('Mesma faixa etária: Meia-idade (vivência geracional síncrona)');
+      highlights.push('Faixa etária: Meia-idade coincidente (sincronia de maturidade - 30/30 pts)');
     } else {
-      highlights.push(`Faixa etária compatível: ${AGE_GROUP_LABELS[patProfile.ageGroup]}`);
+      highlights.push(`Faixa etária idêntica: ${AGE_GROUP_LABELS[patProfile.ageGroup]} (30/30 pts)`);
     }
   } else {
-    // Tolerância para faixas adjacentes (ex: 26-35 com 36-50)
     const order: AgeGroup[] = ['18-25', '26-35', '36-50', '51+'];
     const pIndex = order.indexOf(profProfile.ageGroup);
     const patIndex = order.indexOf(patProfile.ageGroup);
     const distance = Math.abs(pIndex - patIndex);
 
     if (distance === 1) {
-      points += 15;
-      highlights.push('Faixas etárias próximas');
+      ageGroupScore = 15;
+      highlights.push(`Faixas etárias adjacentes compatíveis (${AGE_GROUP_LABELS[patProfile.ageGroup]} e ${AGE_GROUP_LABELS[profProfile.ageGroup]} - 15/30 pts)`);
     } else {
-      // Diferença geracional grande (ex: novata 18-25 vs paciente 36-50 ou 51+)
-      points += 0;
+      ageGroupScore = 0;
     }
   }
 
-  // 2. Vivência Familiar & Estado Civil & Filhos (Peso: até 25 pontos)
-  // Estado civil
-  const isProfCoupled = profProfile.maritalStatus === 'married' || profProfile.maritalStatus === 'stable_union';
-  const isPatCoupled = patProfile.maritalStatus === 'married' || patProfile.maritalStatus === 'stable_union';
-
-  if (isProfCoupled && isPatCoupled) {
-    points += 12;
-    highlights.push('Vivência conjugal semelhante (ambos casados/união estável)');
-  } else if (profProfile.maritalStatus === patProfile.maritalStatus) {
-    points += 10;
-    highlights.push(`Estado civil em comum: ${MARITAL_STATUS_LABELS[patProfile.maritalStatus]}`);
-  }
-
-  // Filhos
-  if (profProfile.hasChildren && patProfile.hasChildren) {
-    points += 13;
-    highlights.push('Experiência compartilhada com maternidade/paternidade e filhos');
-  } else if (!profProfile.hasChildren && !patProfile.hasChildren) {
-    points += 7;
-  }
-
-  // 3. Cruzamento entre Motivos de Busca do Paciente e Tags de Afinidade do Profissional (Peso: até 30 pontos)
-  const profTags = new Set([
+  // 2. Motivos do Atendimento & Experiência Clínica (Peso: 30% - máximo 30 pontos)
+  let reasonsScore = 0;
+  const profClinicalTags = professional.clinicalTags || [];
+  const allProfTags = [
+    ...profClinicalTags,
     ...(profProfile.affinityTags || []),
     ...(professional.approaches || []),
-  ].map(t => t.toLowerCase().trim()));
+  ];
+  const profTagsLower = new Set(allProfTags.map(t => t.toLowerCase().trim()));
 
   let matchedReasonsCount = 0;
-
   for (const reason of patProfile.reasonsForCare) {
-    const relatedTags = REASON_TO_TAG_MAP[reason] || [];
-    const directHit = profTags.has(reason.toLowerCase().trim());
-    const semanticHit = relatedTags.some(tag => profTags.has(tag.toLowerCase().trim()));
+    const rLower = reason.toLowerCase().trim();
+    const relatedTags = (REASON_TO_TAG_MAP[reason] || []).map(t => t.toLowerCase().trim());
 
-    if (directHit || semanticHit) {
+    const directHit = profTagsLower.has(rLower);
+    const semanticHit = relatedTags.some(tag => profTagsLower.has(tag));
+    const tokenHit = Array.from(profTagsLower).some(
+      tag => rLower.includes(tag) || tag.includes(rLower)
+    );
+
+    if (directHit || semanticHit || tokenHit) {
       matchedReasonsCount++;
-      sharedTags.push(reason);
+      if (!sharedTags.includes(reason)) {
+        sharedTags.push(reason);
+      }
     }
   }
+
+  // Tags de experiência clínica explícitas (ex: Ansiedade, Luto, Relacionamentos) que deram match
+  profClinicalTags.forEach(cTag => {
+    const cLower = cTag.toLowerCase().trim();
+    const isDirectlyRelevant = patProfile.reasonsForCare.some(reason => {
+      const rLower = reason.toLowerCase();
+      const mapped = (REASON_TO_TAG_MAP[reason] || []).map(m => m.toLowerCase().trim());
+      return rLower.includes(cLower) || cLower.includes(rLower) || mapped.includes(cLower);
+    });
+
+    if (isDirectlyRelevant && !matchedClinicalTags.includes(cTag)) {
+      matchedClinicalTags.push(cTag);
+    }
+  });
 
   if (patProfile.reasonsForCare.length > 0) {
     const ratio = matchedReasonsCount / patProfile.reasonsForCare.length;
-    const clinicalPoints = Math.round(ratio * 30);
-    points += clinicalPoints;
+    // Base de aderência às queixas: até 22 pontos
+    const baseComplaintPoints = Math.round(ratio * 22);
+    // Bônus de especialidade clínica comprovada (tags do psicólogo): até 8 pontos
+    const clinicalTagBonus = Math.min(8, matchedClinicalTags.length * 4);
 
-    if (matchedReasonsCount > 0) {
-      highlights.push(`Afinidade clínica em ${matchedReasonsCount} queixa(s) relatada(s)`);
+    reasonsScore = Math.min(30, baseComplaintPoints + clinicalTagBonus);
+
+    if (matchedClinicalTags.length > 0) {
+      highlights.push(`Especialidade clínica confirmada: ${matchedClinicalTags.join(', ')} (${reasonsScore}/30 pts)`);
+    } else if (matchedReasonsCount > 0) {
+      highlights.push(`Afinidade com as queixas selecionadas (${matchedReasonsCount}/${patProfile.reasonsForCare.length} motivos - ${reasonsScore}/30 pts)`);
     }
+  } else {
+    // Sem motivos preenchidos: pontuação neutra
+    reasonsScore = 15;
   }
+  reasonsScore = Math.max(0, Math.min(30, reasonsScore));
 
-  // 4. Preferência de Categoria de Cuidado (Terapia vs Bíblica) (Peso: até 10 pontos)
-  if (
-    !patProfile.preferredCareCategory ||
-    patProfile.preferredCareCategory === 'both' ||
-    patProfile.preferredCareCategory === professional.careCategory
-  ) {
-    points += 10;
+  // 3. Estado Civil (Peso: 20% - máximo 20 pontos)
+  let maritalScore = 0;
+  const isProfCoupled = profProfile.maritalStatus === 'married' || profProfile.maritalStatus === 'stable_union';
+  const isPatCoupled = patProfile.maritalStatus === 'married' || patProfile.maritalStatus === 'stable_union';
+
+  if (profProfile.maritalStatus === patProfile.maritalStatus) {
+    maritalScore = 20;
+    highlights.push(`Estado civil em comum: ${MARITAL_STATUS_LABELS[patProfile.maritalStatus]} (20/20 pts)`);
+  } else if (isProfCoupled && isPatCoupled) {
+    maritalScore = 18;
+    highlights.push('Vivência conjugal similar (casados / união estável - 18/20 pts)');
+  } else if (!isProfCoupled && !isPatCoupled) {
+    maritalScore = 12;
+    highlights.push('Situação conjugal independente compartilhada (12/20 pts)');
+  } else {
+    maritalScore = 0;
   }
+  maritalScore = Math.max(0, Math.min(20, maritalScore));
 
-  // Normalização final entre 20% e 99%
-  const finalScore = Math.min(99, Math.max(25, points));
+  // 4. Filhos (Peso: 20% - máximo 20 pontos)
+  let childrenScore = 0;
+  if (profProfile.hasChildren && patProfile.hasChildren) {
+    childrenScore = 20;
+    highlights.push('Experiência compartilhada com criação de filhos e parentalidade (20/20 pts)');
+  } else if (!profProfile.hasChildren && !patProfile.hasChildren) {
+    childrenScore = 16;
+    highlights.push('Momento de vida sem filhos compartilhado (16/20 pts)');
+  } else {
+    childrenScore = 0;
+  }
+  childrenScore = Math.max(0, Math.min(20, childrenScore));
+
+  // Pontuação Total (Soma exata dos 4 pilares: 0 a 100 pontos)
+  const rawTotal = ageGroupScore + reasonsScore + maritalScore + childrenScore;
+  const totalScore = Math.min(100, Math.max(0, rawTotal));
+
+  const scoreBreakdown: MatchScoreBreakdown = {
+    ageGroupScore,
+    reasonsScore,
+    maritalScore,
+    childrenScore,
+    totalScore,
+  };
 
   return {
-    score: finalScore,
+    score: totalScore,
+    scoreBreakdown,
     highlights,
     sharedTags,
+    matchedClinicalTags,
   };
 }
 
@@ -201,15 +347,18 @@ export function getRecommendedPatientsForProfessional(
   const results: PatientMatchResult[] = allPatients
     .filter(patient => patient.role === 'patient')
     .map(patient => {
-      const { score, highlights, sharedTags } = calculateMatchScore(professional, patient);
+      const { score, scoreBreakdown, highlights, sharedTags, matchedClinicalTags } = calculateMatchScore(professional, patient);
       return {
         patient,
         score,
+        scoreBreakdown,
         matchHighlights: highlights,
         sharedTags,
+        matchedClinicalTags,
       };
     });
 
   // Ordena por maior pontuação de compatibilidade
   return results.sort((a, b) => b.score - a.score);
 }
+

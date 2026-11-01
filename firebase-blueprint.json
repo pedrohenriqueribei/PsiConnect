@@ -23,6 +23,7 @@
         "state": { "type": "string", "maxLength": 10 },
         "defaultMeetingType": { "type": "string", "enum": ["native", "external"] },
         "externalMeetingUrl": { "type": "string", "maxLength": 500 },
+        "clinicalTags": { "type": "array", "description": "Clinical experience tags selected by the professional for matching" },
         "joinedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "name", "email", "role", "joinedAt"]

@@ -15,8 +15,114 @@ import {
   Sparkles,
   Info,
   Check,
-  AlertCircle
+  AlertCircle,
+  Timer
 } from 'lucide-react';
+
+interface DurationShortcut {
+  label: string;
+  minutes: number;
+  isDefault?: boolean;
+}
+
+const DURATION_SHORTCUTS: DurationShortcut[] = [
+  { label: '40 min', minutes: 40 },
+  { label: '50 min (default)', minutes: 50, isDefault: true },
+  { label: '1h', minutes: 60 },
+  { label: '1h 30min', minutes: 90 },
+];
+
+export const formatTimeDisplay = (timeStr: string): string => {
+  if (!timeStr || !timeStr.includes(':')) return timeStr;
+  const [hStr, mStr] = timeStr.split(':');
+  const h = parseInt(hStr, 10);
+  const m = parseInt(mStr, 10);
+  if (isNaN(h) || isNaN(m)) return timeStr;
+  if (m === 0) return `${h}h`;
+  return `${h}h${m.toString().padStart(2, '0')}`;
+};
+
+export const formatTimeRangeDisplay = (startTime: string, endTime: string): string => {
+  return `${formatTimeDisplay(startTime)} às ${formatTimeDisplay(endTime)}`;
+};
+
+export interface GeneratedSession {
+  id: string;
+  index: number;
+  startTime: string;
+  endTime: string;
+  displayRange: string;
+}
+
+export const generateSessionsBatch = (
+  rangeStartTime: string,
+  rangeEndTime: string,
+  durationMinutes: number,
+  intervalMinutes: number = 10
+): GeneratedSession[] => {
+  if (!rangeStartTime || !rangeEndTime) return [];
+  const [startH, startM] = rangeStartTime.split(':').map(Number);
+  const [endH, endM] = rangeEndTime.split(':').map(Number);
+  if (isNaN(startH) || isNaN(startM) || isNaN(endH) || isNaN(endM)) return [];
+
+  const rangeStart = startH * 60 + startM;
+  const rangeEnd = endH * 60 + endM;
+
+  if (rangeStart >= rangeEnd || durationMinutes <= 0) return [];
+
+  // Determine step:
+  // If 50 min and interval 10 min -> step 60 min (sessions start on each hour: 8h, 9h, 10h, 11h).
+  // If 60 min and interval 0 min -> step 60 min.
+  // Otherwise durationMinutes + intervalMinutes.
+  let step = durationMinutes + intervalMinutes;
+  if (durationMinutes === 50 && intervalMinutes === 10) {
+    step = 60;
+  } else if (durationMinutes === 60 && intervalMinutes === 0) {
+    step = 60;
+  }
+
+  const sessions: GeneratedSession[] = [];
+  let currentStart = rangeStart;
+  let sessionIndex = 1;
+
+  while (currentStart + durationMinutes <= rangeEnd) {
+    const currentEnd = currentStart + durationMinutes;
+
+    const startHStr = Math.floor(currentStart / 60).toString().padStart(2, '0');
+    const startMStr = (currentStart % 60).toString().padStart(2, '0');
+    const endHStr = Math.floor(currentEnd / 60).toString().padStart(2, '0');
+    const endMStr = (currentEnd % 60).toString().padStart(2, '0');
+
+    const sTime = `${startHStr}:${startMStr}`;
+    const eTime = `${endHStr}:${endMStr}`;
+    const display = `${formatTimeDisplay(sTime)} às ${formatTimeDisplay(eTime)}`;
+
+    sessions.push({
+      id: `session-${sessionIndex}-${sTime}`,
+      index: sessionIndex,
+      startTime: sTime,
+      endTime: eTime,
+      displayRange: display,
+    });
+
+    sessionIndex++;
+    currentStart += step;
+  }
+
+  return sessions;
+};
+
+export const calculateEndTime = (startTime: string, durationMinutes: number): string => {
+  if (!startTime || !startTime.includes(':')) return '';
+  const [hStr, mStr] = startTime.split(':');
+  const h = parseInt(hStr, 10);
+  const m = parseInt(mStr, 10);
+  if (isNaN(h) || isNaN(m)) return '';
+  const totalMinutes = h * 60 + m + durationMinutes;
+  const endHour = Math.floor(totalMinutes / 60) % 24;
+  const endMin = totalMinutes % 60;
+  return `${endHour.toString().padStart(2, '0')}:${endMin.toString().padStart(2, '0')}`;
+};
 
 const DAYS_OF_WEEK = [
   { index: 0, name: 'Domingo', short: 'Dom' },
@@ -57,24 +163,56 @@ export const AvailabilityManager: React.FC = () => {
     return lastDay.toISOString().split('T')[0];
   };
 
+  // --- Duration & Shift State ---
+  // Default is 50 min, pre-filled automatically as requested
+  const [periodDuration, setPeriodDuration] = useState<number>(50);
+  const [sessionInterval, setSessionInterval] = useState<number>(10); // 10 min default interval
+  const [singleDuration, setSingleDuration] = useState<number>(50);
+
   // --- Period Form State ---
   const [periodStartDate, setPeriodStartDate] = useState<string>(todayStr);
   const [periodEndDate, setPeriodEndDate] = useState<string>(addDaysToToday(30));
   const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5]); // Monday to Friday by default
-  const [periodStartTime, setPeriodStartTime] = useState<string>('09:00');
-  const [periodEndTime, setPeriodEndTime] = useState<string>('10:00');
+  const [periodStartTime, setPeriodStartTime] = useState<string>('08:00'); // 8h default as requested
+  const [periodEndTime, setPeriodEndTime] = useState<string>('12:00'); // 12h default as requested
+  const [deselectedSessionIds, setDeselectedSessionIds] = useState<string[]>([]);
   const [periodIsSocial, setPeriodIsSocial] = useState<boolean>(false);
   const [periodSocialRate, setPeriodSocialRate] = useState<number>(40);
 
-  // Multiple time blocks in a period (e.g. 09:00-10:00, 14:00-15:00)
+  // Additional shifts in a period (e.g. tarde: 14:00-18:00)
   const [additionalTimeBlocks, setAdditionalTimeBlocks] = useState<Array<{ startTime: string; endTime: string }>>([]);
 
   // --- Single Slot Form State ---
   const [singleDay, setSingleDay] = useState<number>(1);
   const [singleStartTime, setSingleStartTime] = useState<string>('14:00');
-  const [singleEndTime, setSingleEndTime] = useState<string>('15:00');
+  const [singleEndTime, setSingleEndTime] = useState<string>(() => calculateEndTime('14:00', 50));
   const [singleIsSocial, setSingleIsSocial] = useState<boolean>(false);
   const [singleSocialRate, setSingleSocialRate] = useState<number>(40);
+
+  // Calculate batch sessions for primary shift (e.g. 8h às 12h with 50min generates 4 sessions)
+  const primaryBatchSessions = generateSessionsBatch(
+    periodStartTime,
+    periodEndTime,
+    periodDuration,
+    sessionInterval
+  );
+
+  // Calculate batch sessions for any additional shifts
+  const additionalBatchSessions = additionalTimeBlocks.flatMap((block, blockIdx) => {
+    const baseIndex = primaryBatchSessions.length + blockIdx * 10;
+    return generateSessionsBatch(
+      block.startTime,
+      block.endTime,
+      periodDuration,
+      sessionInterval
+    ).map((s, idx) => ({
+      ...s,
+      id: `extra-${blockIdx}-${s.id}`,
+      index: baseIndex + idx + 1,
+    }));
+  });
+
+  const allBatchSessions = [...primaryBatchSessions, ...additionalBatchSessions];
 
   // Feedback states
   const [feedbackMsg, setFeedbackMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -111,16 +249,61 @@ export const AvailabilityManager: React.FC = () => {
   const handleSelectWeekend = () => setSelectedDays([0, 6]);
   const handleClearDays = () => setSelectedDays([]);
 
-  // Add another time block to period
+  // Duration change for Period mode
+  const handleSelectPeriodDuration = (minutes: number) => {
+    setPeriodDuration(minutes);
+    if (minutes === 50) {
+      setSessionInterval(10);
+    } else if (minutes === 60) {
+      setSessionInterval(0);
+    } else if (minutes === 40) {
+      setSessionInterval(20);
+    }
+  };
+
+  // Apply shift presets (ex: Manhã 8h às 12h, Tarde 13h às 18h)
+  const handleApplyShiftPreset = (start: string, end: string) => {
+    setPeriodStartTime(start);
+    setPeriodEndTime(end);
+  };
+
+  // Toggle specific session inclusion in batch
+  const handleToggleSessionSelection = (sessionId: string) => {
+    setDeselectedSessionIds(prev =>
+      prev.includes(sessionId) ? prev.filter(id => id !== sessionId) : [...prev, sessionId]
+    );
+  };
+
+  // Additional shifts in Period
   const handleAddExtraTimeBlock = () => {
-    setAdditionalTimeBlocks(prev => [...prev, { startTime: '14:00', endTime: '15:00' }]);
+    setAdditionalTimeBlocks(prev => [
+      ...prev,
+      { startTime: '14:00', endTime: '18:00' },
+    ]);
+  };
+
+  const handleUpdateExtraTimeBlock = (index: number, field: 'startTime' | 'endTime', val: string) => {
+    setAdditionalTimeBlocks(prev =>
+      prev.map((item, i) => (i === index ? { ...item, [field]: val } : item))
+    );
   };
 
   const handleRemoveExtraTimeBlock = (index: number) => {
     setAdditionalTimeBlocks(prev => prev.filter((_, i) => i !== index));
   };
 
-  // Submit Period Availability
+  // Duration and start time change for Single slot
+  const handleSelectSingleDuration = (minutes: number) => {
+    setSingleDuration(minutes);
+    setSingleEndTime(calculateEndTime(singleStartTime, minutes));
+  };
+
+  const handleSingleStartTimeChange = (newStartTime: string) => {
+    setSingleStartTime(newStartTime);
+    setSingleEndTime(calculateEndTime(newStartTime, singleDuration));
+  };
+
+  // Submit Period Availability in Batch
   const handleAddPeriodSlots = (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
@@ -140,31 +323,34 @@ export const AvailabilityManager: React.FC = () => {
       return;
     }
 
-    // Collect all time blocks
-    const timeBlocks = [
-      { startTime: periodStartTime, endTime: periodEndTime },
-      ...additionalTimeBlocks,
-    ];
-
-    // Validate times
-    for (const tb of timeBlocks) {
-      if (tb.startTime >= tb.endTime) {
-        showFeedback('error', `O horário inicial (${tb.startTime}) deve ser anterior ao de término (${tb.endTime}).`);
-        return;
-      }
+    if (periodStartTime >= periodEndTime) {
+      showFeedback('error', `O horário inicial do turno (${periodStartTime}) deve ser anterior ao de término (${periodEndTime}).`);
+      return;
     }
 
-    // Construct slot payloads
+    const activeSessions = allBatchSessions.filter(
+      s => !deselectedSessionIds.includes(s.id)
+    );
+
+    if (activeSessions.length === 0) {
+      showFeedback(
+        'error',
+        'Nenhuma sessão foi gerada para o intervalo e duração configurados. Ajuste o início e término do turno.'
+      );
+      return;
+    }
+
+    // Construct slot payloads for each day and each batch session
     const newSlotsToCreate: Omit<AvailabilitySlot, 'id'>[] = [];
     let duplicateCount = 0;
 
     for (const day of selectedDays) {
-      for (const tb of timeBlocks) {
+      for (const session of activeSessions) {
         // Check if an identical slot already exists
         const exists = slots.some(
           s =>
             s.dayOfWeek === day &&
-            s.startTime === tb.startTime &&
+            s.startTime === session.startTime &&
             s.startDate === periodStartDate &&
             s.endDate === periodEndDate
         );
@@ -177,8 +363,8 @@ export const AvailabilityManager: React.FC = () => {
         newSlotsToCreate.push({
           psychologistId: user.id,
           dayOfWeek: day,
-          startTime: tb.startTime,
-          endTime: tb.endTime,
+          startTime: session.startTime,
+          endTime: session.endTime,
           isActive: true,
           startDate: periodStartDate,
           endDate: periodEndDate,
@@ -189,7 +375,7 @@ export const AvailabilityManager: React.FC = () => {
     }
 
     if (newSlotsToCreate.length === 0) {
-      showFeedback('error', 'Todos os horários selecionados para esse período já estavam cadastrados na sua grade.');
+      showFeedback('error', 'Todas as sessões calculadas para esse lote já constavam cadastradas na sua grade.');
       return;
     }
 
@@ -199,8 +385,8 @@ export const AvailabilityManager: React.FC = () => {
     const socialNote = periodIsSocial ? ' com atendimento social ativado' : '';
     showFeedback(
       'success',
-      `Sucesso! ${newSlotsToCreate.length} horário(s) lançado(s) para o período de ${periodStartDate.split('-').reverse().join('/')} até ${periodEndDate.split('-').reverse().join('/')}${socialNote}.${
-        duplicateCount > 0 ? ` (${duplicateCount} já existentes foram ignorados)` : ''
+      `Sucesso! ${newSlotsToCreate.length} vaga(s) lançada(s) em lote (${activeSessions.length} sessões/dia) para o período de ${periodStartDate.split('-').reverse().join('/')} até ${periodEndDate.split('-').reverse().join('/')}${socialNote}.${
+        duplicateCount > 0 ? ` (${duplicateCount} já existentes foram ignoradas)` : ''
       }`
     );
   };
@@ -523,35 +709,87 @@ export const AvailabilityManager: React.FC = () => {
 
                 {/* 3. Horário de Disponibilidade */}
                 <div>
-                  <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                    <Clock className="w-4 h-4 text-sky-700" />
-                    3. Horário de Disponibilidade
-                  </label>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                      <Clock className="w-4 h-4 text-sky-700" />
+                      3. Horário de Disponibilidade (Turno de Atendimento)
+                    </label>
+                    <span className="text-xs font-semibold text-sky-800">
+                      {formatTimeDisplay(periodStartTime)} às {formatTimeDisplay(periodEndTime)}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 mb-2.5">
+                    Defina o início e o término do seu turno de trabalho. O sistema gerará as sessões individuais em lote automaticamente.
+                  </p>
+
+                  {/* Atalhos rápidos de turno */}
+                  <div className="flex items-center gap-1.5 mb-3 flex-wrap">
+                    <span className="text-[11px] text-slate-400 font-medium">Turnos comuns:</span>
+                    <button
+                      type="button"
+                      onClick={() => handleApplyShiftPreset('08:00', '12:00')}
+                      className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-colors ${
+                        periodStartTime === '08:00' && periodEndTime === '12:00'
+                          ? 'bg-sky-700 text-white shadow-2xs'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                      }`}
+                    >
+                      Manhã (8h às 12h)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleApplyShiftPreset('13:00', '18:00')}
+                      className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-colors ${
+                        periodStartTime === '13:00' && periodEndTime === '18:00'
+                          ? 'bg-sky-700 text-white shadow-2xs'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                      }`}
+                    >
+                      Tarde (13h às 18h)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleApplyShiftPreset('18:00', '22:00')}
+                      className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-colors ${
+                        periodStartTime === '18:00' && periodEndTime === '22:00'
+                          ? 'bg-sky-700 text-white shadow-2xs'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                      }`}
+                    >
+                      Noite (18h às 22h)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleApplyShiftPreset('08:00', '18:00')}
+                      className={`px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-colors ${
+                        periodStartTime === '08:00' && periodEndTime === '18:00'
+                          ? 'bg-sky-700 text-white shadow-2xs'
+                          : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                      }`}
+                    >
+                      Integral (8h às 18h)
+                    </button>
+                  </div>
 
                   <div className="space-y-3">
-                    {/* Primary Time Slot */}
+                    {/* Primary Shift Time inputs */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-3 bg-slate-50 rounded-xl border border-slate-200">
                       <div>
                         <span className="block text-xs font-medium text-slate-700 mb-1">
-                          Início da Sessão
+                          Início do Turno (ex: 8h)
                         </span>
                         <select
                           value={periodStartTime}
-                          onChange={e => {
-                            const st = e.target.value;
-                            setPeriodStartTime(st);
-                            const [h, m] = st.split(':').map(Number);
-                            const endH = (h + 1).toString().padStart(2, '0');
-                            setPeriodEndTime(`${endH}:${m.toString().padStart(2, '0')}`);
-                          }}
+                          onChange={e => setPeriodStartTime(e.target.value)}
                           className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-600 tabular-nums font-semibold"
                         >
-                          {Array.from({ length: 16 }, (_, i) => i + 7).map(hour => {
+                          {Array.from({ length: 17 }, (_, i) => i + 6).map(hour => {
                             const hStr = hour.toString().padStart(2, '0');
                             return (
                               <React.Fragment key={hour}>
-                                <option value={`${hStr}:00`}>{hStr}:00</option>
-                                <option value={`${hStr}:30`}>{hStr}:30</option>
+                                <option value={`${hStr}:00`}>{formatTimeDisplay(`${hStr}:00`)} ({hStr}:00)</option>
+                                <option value={`${hStr}:30`}>{formatTimeDisplay(`${hStr}:30`)} ({hStr}:30)</option>
                               </React.Fragment>
                             );
                           })}
@@ -560,18 +798,27 @@ export const AvailabilityManager: React.FC = () => {
 
                       <div>
                         <span className="block text-xs font-medium text-slate-700 mb-1">
-                          Término da Sessão
+                          Término do Turno (ex: 12h)
                         </span>
-                        <input
-                          type="text"
+                        <select
                           value={periodEndTime}
                           onChange={e => setPeriodEndTime(e.target.value)}
-                          className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white tabular-nums focus:outline-hidden focus:ring-2 focus:ring-sky-600 font-semibold"
-                        />
+                          className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-600 tabular-nums font-semibold"
+                        >
+                          {Array.from({ length: 17 }, (_, i) => i + 7).map(hour => {
+                            const hStr = hour.toString().padStart(2, '0');
+                            return (
+                              <React.Fragment key={hour}>
+                                <option value={`${hStr}:00`}>{formatTimeDisplay(`${hStr}:00`)} ({hStr}:00)</option>
+                                <option value={`${hStr}:30`}>{formatTimeDisplay(`${hStr}:30`)} ({hStr}:30)</option>
+                              </React.Fragment>
+                            );
+                          })}
+                        </select>
                       </div>
                     </div>
 
-                    {/* Additional time blocks if professional wants to launch multiple hours at once */}
+                    {/* Additional shifts if professional wants to launch multiple shifts at once */}
                     {additionalTimeBlocks.map((block, idx) => (
                       <div
                         key={idx}
@@ -579,27 +826,19 @@ export const AvailabilityManager: React.FC = () => {
                       >
                         <div className="sm:col-span-2">
                           <span className="block text-xs font-medium text-slate-700 mb-1">
-                            Início Adicional #{idx + 2}
+                            Início Turno Adicional #{idx + 2}
                           </span>
                           <select
                             value={block.startTime}
-                            onChange={e => {
-                              const newTime = e.target.value;
-                              const [h, m] = newTime.split(':').map(Number);
-                              const endH = (h + 1).toString().padStart(2, '0');
-                              const newEnd = `${endH}:${m.toString().padStart(2, '0')}`;
-                              setAdditionalTimeBlocks(prev =>
-                                prev.map((item, i) => (i === idx ? { startTime: newTime, endTime: newEnd } : item))
-                              );
-                            }}
+                            onChange={e => handleUpdateExtraTimeBlock(idx, 'startTime', e.target.value)}
                             className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white tabular-nums font-semibold"
                           >
-                            {Array.from({ length: 16 }, (_, i) => i + 7).map(hour => {
+                            {Array.from({ length: 17 }, (_, i) => i + 6).map(hour => {
                               const hStr = hour.toString().padStart(2, '0');
                               return (
                                 <React.Fragment key={hour}>
-                                  <option value={`${hStr}:00`}>{hStr}:00</option>
-                                  <option value={`${hStr}:30`}>{hStr}:30</option>
+                                  <option value={`${hStr}:00`}>{formatTimeDisplay(`${hStr}:00`)} ({hStr}:00)</option>
+                                  <option value={`${hStr}:30`}>{formatTimeDisplay(`${hStr}:30`)} ({hStr}:30)</option>
                                 </React.Fragment>
                               );
                             })}
@@ -608,19 +847,23 @@ export const AvailabilityManager: React.FC = () => {
 
                         <div className="sm:col-span-2">
                           <span className="block text-xs font-medium text-slate-700 mb-1">
-                            Término
+                            Término Turno Adicional #{idx + 2}
                           </span>
-                          <input
-                            type="text"
+                          <select
                             value={block.endTime}
-                            onChange={e => {
-                              const val = e.target.value;
-                              setAdditionalTimeBlocks(prev =>
-                                prev.map((item, i) => (i === idx ? { ...item, endTime: val } : item))
-                              );
-                            }}
+                            onChange={e => handleUpdateExtraTimeBlock(idx, 'endTime', e.target.value)}
                             className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white tabular-nums font-semibold"
-                          />
+                          >
+                            {Array.from({ length: 17 }, (_, i) => i + 7).map(hour => {
+                              const hStr = hour.toString().padStart(2, '0');
+                              return (
+                                <React.Fragment key={hour}>
+                                  <option value={`${hStr}:00`}>{formatTimeDisplay(`${hStr}:00`)} ({hStr}:00)</option>
+                                  <option value={`${hStr}:30`}>{formatTimeDisplay(`${hStr}:30`)} ({hStr}:30)</option>
+                                </React.Fragment>
+                              );
+                            })}
+                          </select>
                         </div>
 
                         <div className="sm:col-span-1">
@@ -641,12 +884,262 @@ export const AvailabilityManager: React.FC = () => {
                       className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-700 hover:text-sky-800 hover:underline pt-1"
                     >
                       <Plus className="w-3.5 h-3.5" />
-                      Adicionar outro horário para os mesmos dias (ex: tarde ou noite)
+                      Adicionar outro turno para os mesmos dias (ex: tarde 14h às 18h)
                     </button>
                   </div>
                 </div>
 
-                {/* 4. Campo de Atendimento Social */}
+                {/* 4. Duração de Atendimento */}
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                      <Timer className="w-4 h-4 text-sky-700" />
+                      4. Duração de atendimento
+                    </label>
+                    <span className="text-xs font-semibold text-sky-800">
+                      {periodDuration < 60
+                        ? `${periodDuration} minutos`
+                        : periodDuration === 60
+                        ? '1 hora (60 min)'
+                        : `${Math.floor(periodDuration / 60)}h ${periodDuration % 60 ? `${periodDuration % 60}min` : ''}`}
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-slate-500 mb-2.5">
+                    Exibir como atalhos os valores mais comuns. O lote dividirá o horário em sessões de acordo com esta duração.
+                  </p>
+
+                  {/* Atalhos para valores mais comuns */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    {DURATION_SHORTCUTS.map(sc => {
+                      const isSelected = periodDuration === sc.minutes;
+                      return (
+                        <button
+                          key={sc.minutes}
+                          type="button"
+                          onClick={() => handleSelectPeriodDuration(sc.minutes)}
+                          className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer relative ${
+                            isSelected
+                              ? 'border-sky-600 bg-sky-600 text-white shadow-xs ring-2 ring-sky-300'
+                              : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-sm font-bold">{sc.label}</span>
+                            {isSelected && <Check className="w-3.5 h-3.5 shrink-0" />}
+                          </div>
+                          {sc.isDefault && (
+                            <span
+                              className={`text-[10px] mt-1 font-semibold px-1.5 py-0.5 rounded ${
+                                isSelected
+                                  ? 'bg-sky-700/80 text-white'
+                                  : 'bg-sky-50 text-sky-700 border border-sky-200'
+                              }`}
+                            >
+                              Padrão clínico
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Intervalo e customização */}
+                  <div className="mt-2.5 flex items-center justify-between text-xs text-slate-600 bg-slate-50 p-2.5 rounded-lg border border-slate-200 flex-wrap gap-2">
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-sky-700 shrink-0" />
+                      <span>
+                        Intervalo entre sessões:
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => setSessionInterval(10)}
+                          className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-colors ${
+                            sessionInterval === 10
+                              ? 'bg-sky-700 text-white'
+                              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          10 min (padrão)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSessionInterval(0)}
+                          className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-colors ${
+                            sessionInterval === 0
+                              ? 'bg-sky-700 text-white'
+                              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          Sem intervalo
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setSessionInterval(15)}
+                          className={`px-2 py-0.5 rounded text-[11px] font-semibold transition-colors ${
+                            sessionInterval === 15
+                              ? 'bg-sky-700 text-white'
+                              : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          15 min
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[11px] text-slate-500 font-medium">Outra duração:</span>
+                      <input
+                        type="number"
+                        min={15}
+                        max={240}
+                        step={5}
+                        value={periodDuration}
+                        onChange={e => {
+                          const val = Number(e.target.value);
+                          if (val > 0) handleSelectPeriodDuration(val);
+                        }}
+                        className="w-16 px-2 py-0.5 text-xs border border-slate-300 rounded bg-white font-bold text-center text-slate-800 focus:outline-hidden focus:ring-1 focus:ring-sky-600"
+                      />
+                      <span className="text-[11px] text-slate-500">min</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Apresentação das Sessões de Atendimentos em Lote */}
+                <div className="p-4 rounded-xl border border-sky-300 bg-sky-50/70 space-y-3 shadow-2xs">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-sky-200">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <CalendarDays className="w-4 h-4 text-sky-700 shrink-0" />
+                        <h4 className="text-xs font-bold text-sky-950 uppercase tracking-wider">
+                          Sessões (Vagas) de Atendimento em Lote Calculadas
+                        </h4>
+                      </div>
+                      <p className="text-xs text-sky-900 mt-1">
+                        Disponibilidade configurada: <strong>{periodDuration} min</strong> e horário das{' '}
+                        <strong>{formatTimeDisplay(periodStartTime)} às {formatTimeDisplay(periodEndTime)}</strong>.
+                        Apresenta <strong>{primaryBatchSessions.length} sessões (vaga)</strong> de disponibilidade por dia:
+                      </p>
+                    </div>
+
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white text-sky-900 border border-sky-300 shadow-2xs shrink-0 self-start sm:self-auto">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                      {primaryBatchSessions.length} sessões geradas por dia
+                    </span>
+                  </div>
+
+                  {/* Lista estruturada idêntica ao modelo solicitado */}
+                  <div className="bg-white rounded-xl p-3.5 border border-sky-200 shadow-2xs space-y-2">
+                    <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
+                      Grade de Sessões Calculadas:
+                    </span>
+                    <ul className="space-y-1.5">
+                      {primaryBatchSessions.map(session => {
+                        const isDeselected = deselectedSessionIds.includes(session.id);
+                        return (
+                          <li
+                            key={session.id}
+                            onClick={() => handleToggleSessionSelection(session.id)}
+                            className={`flex items-center justify-between p-2.5 rounded-lg border text-xs transition-all cursor-pointer ${
+                              !isDeselected
+                                ? 'bg-sky-50/60 border-sky-200 text-slate-900 hover:bg-sky-100/50'
+                                : 'bg-slate-50 border-slate-200 text-slate-400 opacity-60'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <input
+                                type="checkbox"
+                                checked={!isDeselected}
+                                onChange={() => {}}
+                                className="w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500 cursor-pointer"
+                              />
+                              <span className="font-bold text-slate-900">
+                                - sessão {session.index}:
+                              </span>
+                              <span className="font-bold text-sky-900 bg-white px-2 py-0.5 rounded border border-sky-200">
+                                {session.displayRange}
+                              </span>
+                              <span className="text-[11px] text-slate-500 font-mono">
+                                ({session.startTime} às {session.endTime})
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                {periodDuration} min
+                              </span>
+                              {sessionInterval > 0 && session.index < primaryBatchSessions.length && (
+                                <span className="text-[10px] text-slate-500 font-medium">
+                                  +{sessionInterval}min intervalo
+                                </span>
+                              )}
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </div>
+
+                  {/* Se houver turnos adicionais */}
+                  {additionalBatchSessions.length > 0 && (
+                    <div className="bg-white rounded-xl p-3.5 border border-sky-200 shadow-2xs space-y-2">
+                      <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block">
+                        Sessões dos Turnos Adicionais:
+                      </span>
+                      <ul className="space-y-1.5">
+                        {additionalBatchSessions.map(session => {
+                          const isDeselected = deselectedSessionIds.includes(session.id);
+                          return (
+                            <li
+                              key={session.id}
+                              onClick={() => handleToggleSessionSelection(session.id)}
+                              className={`flex items-center justify-between p-2.5 rounded-lg border text-xs transition-all cursor-pointer ${
+                                !isDeselected
+                                  ? 'bg-sky-50/60 border-sky-200 text-slate-900 hover:bg-sky-100/50'
+                                  : 'bg-slate-50 border-slate-200 text-slate-400 opacity-60'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <input
+                                  type="checkbox"
+                                  checked={!isDeselected}
+                                  onChange={() => {}}
+                                  className="w-4 h-4 text-sky-600 rounded border-slate-300 focus:ring-sky-500 cursor-pointer"
+                                />
+                                <span className="font-bold text-slate-900">
+                                  - sessão {session.index}:
+                                </span>
+                                <span className="font-bold text-sky-900 bg-white px-2 py-0.5 rounded border border-sky-200">
+                                  {session.displayRange}
+                                </span>
+                                <span className="text-[11px] text-slate-500 font-mono">
+                                  ({session.startTime} às {session.endTime})
+                                </span>
+                              </div>
+
+                              <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                                {periodDuration} min
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between text-[11px] text-sky-900/80 pt-1 flex-wrap gap-2">
+                    <span>
+                      Total diário: <strong>{allBatchSessions.filter(s => !deselectedSessionIds.includes(s.id)).length} vagas</strong> ativas por dia de atendimento selecionado.
+                    </span>
+                    <span>
+                      Próxima sessão sempre na hora cheia (ex: 8h, 9h, 10h, 11h).
+                    </span>
+                  </div>
+                </div>
+
+                {/* 5. Campo de Atendimento Social */}
                 <div
                   className={`p-4 rounded-xl border transition-all ${
                     periodIsSocial
@@ -667,7 +1160,7 @@ export const AvailabilityManager: React.FC = () => {
                           className={`w-4 h-4 ${periodIsSocial ? 'text-emerald-700' : 'text-slate-500'}`}
                         />
                         <span className="text-xs font-bold text-slate-900">
-                          Disponibilidade para Atendimento Social
+                          5. Disponibilidade para Atendimento Social (Opcional)
                         </span>
                         {periodIsSocial && (
                           <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full">
@@ -716,18 +1209,32 @@ export const AvailabilityManager: React.FC = () => {
                     <Info className="w-4 h-4 text-sky-700 shrink-0" />
                     <span>
                       Total no lote: <strong>{selectedDays.length} dia(s)</strong> ×{' '}
-                      <strong>{1 + additionalTimeBlocks.length} horário(s)</strong> ={' '}
-                      <strong>{selectedDays.length * (1 + additionalTimeBlocks.length)} vagas</strong> por semana no período selecionado.
+                      <strong>
+                        {allBatchSessions.filter(s => !deselectedSessionIds.includes(s.id)).length} sessão(ões)
+                      </strong>{' '}
+                      ={' '}
+                      <strong>
+                        {selectedDays.length *
+                          allBatchSessions.filter(s => !deselectedSessionIds.includes(s.id)).length}{' '}
+                        vagas
+                      </strong>{' '}
+                      por semana no período selecionado.
                     </span>
                   </div>
 
                   <button
                     type="submit"
-                    disabled={selectedDays.length === 0}
+                    disabled={
+                      selectedDays.length === 0 ||
+                      allBatchSessions.filter(s => !deselectedSessionIds.includes(s.id)).length === 0
+                    }
                     className="flex items-center gap-1.5 px-5 py-2.5 text-xs font-bold text-white bg-sky-700 hover:bg-sky-800 disabled:opacity-50 rounded-xl shadow-xs transition-colors"
                   >
                     <Plus className="w-4 h-4" />
-                    Lançar Disponibilidade do Período
+                    Lançar{' '}
+                    {selectedDays.length *
+                      allBatchSessions.filter(s => !deselectedSessionIds.includes(s.id)).length}{' '}
+                    Vagas do Período
                   </button>
                 </div>
               </form>
@@ -762,13 +1269,7 @@ export const AvailabilityManager: React.FC = () => {
                     </label>
                     <select
                       value={singleStartTime}
-                      onChange={e => {
-                        const st = e.target.value;
-                        setSingleStartTime(st);
-                        const [h, m] = st.split(':').map(Number);
-                        const endH = (h + 1).toString().padStart(2, '0');
-                        setSingleEndTime(`${endH}:${m.toString().padStart(2, '0')}`);
-                      }}
+                      onChange={e => handleSingleStartTimeChange(e.target.value)}
                       className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-600 tabular-nums font-semibold"
                     >
                       {Array.from({ length: 15 }, (_, i) => i + 7).map(hour => {
@@ -785,7 +1286,7 @@ export const AvailabilityManager: React.FC = () => {
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Término da Sessão
+                      Término da Sessão (Automático)
                     </label>
                     <input
                       type="text"
@@ -793,6 +1294,39 @@ export const AvailabilityManager: React.FC = () => {
                       onChange={e => setSingleEndTime(e.target.value)}
                       className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white tabular-nums font-semibold focus:outline-hidden focus:ring-2 focus:ring-sky-600"
                     />
+                  </div>
+                </div>
+
+                {/* Duration shortcuts for single slot */}
+                <div>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="text-xs font-semibold text-slate-700 flex items-center gap-1.5">
+                      <Timer className="w-3.5 h-3.5 text-sky-700" />
+                      Duração de atendimento
+                    </label>
+                    <span className="text-[11px] font-medium text-sky-800">
+                      {singleDuration} min
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                    {DURATION_SHORTCUTS.map(sc => {
+                      const isSelected = singleDuration === sc.minutes;
+                      return (
+                        <button
+                          key={sc.minutes}
+                          type="button"
+                          onClick={() => handleSelectSingleDuration(sc.minutes)}
+                          className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border text-xs font-bold transition-all cursor-pointer ${
+                            isSelected
+                              ? 'border-sky-600 bg-sky-600 text-white shadow-xs'
+                              : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                          }`}
+                        >
+                          <span>{sc.label}</span>
+                          {isSelected && <Check className="w-3 h-3" />}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
@@ -1018,9 +1552,14 @@ export const AvailabilityManager: React.FC = () => {
                         }`}
                       >
                         <div className="flex items-center justify-between">
-                          <span className="font-bold tabular-nums text-slate-900">
-                            {slot.startTime} às {slot.endTime}
-                          </span>
+                          <div>
+                            <span className="font-bold tabular-nums text-slate-900">
+                              {slot.startTime} às {slot.endTime}
+                            </span>
+                            <span className="text-[11px] font-medium text-sky-800 ml-1.5">
+                              ({formatTimeRangeDisplay(slot.startTime, slot.endTime)})
+                            </span>
+                          </div>
 
                           <div className="flex items-center gap-1">
                             <button

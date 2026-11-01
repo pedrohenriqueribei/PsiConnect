@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { storage } from '../services/storage';
 import { User, Appointment, CareCategory, ProfessionalType, PROFESSIONAL_TYPES_CONFIG } from '../types';
+import { calculateMatchScore } from '../services/matchingEngine';
 import { BookingModal } from './BookingModal';
 import { PatientMatchingModal } from './PatientMatchingModal';
 import {
@@ -119,7 +120,8 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
       const matchesChurch = p.ministryOrChurch?.toLowerCase().includes(term);
       const matchesReg = p.registrationNumber?.toLowerCase().includes(term) || p.crp?.toLowerCase().includes(term);
       const matchesApproach = p.approaches?.some(a => a.toLowerCase().includes(term));
-      if (!matchesName && !matchesBio && !matchesChurch && !matchesReg && !matchesApproach) {
+      const matchesClinicalTag = p.clinicalTags?.some(t => t.toLowerCase().includes(term));
+      if (!matchesName && !matchesBio && !matchesChurch && !matchesReg && !matchesApproach && !matchesClinicalTag) {
         return false;
       }
     }
@@ -468,12 +470,29 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                           </h3>
                         </div>
 
-                        {/* Professional Type Badge */}
+                        {/* Professional Type Badge & Matching Score */}
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold border ${badge.bg} ${badge.text} ${badge.border}`}>
                             {badge.icon}
                             <span>{badge.label}</span>
                           </div>
+
+                          {user && user.patientProfile && (() => {
+                            const match = calculateMatchScore(prof, user);
+                            return (
+                              <div
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${
+                                  match.score >= 85
+                                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                    : 'bg-sky-50 text-sky-800 border-sky-200'
+                                }`}
+                                title={match.highlights.join(' · ')}
+                              >
+                                <Sparkles className="w-3 h-3 text-sky-600" />
+                                <span>{match.score}% Compatível</span>
+                              </div>
+                            );
+                          })()}
 
                           {storage.getAvailabilitySlots(prof.id).some(s => s.isSocial && s.isActive) && (
                             <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-900 border border-emerald-200 shadow-2xs">
@@ -509,21 +528,44 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                       {prof.bio || 'Profissional dedicado ao acolhimento e desenvolvimento humano.'}
                     </p>
 
-                    {/* Approaches / Tags */}
-                    <div className="flex flex-wrap gap-1.5 pt-1">
-                      {prof.approaches?.map((app, idx) => (
-                        <span
-                          key={idx}
-                          className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${
-                            pType === 'pastor'
-                              ? 'bg-amber-50 text-amber-900 border border-amber-100'
-                              : 'bg-slate-100 text-slate-700'
-                          }`}
-                        >
-                          {app}
+                    {/* Tags de Experiência Clínica (ex: Ansiedade, Luto, Relacionamentos) */}
+                    {prof.clinicalTags && prof.clinicalTags.length > 0 && (
+                      <div className="space-y-1 pt-1">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                          Foco Clínico & Temas:
                         </span>
-                      ))}
-                    </div>
+                        <div className="flex flex-wrap gap-1">
+                          {prof.clinicalTags.map((tag, idx) => (
+                            <span
+                              key={idx}
+                              className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-sky-50 text-sky-900 border border-sky-200/80"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Approaches / Abordagens */}
+                    {prof.approaches && prof.approaches.length > 0 && (
+                      <div className="flex flex-wrap gap-1 pt-1">
+                        {prof.approaches
+                          .filter(a => !prof.clinicalTags?.includes(a))
+                          .map((app, idx) => (
+                            <span
+                              key={idx}
+                              className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${
+                                pType === 'pastor'
+                                  ? 'bg-amber-50 text-amber-900 border border-amber-100'
+                                  : 'bg-slate-100 text-slate-700'
+                              }`}
+                            >
+                              {app}
+                            </span>
+                          ))}
+                      </div>
+                    )}
                   </div>
 
                   {/* Card Footer: Price & Booking Action */}

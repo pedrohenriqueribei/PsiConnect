@@ -11,10 +11,12 @@ import {
   PatientMatchResult,
   ProfessionalMatchingProfile,
   User,
+  CLINICAL_EXPERIENCE_TAGS,
 } from '../types';
 import { AvailabilityManager } from './AvailabilityManager';
 import { MedicalRecordModal } from './MedicalRecordModal';
 import { PatientInviteModal } from './PatientInviteModal';
+import { PsychologicalRecordModule } from './psychologicalRecord/PsychologicalRecordModule';
 import {
   getRecommendedPatientsForProfessional,
   PROFESSIONAL_AFFINITY_TAGS,
@@ -47,6 +49,8 @@ import {
   Check,
   Flame,
   ShieldCheck,
+  Target,
+  BarChart3,
 } from 'lucide-react';
 
 interface PsychologistDashboardProps {
@@ -62,6 +66,13 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
   const [currentTab, setCurrentTab] = useState<'agenda' | 'availability' | 'records' | 'matching' | 'profile'>(
     (activeSubTab as any) || 'agenda'
   );
+  const [selectedProntuarioPatientId, setSelectedProntuarioPatientId] = useState<string | undefined>(undefined);
+
+  React.useEffect(() => {
+    if (activeSubTab) {
+      setCurrentTab(activeSubTab as any);
+    }
+  }, [activeSubTab]);
 
   const pType: ProfessionalType = (user?.professionalType ||
     (user?.role === 'pastor'
@@ -123,6 +134,26 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
     existingProfProfile?.welcomeIntro || ''
   );
 
+  // Clinical tags state (ex: Ansiedade, Luto, Relacionamentos)
+  const [profClinicalTags, setProfClinicalTags] = useState<string[]>(
+    user?.clinicalTags || ['Ansiedade', 'Luto', 'Relacionamentos']
+  );
+  const [customClinicalTagInput, setCustomClinicalTagInput] = useState('');
+
+  const toggleClinicalTag = (tag: string) => {
+    setProfClinicalTags(prev =>
+      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
+    );
+  };
+
+  const handleAddCustomClinicalTag = () => {
+    const trimmed = customClinicalTagInput.trim();
+    if (trimmed && !profClinicalTags.includes(trimmed)) {
+      setProfClinicalTags(prev => [...prev, trimmed]);
+      setCustomClinicalTagInput('');
+    }
+  };
+
   // Profile edit states
   const [bio, setBio] = useState(user?.bio || '');
   const [registrationNumber, setRegistrationNumber] = useState(user?.registrationNumber || user?.crp || '');
@@ -160,13 +191,18 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
     const appArray = approachesText.split(',').map(s => s.trim()).filter(Boolean);
     const careCategory = selectedType === 'pastor' ? 'biblical' : 'therapy';
 
+    // Garante que as tags clínicas também fiquem vinculadas ao perfil de afinidade
+    const mergedAffinityTags = Array.from(
+      new Set([...selectedAffinityTags, ...profClinicalTags])
+    );
+
     const updatedProfProfile: ProfessionalMatchingProfile = {
       ageGroup: profAgeGroup,
       approximateAge: profApproximateAge ? parseInt(profApproximateAge, 10) : undefined,
       maritalStatus: profMaritalStatus,
       hasChildren: profHasChildren,
       yearsOfExperience: profYearsOfExp ? parseInt(profYearsOfExp, 10) : undefined,
-      affinityTags: selectedAffinityTags,
+      affinityTags: mergedAffinityTags,
       welcomeIntro: welcomeIntro.trim(),
       updatedAt: new Date().toISOString(),
     };
@@ -184,6 +220,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
       hourlyRate: Number(hourlyRate),
       phone,
       approaches: appArray,
+      clinicalTags: profClinicalTags,
       professionalProfile: updatedProfProfile,
     });
 
@@ -328,12 +365,15 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
             Disponibilidade ({activeSlots})
           </button>
           <button
-            onClick={() => setCurrentTab('records')}
+            onClick={() => {
+              setSelectedProntuarioPatientId(undefined);
+              setCurrentTab('records');
+            }}
             className={`px-3.5 py-2 rounded-lg transition-all whitespace-nowrap ${
               currentTab === 'records' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            {pType === 'pastor' ? `Fichas Pastorais (${allRecords.length})` : `Prontuários (${allRecords.length})`}
+            {pType === 'pastor' ? 'Fichas Pastorais' : 'Prontuários (PEP)'}
           </button>
           <button
             onClick={() => setCurrentTab('profile')}
@@ -544,8 +584,12 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                         )}
 
                         <button
-                          onClick={() => setRecordAppointment(apt)}
-                          className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-700 hover:text-sky-800 border border-slate-200 rounded-lg hover:bg-sky-50 transition-colors"
+                          onClick={() => {
+                            setSelectedProntuarioPatientId(apt.patientId);
+                            setCurrentTab('records');
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-sky-800 hover:text-sky-950 bg-sky-50 border border-sky-200 rounded-lg hover:bg-sky-100 transition-colors"
+                          title="Abrir Prontuário Psicológico Completo do Paciente"
                         >
                           <FileText className="w-3.5 h-3.5 text-sky-700" />
                           {pType === 'pastor' ? 'Ficha de Aconselhamento' : 'Prontuário (PEP)'}
@@ -573,106 +617,9 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
       {/* Tab 2: Gestão de Disponibilidade */}
       {currentTab === 'availability' && <AvailabilityManager />}
 
-      {/* Tab 3: Prontuário Geral / Fichas Pastorais */}
+      {/* Tab 3: Módulo de Prontuário Psicológico (PEP) Completo */}
       {currentTab === 'records' && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-            <div>
-              <h2 className="text-lg font-bold text-slate-900 tracking-tight">
-                {pType === 'pastor'
-                  ? 'Fichas de Acompanhamento Pastoral Confidencial'
-                  : 'Prontuários Eletrônicos de Pacientes (PEP)'}
-              </h2>
-              <p className="text-xs text-slate-500">
-                Registros protegidos, anotações de evolução e histórico confidencial por paciente/assessorado.
-              </p>
-            </div>
-          </div>
-
-          {allRecords.length === 0 ? (
-            <div className="py-16 text-center">
-              <FileText className="w-12 h-12 text-slate-300 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-slate-700">Nenhum registro arquivado ainda</p>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                Após realizar as primeiras sessões de atendimento, registre as anotações diretamente pela agenda de consultas.
-              </p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {allRecords.map(rec => (
-                <div
-                  key={rec.id}
-                  className="p-5 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-900">{rec.patientName}</h3>
-                      <span className="text-xs text-slate-500">Sessão em {rec.sessionDate}</span>
-                    </div>
-                    <span className="text-[10px] uppercase font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">
-                      Sigilo Ético
-                    </span>
-                  </div>
-
-                  <div>
-                    <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-1">
-                      {pType === 'pastor' ? 'Motivo do Aconselhamento:' : 'Queixa Principal:'}
-                    </span>
-                    <p className="text-xs text-slate-600 line-clamp-2">{rec.chiefComplaint}</p>
-                  </div>
-
-                  <div>
-                    <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider block mb-1">
-                      {pType === 'pastor' ? 'Anotações do Acolhimento Bíblico:' : 'Evolução Clínica:'}
-                    </span>
-                    <p className="text-xs text-slate-600 line-clamp-3">{rec.clinicalEvolution}</p>
-                  </div>
-
-                  {rec.privateNotes && (
-                    <div className="p-2.5 bg-amber-50/80 rounded-lg border border-amber-200/80 text-xs text-amber-900">
-                      <strong className="block text-[11px] text-amber-950 font-bold mb-0.5">
-                        Anotações Confidenciais:
-                      </strong>
-                      <p className="line-clamp-2">{rec.privateNotes}</p>
-                    </div>
-                  )}
-
-                  {rec.recommendations && (
-                    <div className="text-xs text-slate-600">
-                      <strong>{pType === 'pastor' ? 'Passagens & Orientações:' : 'Tarefas Intersessão:'}</strong>{' '}
-                      {rec.recommendations}
-                    </div>
-                  )}
-
-                  <div className="pt-2 flex justify-end">
-                    <button
-                      onClick={() => {
-                        const targetApt = appointments.find(a => a.id === rec.appointmentId) || {
-                          id: rec.appointmentId,
-                          psychologistId: rec.psychologistId,
-                          psychologistName: user?.name || '',
-                          patientId: rec.patientId,
-                          patientName: rec.patientName,
-                          patientEmail: '',
-                          date: rec.sessionDate,
-                          time: '14:00',
-                          endTime: '14:50',
-                          status: 'completed',
-                          meetingType: 'native',
-                          createdAt: rec.updatedAt,
-                        };
-                        setRecordAppointment(targetApt);
-                      }}
-                      className="px-3 py-1.5 text-xs font-semibold text-sky-800 bg-white border border-slate-200 rounded-lg hover:bg-sky-50 transition-colors"
-                    >
-                      Abrir e Editar Ficha Completa
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <PsychologicalRecordModule initialPatientId={selectedProntuarioPatientId} />
       )}
 
       {/* Tab Matching: Pacientes Sugeridos por Inteligência de Afinidade */}
@@ -687,13 +634,13 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                 </div>
                 <div>
                   <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                    <span>Pacientes Recomendados por Afinidade</span>
+                    <span>Pacientes Recomendados por Compatibilidade</span>
                     <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 border border-sky-200">
-                      Metodologia Inteligente
+                      Score Ponderado (100%)
                     </span>
                   </h2>
                   <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
-                    União inteligente entre a sua vivência pessoal (faixa etária, casamento, filhos), abordagem clínica e tags de identificação com o formulário de acolhimento preenchido pelos pacientes.
+                    Algoritmo refinado com pesos estritos: <strong>Faixa etária (30%)</strong>, <strong>Motivos do atendimento & experiência clínica (30%)</strong>, <strong>Estado civil (20%)</strong> e <strong>Filhos (20%)</strong>.
                   </p>
                 </div>
               </div>
@@ -742,7 +689,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
               <div className="flex items-center gap-2 flex-wrap text-xs">
                 <span className="text-slate-500 font-medium flex items-center gap-1">
                   <Filter className="w-3.5 h-3.5" />
-                  Filtrar por Afinidade:
+                  Filtrar por Compatibilidade:
                 </span>
                 <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
                   <button
@@ -763,7 +710,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    Alta Afinidade (80%+)
+                    Alta Compatibilidade (80%+)
                   </button>
                   <button
                     onClick={() => setMinScoreFilter('90')}
@@ -773,7 +720,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    Máxima Afinidade (90%+)
+                    Máxima Compatibilidade (90%+)
                   </button>
                 </div>
               </div>
@@ -856,16 +803,20 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                                   {patient.name}
                                 </h3>
                                 <span
-                                  className={`px-2.5 py-0.5 rounded-full text-xs font-bold tabular-nums inline-flex items-center gap-1 border ${
+                                  className={`px-3 py-1 rounded-full text-xs font-bold tabular-nums inline-flex items-center gap-1.5 border shadow-2xs ${
                                     match.score >= 90
-                                      ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                      ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
                                       : match.score >= 80
-                                      ? 'bg-sky-50 text-sky-800 border-sky-200'
-                                      : 'bg-slate-50 text-slate-700 border-slate-200'
+                                      ? 'bg-sky-50 text-sky-800 border-sky-300'
+                                      : 'bg-slate-50 text-slate-700 border-slate-300'
                                   }`}
                                 >
-                                  {match.score >= 90 && <Flame className="w-3.5 h-3.5 text-emerald-600" />}
-                                  {match.score}% de Afinidade
+                                  {match.score >= 90 ? (
+                                    <Flame className="w-3.5 h-3.5 text-emerald-600" />
+                                  ) : (
+                                    <Sparkles className="w-3.5 h-3.5 text-sky-600" />
+                                  )}
+                                  {match.score}% Compatibilidade
                                 </span>
                               </div>
                               <div className="flex items-center gap-2 text-xs text-slate-500 mt-1 flex-wrap">
@@ -887,8 +838,119 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                           </div>
                         </div>
 
+                        {/* Score de Compatibilidade com Decomposição dos 4 Pesos (30% + 30% + 20% + 20%) */}
+                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/90 space-y-3">
+                          <div className="flex items-center justify-between flex-wrap gap-2">
+                            <div className="flex items-center gap-2">
+                              <div className="w-7 h-7 rounded-lg bg-sky-100 text-sky-800 flex items-center justify-center font-bold text-xs border border-sky-200">
+                                <Target className="w-4 h-4" />
+                              </div>
+                              <div>
+                                <span className="text-xs font-bold text-slate-900 block leading-tight">
+                                  Score de Compatibilidade Ponderado
+                                </span>
+                                <span className="text-[11px] text-slate-500">
+                                  Faixa (30%), Motivos (30%), Estado Civil (20%), Filhos (20%)
+                                </span>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-sm font-extrabold text-slate-900 tabular-nums">
+                                {match.scoreBreakdown?.totalScore ?? match.score}
+                                <span className="text-xs font-medium text-slate-500"> / 100 pts</span>
+                              </span>
+                              <span className="block text-[10px] font-bold text-sky-700">
+                                {match.score}% Compatível
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Barra de Progresso Segmentada por Pilar */}
+                          <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden flex shadow-inner">
+                            <div
+                              style={{ width: `${((match.scoreBreakdown?.ageGroupScore ?? 0) / 100) * 100}%` }}
+                              className="bg-indigo-500 h-full transition-all"
+                              title={`Faixa Etária: ${match.scoreBreakdown?.ageGroupScore ?? 0}/30 pts`}
+                            />
+                            <div
+                              style={{ width: `${((match.scoreBreakdown?.reasonsScore ?? 0) / 100) * 100}%` }}
+                              className="bg-sky-500 h-full transition-all"
+                              title={`Motivos do Atendimento: ${match.scoreBreakdown?.reasonsScore ?? 0}/30 pts`}
+                            />
+                            <div
+                              style={{ width: `${((match.scoreBreakdown?.maritalScore ?? 0) / 100) * 100}%` }}
+                              className="bg-amber-500 h-full transition-all"
+                              title={`Estado Civil: ${match.scoreBreakdown?.maritalScore ?? 0}/20 pts`}
+                            />
+                            <div
+                              style={{ width: `${((match.scoreBreakdown?.childrenScore ?? 0) / 100) * 100}%` }}
+                              className="bg-emerald-500 h-full transition-all"
+                              title={`Filhos: ${match.scoreBreakdown?.childrenScore ?? 0}/20 pts`}
+                            />
+                          </div>
+
+                          {/* 4 Cards de Pontuação Individual */}
+                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                            <div className="p-2.5 rounded-lg bg-white border border-slate-200 shadow-2xs">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
+                                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">Faixa Etária</span>
+                              </div>
+                              <div className="flex items-baseline justify-between">
+                                <span className="text-sm font-bold text-slate-900 tabular-nums">
+                                  {match.scoreBreakdown?.ageGroupScore ?? 0}
+                                  <span className="text-[10px] font-normal text-slate-400">/30</span>
+                                </span>
+                                <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded">30%</span>
+                              </div>
+                            </div>
+
+                            <div className="p-2.5 rounded-lg bg-white border border-slate-200 shadow-2xs">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0" />
+                                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">Motivos</span>
+                              </div>
+                              <div className="flex items-baseline justify-between">
+                                <span className="text-sm font-bold text-slate-900 tabular-nums">
+                                  {match.scoreBreakdown?.reasonsScore ?? 0}
+                                  <span className="text-[10px] font-normal text-slate-400">/30</span>
+                                </span>
+                                <span className="text-[10px] font-bold text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded">30%</span>
+                              </div>
+                            </div>
+
+                            <div className="p-2.5 rounded-lg bg-white border border-slate-200 shadow-2xs">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
+                                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">Estado Civil</span>
+                              </div>
+                              <div className="flex items-baseline justify-between">
+                                <span className="text-sm font-bold text-slate-900 tabular-nums">
+                                  {match.scoreBreakdown?.maritalScore ?? 0}
+                                  <span className="text-[10px] font-normal text-slate-400">/20</span>
+                                </span>
+                                <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">20%</span>
+                              </div>
+                            </div>
+
+                            <div className="p-2.5 rounded-lg bg-white border border-slate-200 shadow-2xs">
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+                                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">Filhos</span>
+                              </div>
+                              <div className="flex items-baseline justify-between">
+                                <span className="text-sm font-bold text-slate-900 tabular-nums">
+                                  {match.scoreBreakdown?.childrenScore ?? 0}
+                                  <span className="text-[10px] font-normal text-slate-400">/20</span>
+                                </span>
+                                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">20%</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
                         {/* Match Highlights Badge Area */}
-                        <div className="p-3.5 rounded-xl bg-sky-50/70 border border-sky-100 space-y-1.5">
+                        <div className="p-3.5 rounded-xl bg-sky-50/70 border border-sky-100 space-y-2">
                           <span className="text-[11px] font-bold text-sky-950 uppercase tracking-wider block">
                             Por que este perfil combina com você:
                           </span>
@@ -900,6 +962,24 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                               </li>
                             ))}
                           </ul>
+
+                          {/* Tags de Experiência Clínica que deram match */}
+                          {match.matchedClinicalTags && match.matchedClinicalTags.length > 0 && (
+                            <div className="pt-1.5 border-t border-sky-200/60 flex items-center gap-1.5 flex-wrap">
+                              <span className="text-[11px] font-bold text-emerald-900 flex items-center gap-1">
+                                <Sparkles className="w-3 h-3 text-emerald-600" />
+                                Experiência Clínica Sintonizada:
+                              </span>
+                              {match.matchedClinicalTags.map(ct => (
+                                <span
+                                  key={ct}
+                                  className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs"
+                                >
+                                  {ct}
+                                </span>
+                              ))}
+                            </div>
+                          )}
                         </div>
 
                         {/* Patient Personal Demand Narrative */}
@@ -1092,6 +1172,69 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                       Não
                     </button>
                   </div>
+                </div>
+              </div>
+
+              {/* Multi-seleção de Tags de Experiência Clínica */}
+              <div className="p-4 bg-white rounded-xl border border-sky-200/80 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-sky-700" />
+                    <label className="text-xs font-bold text-slate-900">
+                      Experiência Clínica Principal (ex: Ansiedade, Luto, Relacionamentos)
+                    </label>
+                  </div>
+                  <span className="text-[11px] font-semibold text-sky-800 bg-sky-100/70 border border-sky-200 px-2 py-0.5 rounded-full">
+                    {profClinicalTags.length} selecionada(s)
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 leading-snug">
+                  Selecione as queixas e temas clínicos com os quais você tem maior vivência prática. O motor de afinidade cruza diretamente essas tags com os formulários de acolhimento dos pacientes.
+                </p>
+
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {Array.from(new Set([...CLINICAL_EXPERIENCE_TAGS, ...profClinicalTags])).map(tag => {
+                    const isSelected = profClinicalTags.includes(tag);
+                    return (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => toggleClinicalTag(tag)}
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg border transition-all ${
+                          isSelected
+                            ? 'bg-sky-700 text-white border-sky-700 shadow-2xs font-semibold'
+                            : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                        }`}
+                      >
+                        <span>{tag}</span>
+                        {isSelected && <Check className="w-3 h-3 text-sky-200 shrink-0" />}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div className="pt-1.5 flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={customClinicalTagInput}
+                    onChange={e => setCustomClinicalTagInput(e.target.value)}
+                    onKeyDown={e => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddCustomClinicalTag();
+                      }
+                    }}
+                    placeholder="Adicionar outra tag clínica personalizada..."
+                    className="flex-1 px-3 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-600 focus:bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomClinicalTag}
+                    disabled={!customClinicalTagInput.trim()}
+                    className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-lg disabled:opacity-40 transition-colors"
+                  >
+                    Adicionar
+                  </button>
                 </div>
               </div>
 
@@ -1299,6 +1442,11 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
             refreshAppointments();
           }}
           appointment={recordAppointment}
+          onOpenFullRecord={patientId => {
+            setRecordAppointment(null);
+            setSelectedProntuarioPatientId(patientId);
+            setCurrentTab('records');
+          }}
         />
       )}
 

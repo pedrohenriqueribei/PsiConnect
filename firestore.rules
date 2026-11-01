@@ -45,7 +45,8 @@ service cloud.firestore {
         (!('city' in data) || (data.city is string && data.city.size() <= 100)) &&
         (!('state' in data) || (data.state is string && data.state.size() <= 10)) &&
         (!('defaultMeetingType' in data) || (data.defaultMeetingType in ['native', 'external'])) &&
-        (!('externalMeetingUrl' in data) || (data.externalMeetingUrl is string && data.externalMeetingUrl.size() <= 500));
+        (!('externalMeetingUrl' in data) || (data.externalMeetingUrl is string && data.externalMeetingUrl.size() <= 500)) &&
+        (!('clinicalTags' in data) || (data.clinicalTags is list && data.clinicalTags.size() <= 20));
     }
 
     // Entity Validation: AvailabilitySlot
