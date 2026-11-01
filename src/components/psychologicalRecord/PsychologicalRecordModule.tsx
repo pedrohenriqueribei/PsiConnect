@@ -51,10 +51,18 @@ export const PsychologicalRecordModule: React.FC<PsychologicalRecordModuleProps>
     email: user?.email,
   };
 
-  // Records state
+  // Records state with real-time Firestore subscription
   const [records, setRecords] = useState<PsychologicalRecord[]>(() =>
     psychologicalRecordStorage.getRecordsByProfessional(currentProfessional.id)
   );
+
+  React.useEffect(() => {
+    const unsubscribe = psychologicalRecordStorage.subscribe((allRecords) => {
+      const filtered = allRecords.filter(r => r.professionalId === currentProfessional.id);
+      setRecords(filtered);
+    });
+    return () => unsubscribe();
+  }, [currentProfessional.id]);
 
   // Selected Record for full Detail View
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(() => {

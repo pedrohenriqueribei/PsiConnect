@@ -2,176 +2,33 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Global Catch-all Deny Rule
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
-    // Helper functions
-    function isValidId(id) {
-      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
-    }
-
-    function incoming() {
-      return request.resource.data;
-    }
-
-    function existing() {
-      return resource.data;
-    }
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    // Entity Validation: User
-    function isValidUser(data) {
-      return data.keys().hasAll(['id', 'name', 'email', 'role', 'joinedAt']) &&
-        data.id is string && data.id.size() <= 128 &&
-        data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
-        data.email is string && data.email.size() <= 120 &&
-        data.role in ['patient', 'psychologist', 'therapist', 'psychoanalyst', 'pastor', 'professional'] &&
-        data.joinedAt is string &&
-        (!('professionalType' in data) || (data.professionalType in ['psychologist', 'therapist', 'psychoanalyst', 'pastor'])) &&
-        (!('careCategory' in data) || (data.careCategory in ['therapy', 'biblical'])) &&
-        (!('phone' in data) || (data.phone is string && data.phone.size() <= 30)) &&
-        (!('crp' in data) || (data.crp is string && data.crp.size() <= 50)) &&
-        (!('registrationNumber' in data) || (data.registrationNumber is string && data.registrationNumber.size() <= 50)) &&
-        (!('ministryOrChurch' in data) || (data.ministryOrChurch is string && data.ministryOrChurch.size() <= 100)) &&
-        (!('bio' in data) || (data.bio is string && data.bio.size() <= 1000)) &&
-        (!('hourlyRate' in data) || (data.hourlyRate is number)) &&
-        (!('sessionDuration' in data) || (data.sessionDuration is number)) &&
-        (!('avatar' in data) || (data.avatar is string && data.avatar.size() <= 500)) &&
-        (!('city' in data) || (data.city is string && data.city.size() <= 100)) &&
-        (!('state' in data) || (data.state is string && data.state.size() <= 10)) &&
-        (!('defaultMeetingType' in data) || (data.defaultMeetingType in ['native', 'external'])) &&
-        (!('externalMeetingUrl' in data) || (data.externalMeetingUrl is string && data.externalMeetingUrl.size() <= 500)) &&
-        (!('clinicalTags' in data) || (data.clinicalTags is list && data.clinicalTags.size() <= 20));
-    }
-
-    // Entity Validation: AvailabilitySlot
-    function isValidSlot(data) {
-      return data.keys().hasAll(['id', 'psychologistId', 'dayOfWeek', 'startTime', 'endTime', 'isActive']) &&
-        data.id is string && data.id.size() <= 128 &&
-        data.psychologistId is string && data.psychologistId.size() <= 128 &&
-        data.dayOfWeek is number && data.dayOfWeek >= 0 && data.dayOfWeek <= 6 &&
-        data.startTime is string && data.startTime.size() >= 4 && data.startTime.size() <= 10 &&
-        data.endTime is string && data.endTime.size() >= 4 && data.endTime.size() <= 10 &&
-        data.isActive is bool &&
-        (!('startDate' in data) || (data.startDate is string && data.startDate.size() == 10)) &&
-        (!('endDate' in data) || (data.endDate is string && data.endDate.size() == 10)) &&
-        (!('isSocial' in data) || (data.isSocial is bool)) &&
-        (!('socialRate' in data) || (data.socialRate is number));
-    }
-
-    // Entity Validation: Appointment
-    function isValidAppointment(data) {
-      return data.keys().hasAll(['id', 'psychologistId', 'psychologistName', 'patientId', 'patientName', 'patientEmail', 'date', 'time', 'endTime', 'status', 'meetingType', 'createdAt']) &&
-        data.id is string && data.id.size() <= 128 &&
-        data.psychologistId is string && data.psychologistId.size() <= 128 &&
-        data.psychologistName is string && data.psychologistName.size() <= 100 &&
-        data.patientId is string && data.patientId.size() <= 128 &&
-        data.patientName is string && data.patientName.size() <= 100 &&
-        data.patientEmail is string && data.patientEmail.size() <= 120 &&
-        data.date is string && data.date.size() == 10 &&
-        data.time is string && data.time.size() >= 4 && data.time.size() <= 10 &&
-        data.endTime is string && data.endTime.size() >= 4 && data.endTime.size() <= 10 &&
-        data.status in ['scheduled', 'in_progress', 'completed', 'cancelled'] &&
-        data.meetingType in ['native', 'external'] &&
-        data.createdAt is string &&
-        (!('professionalType' in data) || (data.professionalType in ['psychologist', 'therapist', 'psychoanalyst', 'pastor'])) &&
-        (!('careCategory' in data) || (data.careCategory in ['therapy', 'biblical'])) &&
-        (!('psychologistAvatar' in data) || (data.psychologistAvatar is string && data.psychologistAvatar.size() <= 500)) &&
-        (!('psychologistCrp' in data) || (data.psychologistCrp is string && data.psychologistCrp.size() <= 50)) &&
-        (!('patientPhone' in data) || (data.patientPhone is string && data.patientPhone.size() <= 30)) &&
-        (!('meetingUrl' in data) || (data.meetingUrl is string && data.meetingUrl.size() <= 500)) &&
-        (!('isSocial' in data) || (data.isSocial is bool)) &&
-        (!('socialRate' in data) || (data.socialRate is number)) &&
-        (!('notesFromPatient' in data) || (data.notesFromPatient is string && data.notesFromPatient.size() <= 1000));
-    }
-
-    // Entity Validation: MedicalRecord (PEP or Pastoral Record)
-    function isValidMedicalRecord(data) {
-      return data.keys().hasAll(['id', 'appointmentId', 'patientId', 'patientName', 'psychologistId', 'sessionDate', 'chiefComplaint', 'clinicalEvolution', 'privateNotes', 'updatedAt']) &&
-        data.id is string && data.id.size() <= 128 &&
-        data.appointmentId is string && data.appointmentId.size() <= 128 &&
-        data.patientId is string && data.patientId.size() <= 128 &&
-        data.patientName is string && data.patientName.size() <= 100 &&
-        data.psychologistId is string && data.psychologistId.size() <= 128 &&
-        data.sessionDate is string && data.sessionDate.size() == 10 &&
-        data.chiefComplaint is string && data.chiefComplaint.size() <= 2000 &&
-        data.clinicalEvolution is string && data.clinicalEvolution.size() <= 4000 &&
-        data.privateNotes is string && data.privateNotes.size() <= 4000 &&
-        data.updatedAt is string &&
-        (!('professionalType' in data) || (data.professionalType in ['psychologist', 'therapist', 'psychoanalyst', 'pastor'])) &&
-        (!('careCategory' in data) || (data.careCategory in ['therapy', 'biblical'])) &&
-        (!('recommendations' in data) || (data.recommendations is string && data.recommendations.size() <= 2000));
-    }
-
-    // Entity Validation: ChatMessage
-    function isValidMessage(data) {
-      return data.keys().hasAll(['id', 'appointmentId', 'senderId', 'senderName', 'senderRole', 'text', 'timestamp']) &&
-        data.id is string && data.id.size() <= 128 &&
-        data.appointmentId is string && data.appointmentId.size() <= 128 &&
-        data.senderId is string && data.senderId.size() <= 128 &&
-        data.senderName is string && data.senderName.size() <= 100 &&
-        data.senderRole in ['patient', 'psychologist', 'therapist', 'psychoanalyst', 'pastor', 'professional'] &&
-        data.text is string && data.text.size() > 0 && data.text.size() <= 1000 &&
-        data.timestamp is string && data.timestamp.size() <= 50;
-    }
-
-    // Diagnostics / Connection Check
-    match /test/{testId} {
-      allow read: if true;
-    }
-
-    // USERS COLLECTION (Directory of professionals is readable by signed in users)
     match /users/{userId} {
-      allow get: if isSignedIn() && (request.auth.uid == userId || resource.data.role != 'patient');
-      allow list: if isSignedIn() && resource.data.role != 'patient';
-      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming()) && incoming().id == userId;
-      allow update: if isSignedIn() && request.auth.uid == userId && isValidUser(incoming()) && incoming().id == existing().id && incoming().role == existing().role;
-      allow delete: if false;
+      allow read, write: if true;
     }
 
-    // SLOTS COLLECTION
     match /slots/{slotId} {
-      allow get, list: if isSignedIn();
-      allow create: if isSignedIn() && incoming().psychologistId == request.auth.uid && isValidSlot(incoming());
-      allow update: if isSignedIn() && existing().psychologistId == request.auth.uid && incoming().psychologistId == existing().psychologistId && isValidSlot(incoming());
-      allow delete: if isSignedIn() && existing().psychologistId == request.auth.uid;
+      allow read, write: if true;
     }
 
-    // APPOINTMENTS COLLECTION
     match /appointments/{appointmentId} {
-      allow get: if isSignedIn() && (resource.data.patientId == request.auth.uid || resource.data.psychologistId == request.auth.uid);
-      allow list: if isSignedIn() && (resource.data.patientId == request.auth.uid || resource.data.psychologistId == request.auth.uid);
-      allow create: if isSignedIn() && (incoming().patientId == request.auth.uid || incoming().psychologistId == request.auth.uid) && isValidAppointment(incoming());
-      allow update: if isSignedIn() && (existing().patientId == request.auth.uid || existing().psychologistId == request.auth.uid) &&
-        isValidAppointment(incoming()) &&
-        incoming().patientId == existing().patientId &&
-        incoming().psychologistId == existing().psychologistId &&
-        incoming().createdAt == existing().createdAt;
-      allow delete: if false;
+      allow read, write: if true;
     }
 
-    // MEDICAL RECORDS / PASTORAL RECORDS COLLECTION (Strict Confidentiality)
     match /medicalRecords/{recordId} {
-      allow get: if isSignedIn() && resource.data.psychologistId == request.auth.uid;
-      allow list: if isSignedIn() && resource.data.psychologistId == request.auth.uid;
-      allow create: if isSignedIn() && incoming().psychologistId == request.auth.uid && isValidMedicalRecord(incoming());
-      allow update: if isSignedIn() && existing().psychologistId == request.auth.uid &&
-        incoming().psychologistId == existing().psychologistId &&
-        incoming().patientId == existing().patientId &&
-        isValidMedicalRecord(incoming());
-      allow delete: if false;
+      allow read, write: if true;
     }
 
-    // LIVE CHAT MESSAGES
+    match /psychologicalRecords/{recordId} {
+      allow read, write: if true;
+    }
+
     match /messages/{messageId} {
-      allow get, list: if isSignedIn();
-      allow create: if isSignedIn() && incoming().senderId == request.auth.uid && isValidMessage(incoming());
-      allow update, delete: if false;
+      allow read, write: if true;
+    }
+
+    match /test/{testId} {
+      allow read, write: if true;
     }
   }
 }
+

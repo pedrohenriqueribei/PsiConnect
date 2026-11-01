@@ -85,10 +85,23 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
 
   const currentProfConfig = PROFESSIONAL_TYPES_CONFIG[pType] || PROFESSIONAL_TYPES_CONFIG.psychologist;
 
-  // Appointments
+  // Appointments with real-time Firestore sync
   const [appointments, setAppointments] = useState<Appointment[]>(() =>
     user ? storage.getAppointments(user.id, 'psychologist') : []
   );
+
+  // Matching & Suggestions states
+  const [allPatients, setAllPatients] = useState<User[]>(() => storage.getAllPatients());
+
+  React.useEffect(() => {
+    const unsubscribe = storage.subscribe(() => {
+      if (user) {
+        setAppointments(storage.getAppointments(user.id, 'psychologist'));
+      }
+      setAllPatients(storage.getAllPatients());
+    });
+    return () => unsubscribe();
+  }, [user]);
 
   // Selected appointment for Medical/Pastoral Record Modal
   const [recordAppointment, setRecordAppointment] = useState<Appointment | null>(null);
@@ -96,8 +109,6 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
   // Filter state for appointments
   const [statusFilter, setStatusFilter] = useState<'all' | 'scheduled' | 'completed' | 'cancelled'>('all');
 
-  // Matching & Suggestions states
-  const [allPatients, setAllPatients] = useState<User[]>(() => storage.getAllPatients());
   const [selectedInviteMatch, setSelectedInviteMatch] = useState<PatientMatchResult | null>(null);
   const [minScoreFilter, setMinScoreFilter] = useState<'all' | '80' | '90'>('all');
   const [reasonFilter, setReasonFilter] = useState<string>('all');

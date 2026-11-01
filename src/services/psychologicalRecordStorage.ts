@@ -8,7 +8,7 @@ import {
 } from '../types/psychologicalRecord';
 import { recordSecurity } from './recordSecurity';
 import { db, auth, OperationType, handleFirestoreError } from './firebase';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, collection, getDocs, onSnapshot } from 'firebase/firestore';
 
 const STORAGE_KEY = 'psiconnect_psychological_records_v1';
 
@@ -721,48 +721,110 @@ const INITIAL_PSYCHOLOGICAL_RECORDS: PsychologicalRecord[] = [
 ];
 
 class PsychologicalRecordStorageService {
-  private getRecords(): PsychologicalRecord[] {
+  private recordsCache: PsychologicalRecord[] = [];
+  private listeners: Set<(records: PsychologicalRecord[]) => void> = new Set();
+  private isInitialized = false;
+
+  constructor() {
+    // Clean up any legacy localStorage data
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (!stored) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_PSYCHOLOGICAL_RECORDS));
-        return INITIAL_PSYCHOLOGICAL_RECORDS;
-      }
-      return JSON.parse(stored) as PsychologicalRecord[];
-    } catch {
-      return INITIAL_PSYCHOLOGICAL_RECORDS;
-    }
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {}
+
+    // Initialize real-time sync with Firestore database
+    this.initFirestoreSync();
   }
 
-  private saveRecords(records: PsychologicalRecord[]): void {
+  private initFirestoreSync(): void {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
-    } catch (e) {
-      console.error('Erro ao gravar no storage de prontuários:', e);
-    }
-  }
-
-  // --- Sync to Firestore if authenticated ---
-  private async syncRecordToFirestore(record: PsychologicalRecord): Promise<void> {
-    if (!auth.currentUser) return;
-    try {
-      const path = `medicalRecords/${record.id}`;
-      await setDoc(doc(db, 'medicalRecords', record.id), {
-        id: record.id,
-        appointmentId: record.sessions[0]?.id || record.id,
-        patientId: record.patientId,
-        patientName: record.identification.fullName,
-        psychologistId: record.professionalId,
-        sessionDate: record.sessions[record.sessions.length - 1]?.date || record.createdAt.split('T')[0],
-        chiefComplaint: record.initialDemand.chiefComplaint,
-        clinicalEvolution: record.sessions[record.sessions.length - 1]?.summaryContent || '',
-        privateNotes: record.sessions[record.sessions.length - 1]?.evolutionNotes || '',
-        recommendations: record.sessions[record.sessions.length - 1]?.nextSessionTasks || '',
-        updatedAt: record.updatedAt,
+      const recordsCol = collection(db, 'psychologicalRecords');
+      onSnapshot(recordsCol, (snapshot) => {
+        const docs: PsychologicalRecord[] = [];
+        snapshot.forEach((d) => {
+          docs.push(d.data() as PsychologicalRecord);
+        });
+        if (docs.length > 0) {
+          this.recordsCache = docs;
+          this.isInitialized = true;
+          this.notifyListeners();
+        } else {
+          // If Firestore is empty, seed initial data
+          this.seedInitialIfEmpty();
+        }
+      }, (error) => {
+        console.warn('Realtime listener error in psychologicalRecords:', error);
       });
     } catch (err) {
-      // Non-blocking error handling
-      console.warn('Sync to firestore non-fatal:', err);
+      console.warn('Failed to attach psychologicalRecords listener:', err);
+    }
+  }
+
+  private async seedInitialIfEmpty(): Promise<void> {
+    try {
+      const snapshot = await getDocs(collection(db, 'psychologicalRecords'));
+      if (snapshot.size === 0) {
+        console.log('Seeding initial psychological records into Firestore...');
+        for (const rec of INITIAL_PSYCHOLOGICAL_RECORDS) {
+          await setDoc(doc(db, 'psychologicalRecords', rec.id), rec);
+        }
+        this.recordsCache = [...INITIAL_PSYCHOLOGICAL_RECORDS];
+        this.isInitialized = true;
+        this.notifyListeners();
+      } else {
+        const docs: PsychologicalRecord[] = [];
+        snapshot.forEach((d) => docs.push(d.data() as PsychologicalRecord));
+        this.recordsCache = docs;
+        this.isInitialized = true;
+        this.notifyListeners();
+      }
+    } catch (err) {
+      console.warn('Seeding check error:', err);
+      // Fallback cache until online
+      if (this.recordsCache.length === 0) {
+        this.recordsCache = [...INITIAL_PSYCHOLOGICAL_RECORDS];
+      }
+    }
+  }
+
+  private notifyListeners(): void {
+    this.listeners.forEach((listener) => {
+      try {
+        listener([...this.recordsCache]);
+      } catch (e) {
+        console.error('Error in record listener:', e);
+      }
+    });
+  }
+
+  /**
+   * Subscribe to real-time changes in psychological records from Firestore.
+   */
+  subscribe(listener: (records: PsychologicalRecord[]) => void): () => void {
+    this.listeners.add(listener);
+    if (this.recordsCache.length > 0) {
+      listener([...this.recordsCache]);
+    }
+    return () => {
+      this.listeners.delete(listener);
+    };
+  }
+
+  private getRecords(): PsychologicalRecord[] {
+    if (this.recordsCache.length === 0 && !this.isInitialized) {
+      return INITIAL_PSYCHOLOGICAL_RECORDS;
+    }
+    return this.recordsCache;
+  }
+
+  /**
+   * Direct write to Firestore database (ai-studio-psiconnect-230ab3cb-014d-48bc-9bc7-a63bde403618)
+   */
+  async syncRecordToFirestore(record: PsychologicalRecord): Promise<void> {
+    const path = `psychologicalRecords/${record.id}`;
+    try {
+      await setDoc(doc(db, 'psychologicalRecords', record.id), record);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, path);
     }
   }
 
@@ -826,9 +888,14 @@ class PsychologicalRecordStorageService {
       retentionUntil: recordSecurity.calculateRetentionDate(now),
     };
 
-    records.unshift(newRecord);
-    this.saveRecords(records);
-    this.syncRecordToFirestore(newRecord).catch(() => {});
+    // Update memory cache and notify
+    this.recordsCache = [newRecord, ...this.recordsCache.filter(r => r.id !== newRecord.id)];
+    this.notifyListeners();
+
+    // Persist directly to Firestore
+    this.syncRecordToFirestore(newRecord).catch((err) => {
+      console.error('Failed to persist psychological record to Firestore:', err);
+    });
 
     return { success: true, record: newRecord };
   }
@@ -862,9 +929,14 @@ class PsychologicalRecordStorageService {
       auditLogs: [auditEntry, ...current.auditLogs],
     };
 
-    records[index] = updated;
-    this.saveRecords(records);
-    this.syncRecordToFirestore(updated).catch(() => {});
+    this.recordsCache = this.recordsCache.map(r => r.id === updated.id ? updated : r);
+    this.notifyListeners();
+
+    // Write to Firestore
+    this.syncRecordToFirestore(updated).catch(err => {
+      console.error('Failed to update psychological record in Firestore:', err);
+    });
+
     return updated;
   }
 
@@ -909,9 +981,13 @@ class PsychologicalRecordStorageService {
       auditLogs: [auditEntry, ...record.auditLogs],
     };
 
-    records[index] = updatedRecord;
-    this.saveRecords(records);
-    this.syncRecordToFirestore(updatedRecord).catch(() => {});
+    this.recordsCache = this.recordsCache.map(r => r.id === updatedRecord.id ? updatedRecord : r);
+    this.notifyListeners();
+
+    // Write to Firestore
+    this.syncRecordToFirestore(updatedRecord).catch(err => {
+      console.error('Failed to sync new session to Firestore:', err);
+    });
 
     return { success: true, session: newSession, record: updatedRecord };
   }
@@ -979,9 +1055,13 @@ class PsychologicalRecordStorageService {
       auditLogs: [auditEntry, ...record.auditLogs],
     };
 
-    records[index] = updatedRecord;
-    this.saveRecords(records);
-    this.syncRecordToFirestore(updatedRecord).catch(() => {});
+    this.recordsCache = this.recordsCache.map(r => r.id === updatedRecord.id ? updatedRecord : r);
+    this.notifyListeners();
+
+    // Write to Firestore
+    this.syncRecordToFirestore(updatedRecord).catch(err => {
+      console.error('Failed to sync updated session to Firestore:', err);
+    });
 
     return { success: true, session: newSession, record: updatedRecord };
   }
@@ -1021,9 +1101,14 @@ class PsychologicalRecordStorageService {
       auditLogs: [auditEntry, ...current.auditLogs],
     };
 
-    records[index] = updated;
-    this.saveRecords(records);
-    this.syncRecordToFirestore(updated).catch(() => {});
+    this.recordsCache = this.recordsCache.map(r => r.id === updated.id ? updated : r);
+    this.notifyListeners();
+
+    // Write to Firestore
+    this.syncRecordToFirestore(updated).catch(err => {
+      console.error('Failed to sync record status to Firestore:', err);
+    });
+
     return updated;
   }
 
@@ -1061,8 +1146,14 @@ class PsychologicalRecordStorageService {
       auditLogs: [auditEntry, ...current.auditLogs],
     };
 
-    records[index] = updated;
-    this.saveRecords(records);
+    this.recordsCache = this.recordsCache.map(r => r.id === updated.id ? updated : r);
+    this.notifyListeners();
+
+    // Write to Firestore
+    this.syncRecordToFirestore(updated).catch(err => {
+      console.error('Failed to sync attachment to Firestore:', err);
+    });
+
     return updated;
   }
 
@@ -1082,12 +1173,20 @@ class PsychologicalRecordStorageService {
     const current = records[index];
     const auditEntry = recordSecurity.createAuditEntry(action, actor, details);
 
-    records[index] = {
+    const updated = {
       ...current,
       auditLogs: [auditEntry, ...current.auditLogs],
     };
-    this.saveRecords(records);
+
+    this.recordsCache = this.recordsCache.map(r => r.id === updated.id ? updated : r);
+    this.notifyListeners();
+
+    // Write to Firestore
+    this.syncRecordToFirestore(updated).catch(err => {
+      console.error('Failed to sync audit log to Firestore:', err);
+    });
   }
 }
 
 export const psychologicalRecordStorage = new PsychologicalRecordStorageService();
+

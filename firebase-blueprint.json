@@ -110,6 +110,20 @@
         "timestamp": { "type": "string", "maxLength": 50 }
       },
       "required": ["id", "appointmentId", "senderId", "senderName", "senderRole", "text", "timestamp"]
+    },
+    "PsychologicalRecord": {
+      "title": "PsychologicalRecord",
+      "description": "Complete psychological clinical record with patient identification, demand, history, therapeutic plan, evolution sessions, and audit trail",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "patientId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "professionalId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "status": { "type": "string", "enum": ["active", "paused", "discharged", "abandoned", "referred"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "patientId", "professionalId", "status", "createdAt", "updatedAt"]
     }
   },
   "firestore": {
@@ -128,6 +142,10 @@
     "/medicalRecords/{recordId}": {
       "schema": "MedicalRecord",
       "description": "Confidential medical record documents (PEP) and pastoral records managed by professionals"
+    },
+    "/psychologicalRecords/{recordId}": {
+      "schema": "PsychologicalRecord",
+      "description": "Electronic psychological medical records and evolution timelines"
     },
     "/messages/{messageId}": {
       "schema": "ChatMessage",

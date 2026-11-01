@@ -478,61 +478,126 @@ const INITIAL_MESSAGES: ChatMessage[] = [
 ];
 
 class StorageService {
-  private getItem<T>(key: string, defaultValue: T): T {
+  private usersCache: User[] = [];
+  private slotsCache: AvailabilitySlot[] = [];
+  private appointmentsCache: Appointment[] = [];
+  private recordsCache: MedicalRecord[] = [];
+  private messagesCache: ChatMessage[] = [];
+
+  private listeners: Set<() => void> = new Set();
+  private isInitialized = false;
+
+  constructor() {
+    // Clear legacy localStorage data stores so they are not used as reference
     try {
-      const item = localStorage.getItem(key);
-      if (!item) {
-        localStorage.setItem(key, JSON.stringify(defaultValue));
-        return defaultValue;
-      }
-      return JSON.parse(item) as T;
-    } catch {
-      return defaultValue;
+      localStorage.removeItem(STORAGE_KEYS.USERS);
+      localStorage.removeItem(STORAGE_KEYS.SLOTS);
+      localStorage.removeItem(STORAGE_KEYS.APPOINTMENTS);
+      localStorage.removeItem(STORAGE_KEYS.RECORDS);
+      localStorage.removeItem(STORAGE_KEYS.CHAT);
+    } catch {}
+
+    // Initialize real-time synchronization with Firestore database
+    this.initFirestoreSync();
+  }
+
+  private initFirestoreSync(): void {
+    try {
+      // 1. Users real-time listener
+      onSnapshot(collection(db, 'users'), (snapshot) => {
+        const list: User[] = [];
+        snapshot.forEach((d) => list.push(d.data() as User));
+        if (list.length > 0) {
+          this.usersCache = list;
+          this.notifyListeners();
+        }
+      }, (err) => console.warn('Users listener:', err));
+
+      // 2. Slots real-time listener
+      onSnapshot(collection(db, 'slots'), (snapshot) => {
+        const list: AvailabilitySlot[] = [];
+        snapshot.forEach((d) => list.push(d.data() as AvailabilitySlot));
+        if (list.length > 0) {
+          this.slotsCache = list;
+          this.notifyListeners();
+        }
+      }, (err) => console.warn('Slots listener:', err));
+
+      // 3. Appointments real-time listener
+      onSnapshot(collection(db, 'appointments'), (snapshot) => {
+        const list: Appointment[] = [];
+        snapshot.forEach((d) => list.push(d.data() as Appointment));
+        if (list.length > 0) {
+          this.appointmentsCache = list;
+          this.notifyListeners();
+        }
+      }, (err) => console.warn('Appointments listener:', err));
+
+      // 4. Medical records real-time listener
+      onSnapshot(collection(db, 'medicalRecords'), (snapshot) => {
+        const list: MedicalRecord[] = [];
+        snapshot.forEach((d) => list.push(d.data() as MedicalRecord));
+        if (list.length > 0) {
+          this.recordsCache = list;
+          this.notifyListeners();
+        }
+      }, (err) => console.warn('MedicalRecords listener:', err));
+
+      // 5. Messages real-time listener
+      onSnapshot(collection(db, 'messages'), (snapshot) => {
+        const list: ChatMessage[] = [];
+        snapshot.forEach((d) => list.push(d.data() as ChatMessage));
+        if (list.length > 0) {
+          this.messagesCache = list;
+          this.notifyListeners();
+        }
+      }, (err) => console.warn('Messages listener:', err));
+
+      this.isInitialized = true;
+    } catch (err) {
+      console.warn('Failed to initialize Firestore sync in storage:', err);
     }
   }
 
-  private setItem<T>(key: string, value: T): void {
-    try {
-      localStorage.setItem(key, JSON.stringify(value));
-    } catch (err) {
-      console.error('Erro ao salvar no storage local:', err);
-    }
+  private notifyListeners(): void {
+    this.listeners.forEach((cb) => {
+      try {
+        cb();
+      } catch (e) {
+        console.error('Error in storage listener callback:', e);
+      }
+    });
+  }
+
+  /**
+   * Subscribe to database updates.
+   */
+  subscribe(callback: () => void): () => void {
+    this.listeners.add(callback);
+    return () => {
+      this.listeners.delete(callback);
+    };
   }
 
   // --- Auth & Users ---
   getUsers(): User[] {
-    return this.getItem<User[]>(STORAGE_KEYS.USERS, INITIAL_USERS);
+    if (this.usersCache.length === 0) {
+      return INITIAL_USERS;
+    }
+    return this.usersCache;
   }
 
   async saveUserToFirestore(user: User): Promise<void> {
+    const path = `users/${user.id}`;
     try {
-      const path = `users/${user.id}`;
-      await setDoc(doc(db, 'users', user.id), {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        joinedAt: user.joinedAt,
-        ...(user.professionalType ? { professionalType: user.professionalType } : {}),
-        ...(user.careCategory ? { careCategory: user.careCategory } : {}),
-        ...(user.phone ? { phone: user.phone } : {}),
-        ...(user.crp ? { crp: user.crp } : {}),
-        ...(user.registrationNumber ? { registrationNumber: user.registrationNumber } : {}),
-        ...(user.ministryOrChurch ? { ministryOrChurch: user.ministryOrChurch } : {}),
-        ...(user.bio ? { bio: user.bio } : {}),
-        ...(user.hourlyRate ? { hourlyRate: user.hourlyRate } : {}),
-        ...(user.sessionDuration ? { sessionDuration: user.sessionDuration } : {}),
-        ...(user.avatar ? { avatar: user.avatar } : {}),
-        ...(user.city ? { city: user.city } : {}),
-        ...(user.state ? { state: user.state } : {}),
-        ...(user.defaultMeetingType ? { defaultMeetingType: user.defaultMeetingType } : {}),
-        ...(user.externalMeetingUrl ? { externalMeetingUrl: user.externalMeetingUrl } : {}),
-        ...(user.patientProfile ? { patientProfile: user.patientProfile } : {}),
-        ...(user.professionalProfile ? { professionalProfile: user.professionalProfile } : {}),
-        ...(user.clinicalTags ? { clinicalTags: user.clinicalTags } : {}),
-      });
+      const cleanData = Object.fromEntries(
+        Object.entries(user).filter(([_, v]) => v !== undefined)
+      );
+      await setDoc(doc(db, 'users', user.id), cleanData);
+      this.usersCache = [user, ...this.usersCache.filter((u) => u.id !== user.id)];
+      this.notifyListeners();
     } catch (error) {
-      handleFirestoreError(error, OperationType.WRITE, `users/${user.id}`);
+      handleFirestoreError(error, OperationType.WRITE, path);
     }
   }
 
@@ -549,51 +614,34 @@ class StorageService {
       joinedAt: new Date().toISOString(),
     };
 
-    users.push(createdUser);
-    this.setItem(STORAGE_KEYS.USERS, users);
+    this.usersCache = [createdUser, ...this.usersCache.filter(u => u.id !== createdUser.id)];
+    this.notifyListeners();
 
-    // If Firebase Auth is authenticated, also sync to Firestore
-    if (auth.currentUser) {
-      this.saveUserToFirestore(createdUser).catch(err => console.warn('Sync to Firestore deferred:', err));
-    }
+    // Persist directly to Firestore database
+    this.saveUserToFirestore(createdUser).catch((err) => {
+      console.error('Error saving user to Firestore:', err);
+    });
 
     return { success: true, user: createdUser };
   }
 
   updateUser(updated: User): void {
-    const users = this.getUsers().map(u => (u.id === updated.id ? updated : u));
-    this.setItem(STORAGE_KEYS.USERS, users);
+    this.usersCache = this.usersCache.map(u => (u.id === updated.id ? updated : u));
+    this.notifyListeners();
 
     const currentUser = this.getCurrentUser();
     if (currentUser && currentUser.id === updated.id) {
-      this.setItem(STORAGE_KEYS.CURRENT_USER, updated);
+      this.setCurrentUser(updated);
     }
 
-    if (auth.currentUser && auth.currentUser.uid === updated.id) {
-      const path = `users/${updated.id}`;
-      updateDoc(doc(db, 'users', updated.id), {
-        name: updated.name,
-        ...(updated.professionalType !== undefined ? { professionalType: updated.professionalType } : {}),
-        ...(updated.careCategory !== undefined ? { careCategory: updated.careCategory } : {}),
-        ...(updated.phone !== undefined ? { phone: updated.phone } : {}),
-        ...(updated.crp !== undefined ? { crp: updated.crp } : {}),
-        ...(updated.registrationNumber !== undefined ? { registrationNumber: updated.registrationNumber } : {}),
-        ...(updated.ministryOrChurch !== undefined ? { ministryOrChurch: updated.ministryOrChurch } : {}),
-        ...(updated.bio !== undefined ? { bio: updated.bio } : {}),
-        ...(updated.hourlyRate !== undefined ? { hourlyRate: updated.hourlyRate } : {}),
-        ...(updated.sessionDuration !== undefined ? { sessionDuration: updated.sessionDuration } : {}),
-        ...(updated.avatar !== undefined ? { avatar: updated.avatar } : {}),
-        ...(updated.city !== undefined ? { city: updated.city } : {}),
-        ...(updated.state !== undefined ? { state: updated.state } : {}),
-        ...(updated.defaultMeetingType !== undefined ? { defaultMeetingType: updated.defaultMeetingType } : {}),
-        ...(updated.externalMeetingUrl !== undefined ? { externalMeetingUrl: updated.externalMeetingUrl } : {}),
-        ...(updated.patientProfile !== undefined ? { patientProfile: updated.patientProfile } : {}),
-        ...(updated.professionalProfile !== undefined ? { professionalProfile: updated.professionalProfile } : {}),
-        ...(updated.clinicalTags !== undefined ? { clinicalTags: updated.clinicalTags } : {}),
-      }).catch(error => {
-        handleFirestoreError(error, OperationType.UPDATE, path);
-      });
-    }
+    // Direct write to Firestore database
+    const path = `users/${updated.id}`;
+    const cleanData = Object.fromEntries(
+      Object.entries(updated).filter(([_, v]) => v !== undefined)
+    );
+    setDoc(doc(db, 'users', updated.id), cleanData, { merge: true }).catch(error => {
+      handleFirestoreError(error, OperationType.UPDATE, path);
+    });
   }
 
   findUserByEmail(email: string): User | undefined {
@@ -614,9 +662,13 @@ class StorageService {
 
   setCurrentUser(user: User | null): void {
     if (user) {
-      this.setItem(STORAGE_KEYS.CURRENT_USER, user);
+      try {
+        localStorage.setItem(STORAGE_KEYS.CURRENT_USER, JSON.stringify(user));
+      } catch {}
     } else {
-      localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+      try {
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+      } catch {}
     }
   }
 
@@ -663,44 +715,32 @@ class StorageService {
 
   // --- Disponibilidade e Horários ---
   getAvailabilitySlots(psychologistId?: string): AvailabilitySlot[] {
-    const all = this.getItem<AvailabilitySlot[]>(STORAGE_KEYS.SLOTS, INITIAL_SLOTS);
+    const all = this.slotsCache.length > 0 ? this.slotsCache : INITIAL_SLOTS;
     if (!psychologistId) return all;
     return all.filter(s => s.psychologistId === psychologistId);
   }
 
   addAvailabilitySlot(slot: Omit<AvailabilitySlot, 'id'>): AvailabilitySlot {
-    const all = this.getAvailabilitySlots();
     const newSlot: AvailabilitySlot = {
       ...slot,
       id: 'slot_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 5),
     };
-    all.push(newSlot);
-    this.setItem(STORAGE_KEYS.SLOTS, all);
+    this.slotsCache = [...this.slotsCache, newSlot];
+    this.notifyListeners();
 
-    if (auth.currentUser && auth.currentUser.uid === slot.psychologistId) {
-      const path = `slots/${newSlot.id}`;
-      setDoc(doc(db, 'slots', newSlot.id), {
-        id: newSlot.id,
-        psychologistId: newSlot.psychologistId,
-        dayOfWeek: newSlot.dayOfWeek,
-        startTime: newSlot.startTime,
-        endTime: newSlot.endTime,
-        isActive: newSlot.isActive,
-        ...(newSlot.startDate ? { startDate: newSlot.startDate } : {}),
-        ...(newSlot.endDate ? { endDate: newSlot.endDate } : {}),
-        ...(newSlot.isSocial !== undefined ? { isSocial: newSlot.isSocial } : {}),
-        ...(newSlot.socialRate !== undefined ? { socialRate: newSlot.socialRate } : {}),
-      }).catch(err => {
-        handleFirestoreError(err, OperationType.CREATE, path);
-      });
-    }
+    const path = `slots/${newSlot.id}`;
+    const cleanData = Object.fromEntries(
+      Object.entries(newSlot).filter(([_, v]) => v !== undefined)
+    );
+    setDoc(doc(db, 'slots', newSlot.id), cleanData).catch(err => {
+      handleFirestoreError(err, OperationType.CREATE, path);
+    });
 
     return newSlot;
   }
 
   addAvailabilitySlotsBatch(newSlotsData: Omit<AvailabilitySlot, 'id'>[]): AvailabilitySlot[] {
     if (newSlotsData.length === 0) return [];
-    const all = this.getAvailabilitySlots();
     const createdList: AvailabilitySlot[] = [];
 
     newSlotsData.forEach((slot, index) => {
@@ -709,74 +749,60 @@ class StorageService {
         id: 'slot_' + Date.now().toString(36) + '_' + index + '_' + Math.random().toString(36).substring(2, 5),
       };
       createdList.push(newSlot);
-      all.push(newSlot);
+      this.slotsCache.push(newSlot);
 
-      if (auth.currentUser && auth.currentUser.uid === slot.psychologistId) {
-        const path = `slots/${newSlot.id}`;
-        setDoc(doc(db, 'slots', newSlot.id), {
-          id: newSlot.id,
-          psychologistId: newSlot.psychologistId,
-          dayOfWeek: newSlot.dayOfWeek,
-          startTime: newSlot.startTime,
-          endTime: newSlot.endTime,
-          isActive: newSlot.isActive,
-          ...(newSlot.startDate ? { startDate: newSlot.startDate } : {}),
-          ...(newSlot.endDate ? { endDate: newSlot.endDate } : {}),
-          ...(newSlot.isSocial !== undefined ? { isSocial: newSlot.isSocial } : {}),
-          ...(newSlot.socialRate !== undefined ? { socialRate: newSlot.socialRate } : {}),
-        }).catch(err => {
-          handleFirestoreError(err, OperationType.CREATE, path);
-        });
-      }
+      const path = `slots/${newSlot.id}`;
+      const cleanData = Object.fromEntries(
+        Object.entries(newSlot).filter(([_, v]) => v !== undefined)
+      );
+      setDoc(doc(db, 'slots', newSlot.id), cleanData).catch(err => {
+        handleFirestoreError(err, OperationType.CREATE, path);
+      });
     });
 
-    this.setItem(STORAGE_KEYS.SLOTS, all);
+    this.notifyListeners();
     return createdList;
   }
 
   removeAvailabilitySlot(slotId: string): void {
-    const all = this.getAvailabilitySlots().filter(s => s.id !== slotId);
-    this.setItem(STORAGE_KEYS.SLOTS, all);
+    this.slotsCache = this.slotsCache.filter(s => s.id !== slotId);
+    this.notifyListeners();
 
-    if (auth.currentUser) {
-      const path = `slots/${slotId}`;
-      deleteDoc(doc(db, 'slots', slotId)).catch(err => {
-        handleFirestoreError(err, OperationType.DELETE, path);
-      });
-    }
+    const path = `slots/${slotId}`;
+    deleteDoc(doc(db, 'slots', slotId)).catch(err => {
+      handleFirestoreError(err, OperationType.DELETE, path);
+    });
   }
 
   removeAvailabilitySlotsBatch(slotIds: string[]): void {
     const set = new Set(slotIds);
-    const all = this.getAvailabilitySlots().filter(s => !set.has(s.id));
-    this.setItem(STORAGE_KEYS.SLOTS, all);
+    this.slotsCache = this.slotsCache.filter(s => !set.has(s.id));
+    this.notifyListeners();
 
-    if (auth.currentUser) {
-      slotIds.forEach(slotId => {
-        const path = `slots/${slotId}`;
-        deleteDoc(doc(db, 'slots', slotId)).catch(err => {
-          handleFirestoreError(err, OperationType.DELETE, path);
-        });
+    slotIds.forEach(slotId => {
+      const path = `slots/${slotId}`;
+      deleteDoc(doc(db, 'slots', slotId)).catch(err => {
+        handleFirestoreError(err, OperationType.DELETE, path);
       });
-    }
+    });
   }
 
   toggleAvailabilitySlot(slotId: string): void {
-    const all = this.getAvailabilitySlots().map(s => (s.id === slotId ? { ...s, isActive: !s.isActive } : s));
-    this.setItem(STORAGE_KEYS.SLOTS, all);
+    const target = this.slotsCache.find(s => s.id === slotId);
+    if (!target) return;
+    const newActive = !target.isActive;
+    this.slotsCache = this.slotsCache.map(s => (s.id === slotId ? { ...s, isActive: newActive } : s));
+    this.notifyListeners();
 
-    const target = all.find(s => s.id === slotId);
-    if (auth.currentUser && target && auth.currentUser.uid === target.psychologistId) {
-      const path = `slots/${slotId}`;
-      updateDoc(doc(db, 'slots', slotId), { isActive: target.isActive }).catch(err => {
-        handleFirestoreError(err, OperationType.UPDATE, path);
-      });
-    }
+    const path = `slots/${slotId}`;
+    updateDoc(doc(db, 'slots', slotId), { isActive: newActive }).catch(err => {
+      handleFirestoreError(err, OperationType.UPDATE, path);
+    });
   }
 
   // --- Agendamentos ---
   getAppointments(userId?: string, role?: 'psychologist' | 'patient'): Appointment[] {
-    const all = this.getItem<Appointment[]>(STORAGE_KEYS.APPOINTMENTS, INITIAL_APPOINTMENTS);
+    const all = this.appointmentsCache.length > 0 ? this.appointmentsCache : INITIAL_APPOINTMENTS;
     if (!userId) return all;
     if (role === 'psychologist') {
       return all.filter(a => a.psychologistId === userId);
@@ -791,47 +817,42 @@ class StorageService {
   }
 
   createAppointment(apt: Omit<Appointment, 'id' | 'createdAt' | 'status'>): Appointment {
-    const all = this.getItem<Appointment[]>(STORAGE_KEYS.APPOINTMENTS, INITIAL_APPOINTMENTS);
     const newApt: Appointment = {
       ...apt,
       id: 'apt_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
       status: 'scheduled',
       createdAt: new Date().toISOString(),
     };
-    all.unshift(newApt);
-    this.setItem(STORAGE_KEYS.APPOINTMENTS, all);
 
-    if (auth.currentUser) {
-      const path = `appointments/${newApt.id}`;
-      const firestoreData = Object.fromEntries(
-        Object.entries(newApt).filter(([_, v]) => v !== undefined)
-      );
-      setDoc(doc(db, 'appointments', newApt.id), firestoreData).catch(err => {
-        handleFirestoreError(err, OperationType.CREATE, path);
-      });
-    }
+    this.appointmentsCache = [newApt, ...this.appointmentsCache];
+    this.notifyListeners();
+
+    const path = `appointments/${newApt.id}`;
+    const cleanData = Object.fromEntries(
+      Object.entries(newApt).filter(([_, v]) => v !== undefined)
+    );
+    setDoc(doc(db, 'appointments', newApt.id), cleanData).catch(err => {
+      handleFirestoreError(err, OperationType.CREATE, path);
+    });
 
     return newApt;
   }
 
   updateAppointmentStatus(id: string, status: Appointment['status']): void {
-    const all = this.getItem<Appointment[]>(STORAGE_KEYS.APPOINTMENTS, INITIAL_APPOINTMENTS).map(a =>
+    this.appointmentsCache = this.appointmentsCache.map(a =>
       a.id === id ? { ...a, status } : a
     );
-    this.setItem(STORAGE_KEYS.APPOINTMENTS, all);
+    this.notifyListeners();
 
-    const target = all.find(a => a.id === id);
-    if (auth.currentUser && target) {
-      const path = `appointments/${id}`;
-      updateDoc(doc(db, 'appointments', id), { status }).catch(err => {
-        handleFirestoreError(err, OperationType.UPDATE, path);
-      });
-    }
+    const path = `appointments/${id}`;
+    updateDoc(doc(db, 'appointments', id), { status }).catch(err => {
+      handleFirestoreError(err, OperationType.UPDATE, path);
+    });
   }
 
   // --- Prontuário Eletrônico do Paciente (PEP) ---
   getMedicalRecords(psychologistId?: string, patientId?: string): MedicalRecord[] {
-    let records = this.getItem<MedicalRecord[]>(STORAGE_KEYS.RECORDS, INITIAL_RECORDS);
+    let records = this.recordsCache.length > 0 ? this.recordsCache : INITIAL_RECORDS;
     if (psychologistId) {
       records = records.filter(r => r.psychologistId === psychologistId);
     }
@@ -846,24 +867,26 @@ class StorageService {
   }
 
   saveMedicalRecord(recordData: Omit<MedicalRecord, 'id' | 'updatedAt'> & { id?: string }): MedicalRecord {
-    const all = this.getMedicalRecords();
-    const existingIndex = all.findIndex(r => r.id === recordData.id || r.appointmentId === recordData.appointmentId);
+    const existingIndex = this.recordsCache.findIndex(
+      r => r.id === recordData.id || r.appointmentId === recordData.appointmentId
+    );
 
     if (existingIndex >= 0) {
       const updated: MedicalRecord = {
-        ...all[existingIndex],
+        ...this.recordsCache[existingIndex],
         ...recordData,
         updatedAt: new Date().toISOString(),
       };
-      all[existingIndex] = updated;
-      this.setItem(STORAGE_KEYS.RECORDS, all);
+      this.recordsCache[existingIndex] = updated;
+      this.notifyListeners();
 
-      if (auth.currentUser && auth.currentUser.uid === updated.psychologistId) {
-        const path = `medicalRecords/${updated.id}`;
-        setDoc(doc(db, 'medicalRecords', updated.id), updated).catch(err => {
-          handleFirestoreError(err, OperationType.UPDATE, path);
-        });
-      }
+      const path = `medicalRecords/${updated.id}`;
+      const cleanData = Object.fromEntries(
+        Object.entries(updated).filter(([_, v]) => v !== undefined)
+      );
+      setDoc(doc(db, 'medicalRecords', updated.id), cleanData).catch(err => {
+        handleFirestoreError(err, OperationType.UPDATE, path);
+      });
       return updated;
     } else {
       const created: MedicalRecord = {
@@ -871,27 +894,27 @@ class StorageService {
         id: recordData.id || ('rec_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6)),
         updatedAt: new Date().toISOString(),
       };
-      all.unshift(created);
-      this.setItem(STORAGE_KEYS.RECORDS, all);
+      this.recordsCache = [created, ...this.recordsCache];
+      this.notifyListeners();
 
-      if (auth.currentUser && auth.currentUser.uid === created.psychologistId) {
-        const path = `medicalRecords/${created.id}`;
-        setDoc(doc(db, 'medicalRecords', created.id), created).catch(err => {
-          handleFirestoreError(err, OperationType.CREATE, path);
-        });
-      }
+      const path = `medicalRecords/${created.id}`;
+      const cleanData = Object.fromEntries(
+        Object.entries(created).filter(([_, v]) => v !== undefined)
+      );
+      setDoc(doc(db, 'medicalRecords', created.id), cleanData).catch(err => {
+        handleFirestoreError(err, OperationType.CREATE, path);
+      });
       return created;
     }
   }
 
   // --- Chat de Consulta em Tempo Real ---
   getChatMessages(appointmentId: string): ChatMessage[] {
-    const all = this.getItem<ChatMessage[]>(STORAGE_KEYS.CHAT, INITIAL_MESSAGES);
+    const all = this.messagesCache.length > 0 ? this.messagesCache : INITIAL_MESSAGES;
     return all.filter(m => m.appointmentId === appointmentId);
   }
 
   sendChatMessage(message: Omit<ChatMessage, 'id' | 'timestamp'>): ChatMessage {
-    const all = this.getItem<ChatMessage[]>(STORAGE_KEYS.CHAT, INITIAL_MESSAGES);
     const now = new Date();
     const timestamp = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const newMsg: ChatMessage = {
@@ -899,20 +922,18 @@ class StorageService {
       id: 'msg_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
       timestamp,
     };
-    all.push(newMsg);
-    this.setItem(STORAGE_KEYS.CHAT, all);
+    this.messagesCache.push(newMsg);
+    this.notifyListeners();
 
-    if (auth.currentUser) {
-      const path = `messages/${newMsg.id}`;
-      setDoc(doc(db, 'messages', newMsg.id), newMsg).catch(err => {
-        handleFirestoreError(err, OperationType.CREATE, path);
-      });
-    }
+    const path = `messages/${newMsg.id}`;
+    setDoc(doc(db, 'messages', newMsg.id), newMsg).catch(err => {
+      handleFirestoreError(err, OperationType.CREATE, path);
+    });
 
     return newMsg;
   }
 
-  // Real-time Firestore Listeners
+  // Real-time Firestore Listeners for Chat
   subscribeChat(appointmentId: string, onUpdate: (messages: ChatMessage[]) => void): Unsubscribe {
     const path = 'messages';
     try {

@@ -43,11 +43,25 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
     (activeSubTab as any) || 'catalog'
   );
 
-  // All Professionals from storage
+  // All Professionals from storage with real-time Firestore sync
   const [professionals, setProfessionals] = useState<User[]>(() =>
     storage.getProfessionals()
   );
 
+  // Appointments with real-time Firestore sync
+  const [appointments, setAppointments] = useState<Appointment[]>(() =>
+    user ? storage.getAppointments(user.id, 'patient') : []
+  );
+
+  React.useEffect(() => {
+    const unsubscribe = storage.subscribe(() => {
+      setProfessionals(storage.getProfessionals());
+      if (user) {
+        setAppointments(storage.getAppointments(user.id, 'patient'));
+      }
+    });
+    return () => unsubscribe();
+  }, [user]);
   // Care category filter: 'all' | 'therapy' | 'biblical'
   const [categoryFilter, setCategoryFilter] = useState<'all' | CareCategory>('all');
   // Specific professional type filter: 'all' | ProfessionalType
@@ -57,11 +71,6 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
   const [maxPrice, setMaxPrice] = useState<number>(300);
   // Social care filter
   const [onlySocialFilter, setOnlySocialFilter] = useState<boolean>(false);
-
-  // Appointments
-  const [appointments, setAppointments] = useState<Appointment[]>(() =>
-    user ? storage.getAppointments(user.id, 'patient') : []
-  );
 
   // Booking Modal
   const [selectedProfessionalForBooking, setSelectedProfessionalForBooking] = useState<User | null>(null);
