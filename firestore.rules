@@ -26,9 +26,22 @@ service cloud.firestore {
       allow read, write: if true;
     }
 
+    match /clinicalForms/{formId} {
+      allow read, write: if true;
+    }
+
+    match /formDispatches/{dispatchId} {
+      allow read, write: if true;
+    }
+
+    match /formSubmissions/{submissionId} {
+      allow read, write: if true;
+    }
+
     match /test/{testId} {
       allow read, write: if true;
     }
   }
 }
+
 

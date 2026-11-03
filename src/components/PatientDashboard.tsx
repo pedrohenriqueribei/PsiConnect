@@ -5,12 +5,15 @@ import { User, Appointment, CareCategory, ProfessionalType, PROFESSIONAL_TYPES_C
 import { calculateMatchScore } from '../services/matchingEngine';
 import { BookingModal } from './BookingModal';
 import { PatientMatchingModal } from './PatientMatchingModal';
+import { PatientFormList } from './clinicalForms/PatientFormList';
+import { clinicalFormStorage } from '../services/clinicalFormStorage';
 import {
   Search,
   Calendar,
   Clock,
   Video,
   Shield,
+  FileText,
   CheckCircle2,
   ExternalLink,
   PhoneCall,
@@ -39,9 +42,31 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
   activeSubTab = 'catalog',
 }) => {
   const { user } = useAuth();
-  const [currentTab, setCurrentTab] = useState<'catalog' | 'appointments' | 'patient_records'>(
-    (activeSubTab as any) || 'catalog'
+  const [currentTab, setCurrentTab] = useState<
+    'catalog' | 'appointments' | 'patient_forms' | 'patient_records'
+  >((activeSubTab as any) || 'catalog');
+
+  const [pendingFormsCount, setPendingFormsCount] = useState<number>(() =>
+    user
+      ? clinicalFormStorage.getDispatchesByPatient(user.id).filter(d => d.status === 'pending').length
+      : 0
   );
+
+  React.useEffect(() => {
+    if (activeSubTab) {
+      setCurrentTab(activeSubTab as any);
+    }
+  }, [activeSubTab]);
+
+  React.useEffect(() => {
+    if (!user) return;
+    const unsub = clinicalFormStorage.subscribe(() => {
+      setPendingFormsCount(
+        clinicalFormStorage.getDispatchesByPatient(user.id).filter(d => d.status === 'pending').length
+      );
+    });
+    return () => unsub();
+  }, [user]);
 
   // All Professionals from storage with real-time Firestore sync
   const [professionals, setProfessionals] = useState<User[]>(() =>
@@ -214,6 +239,20 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
             Minhas Consultas ({appointments.length})
           </button>
           <button
+            onClick={() => setCurrentTab('patient_forms')}
+            className={`px-4 py-2 rounded-lg transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              currentTab === 'patient_forms' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5 text-sky-700" />
+            <span>Meus Questionários</span>
+            {pendingFormsCount > 0 && (
+              <span className="px-1.5 py-0.2 bg-amber-400 text-slate-900 rounded-full text-[10px] font-black">
+                {pendingFormsCount}
+              </span>
+            )}
+          </button>
+          <button
             onClick={() => setCurrentTab('patient_records')}
             className={`px-4 py-2 rounded-lg transition-all whitespace-nowrap ${
               currentTab === 'patient_records' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
@@ -223,6 +262,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           </button>
         </div>
       </div>
+
 
       {/* Patient Matching Profile Banner */}
       {user && (
@@ -777,6 +817,15 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
             </div>
           )}
         </div>
+      )}
+
+      {/* Tab: Meus Questionários e Acompanhamento */}
+      {currentTab === 'patient_forms' && (
+        <PatientFormList
+          patientId={user?.id || 'pat_lucas'}
+          patientName={user?.name || 'Paciente'}
+          patientEmail={user?.email}
+        />
       )}
 
       {/* Tab 3: Orientações & Apoio */}

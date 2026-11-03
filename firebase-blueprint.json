@@ -124,6 +124,67 @@
         "updatedAt": { "type": "string" }
       },
       "required": ["id", "patientId", "professionalId", "status", "createdAt", "updatedAt"]
+    },
+    "ClinicalForm": {
+      "title": "ClinicalForm",
+      "description": "Custom psychological research and clinical monitoring questionnaires created by professionals",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "professionalId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "professionalName": { "type": "string", "maxLength": 100 },
+        "title": { "type": "string", "minLength": 1, "maxLength": 150 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "category": { "type": "string", "enum": ["anxiety", "mood", "followup", "burnout", "anamnesis", "general"] },
+        "status": { "type": "string", "enum": ["draft", "published"] },
+        "isAnonymous": { "type": "boolean" },
+        "allowMultipleSubmissions": { "type": "boolean" },
+        "periodicity": { "type": "string", "enum": ["weekly", "biweekly", "monthly", "on_demand"] },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "professionalId", "title", "status", "createdAt", "updatedAt"]
+    },
+    "FormDispatch": {
+      "title": "FormDispatch",
+      "description": "Individual dispatch records sent by professionals to specific patients with timestamps and deadlines",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "formId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "formTitle": { "type": "string", "maxLength": 150 },
+        "professionalId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "patientId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "patientName": { "type": "string", "maxLength": 100 },
+        "patientEmail": { "type": "string", "format": "email", "maxLength": 120 },
+        "sentAt": { "type": "string" },
+        "deadline": { "type": "string", "maxLength": 30 },
+        "status": { "type": "string", "enum": ["pending", "completed", "expired"] },
+        "submissionCount": { "type": "number" },
+        "lastSubmittedAt": { "type": "string" },
+        "shareToken": { "type": "string", "maxLength": 128 }
+      },
+      "required": ["id", "formId", "professionalId", "patientId", "sentAt", "status", "shareToken"]
+    },
+    "FormSubmission": {
+      "title": "FormSubmission",
+      "description": "Patient survey and clinical monitoring responses with encrypted clinical answers and submission timestamps",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "formId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "formTitle": { "type": "string", "maxLength": 150 },
+        "dispatchId": { "type": "string", "maxLength": 128 },
+        "professionalId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "patientId": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "patientName": { "type": "string", "maxLength": 100 },
+        "patientEmail": { "type": "string", "format": "email", "maxLength": 120 },
+        "submittedAt": { "type": "string" },
+        "encryptedPayload": { "type": "string" },
+        "isReadByProfessional": { "type": "boolean" },
+        "readAt": { "type": "string" }
+      },
+      "required": ["id", "formId", "professionalId", "patientId", "submittedAt", "isReadByProfessional"]
     }
   },
   "firestore": {
@@ -147,9 +208,22 @@
       "schema": "PsychologicalRecord",
       "description": "Electronic psychological medical records and evolution timelines"
     },
+    "/clinicalForms/{formId}": {
+      "schema": "ClinicalForm",
+      "description": "Clinical research and evaluation forms configured by professionals"
+    },
+    "/formDispatches/{dispatchId}": {
+      "schema": "FormDispatch",
+      "description": "Form assignment and dispatch tracking records"
+    },
+    "/formSubmissions/{submissionId}": {
+      "schema": "FormSubmission",
+      "description": "Completed psychological questionnaires and encrypted response data"
+    },
     "/messages/{messageId}": {
       "schema": "ChatMessage",
       "description": "Real-time consultation chat messages"
     }
   }
 }
+

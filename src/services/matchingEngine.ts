@@ -165,6 +165,8 @@ export function calculateMatchScore(
   highlights: string[];
   sharedTags: string[];
   matchedClinicalTags: string[];
+  matchedSpecializations: string[];
+  matchedFormations: string[];
 } {
   const profProfile: ProfessionalMatchingProfile = professional.professionalProfile || {
     ageGroup: '36-50',
@@ -172,6 +174,8 @@ export function calculateMatchScore(
     maritalStatus: 'married',
     hasChildren: true,
     affinityTags: professional.clinicalTags || professional.approaches || [],
+    formations: professional.formations || [],
+    specializations: professional.specializations || [],
     updatedAt: new Date().toISOString(),
   };
 
@@ -191,12 +195,16 @@ export function calculateMatchScore(
       highlights: ['Perfil preliminar sem questionário de acolhimento completo'],
       sharedTags: [],
       matchedClinicalTags: [],
+      matchedSpecializations: [],
+      matchedFormations: [],
     };
   }
 
   const highlights: string[] = [];
   const sharedTags: string[] = [];
   const matchedClinicalTags: string[] = [];
+  const matchedSpecializations: string[] = [];
+  const matchedFormations: string[] = [];
 
   // 1. Faixa Etária (Peso: 30% - máximo 30 pontos)
   let ageGroupScore = 0;
@@ -221,28 +229,34 @@ export function calculateMatchScore(
     }
   }
 
-  // 2. Motivos do Atendimento & Experiência Clínica (Peso: 30% - máximo 30 pontos)
+  // 2. Motivos do Atendimento, Especializações Clínicas & Formações Acadêmicas (Peso: 30% - máximo 30 pontos)
   let reasonsScore = 0;
   const profClinicalTags = professional.clinicalTags || [];
-  const allProfTags = [
+  const profSpecializations = professional.specializations || profProfile.specializations || [];
+  const profFormations = professional.formations || profProfile.formations || [];
+  const profApproaches = professional.approaches || [];
+  const profAffinityTags = profProfile.affinityTags || [];
+
+  // Normalização de termos para busca cruzada
+  const allProfSearchTerms = [
     ...profClinicalTags,
-    ...(profProfile.affinityTags || []),
-    ...(professional.approaches || []),
-  ];
-  const profTagsLower = new Set(allProfTags.map(t => t.toLowerCase().trim()));
+    ...profSpecializations,
+    ...profFormations,
+    ...profApproaches,
+    ...profAffinityTags,
+  ].map(t => t.toLowerCase().trim());
 
   let matchedReasonsCount = 0;
   for (const reason of patProfile.reasonsForCare) {
     const rLower = reason.toLowerCase().trim();
     const relatedTags = (REASON_TO_TAG_MAP[reason] || []).map(t => t.toLowerCase().trim());
 
-    const directHit = profTagsLower.has(rLower);
-    const semanticHit = relatedTags.some(tag => profTagsLower.has(tag));
-    const tokenHit = Array.from(profTagsLower).some(
-      tag => rLower.includes(tag) || tag.includes(rLower)
+    const directHit = allProfSearchTerms.some(term => term.includes(rLower) || rLower.includes(term));
+    const semanticHit = relatedTags.some(tag =>
+      allProfSearchTerms.some(term => term.includes(tag) || tag.includes(term))
     );
 
-    if (directHit || semanticHit || tokenHit) {
+    if (directHit || semanticHit) {
       matchedReasonsCount++;
       if (!sharedTags.includes(reason)) {
         sharedTags.push(reason);
@@ -250,7 +264,46 @@ export function calculateMatchScore(
     }
   }
 
-  // Tags de experiência clínica explícitas (ex: Ansiedade, Luto, Relacionamentos) que deram match
+  // Identifica Especializações que correspondem às queixas e ao relato pessoal do paciente
+  profSpecializations.forEach(spec => {
+    const sLower = spec.toLowerCase().trim();
+    const matchesReason = patProfile.reasonsForCare.some(reason => {
+      const rLower = reason.toLowerCase();
+      const mapped = (REASON_TO_TAG_MAP[reason] || []).map(m => m.toLowerCase().trim());
+      return rLower.includes(sLower) || sLower.includes(rLower) || mapped.some(m => sLower.includes(m) || m.includes(sLower));
+    });
+
+    const matchesNote = patProfile.personalNote
+      ? patProfile.personalNote.toLowerCase().split(/[ ,.;:!?]+/).some(word => word.length >= 4 && sLower.includes(word))
+      : false;
+
+    if ((matchesReason || matchesNote) && !matchedSpecializations.includes(spec)) {
+      matchedSpecializations.push(spec);
+    }
+  });
+
+  // Identifica Formações Acadêmicas qualificadas para a demanda
+  profFormations.forEach(form => {
+    const fLower = form.toLowerCase().trim();
+    const matchesReason = patProfile.reasonsForCare.some(reason => {
+      const mapped = (REASON_TO_TAG_MAP[reason] || []).map(m => m.toLowerCase().trim());
+      return mapped.some(m => fLower.includes(m));
+    });
+
+    const isBiblicalAffinity =
+      (fLower.includes('teologia') || fLower.includes('bíblico')) &&
+      (patProfile.preferredCareCategory === 'biblical' || patProfile.reasonsForCare.some(r => r.includes('Bíblica')));
+
+    const isClinicalAffinity =
+      (fLower.includes('psicologia') || fLower.includes('saúde mental') || fLower.includes('psicoterapia')) &&
+      patProfile.reasonsForCare.some(r => r.includes('Ansiedade') || r.includes('Depressão') || r.includes('Luto'));
+
+    if ((matchesReason || isBiblicalAffinity || isClinicalAffinity) && !matchedFormations.includes(form)) {
+      matchedFormations.push(form);
+    }
+  });
+
+  // Tags de experiência clínica explícitas (ex: Ansiedade, Luto, Relacionamentos)
   profClinicalTags.forEach(cTag => {
     const cLower = cTag.toLowerCase().trim();
     const isDirectlyRelevant = patProfile.reasonsForCare.some(reason => {
@@ -259,27 +312,44 @@ export function calculateMatchScore(
       return rLower.includes(cLower) || cLower.includes(rLower) || mapped.includes(cLower);
     });
 
-    if (isDirectlyRelevant && !matchedClinicalTags.includes(cTag)) {
+    const matchesNote = patProfile.personalNote
+      ? patProfile.personalNote.toLowerCase().includes(cLower)
+      : false;
+
+    if ((isDirectlyRelevant || matchesNote) && !matchedClinicalTags.includes(cTag)) {
       matchedClinicalTags.push(cTag);
     }
   });
 
   if (patProfile.reasonsForCare.length > 0) {
     const ratio = matchedReasonsCount / patProfile.reasonsForCare.length;
-    // Base de aderência às queixas: até 22 pontos
-    const baseComplaintPoints = Math.round(ratio * 22);
-    // Bônus de especialidade clínica comprovada (tags do psicólogo): até 8 pontos
-    const clinicalTagBonus = Math.min(8, matchedClinicalTags.length * 4);
+    // Base de aderência às queixas: até 14 pontos
+    const baseComplaintPoints = Math.round(ratio * 14);
+    // Bônus de especializações clínicas específicas (+4 pts por especialização, max 8 pts)
+    const specBonus = Math.min(8, matchedSpecializations.length * 4);
+    // Bônus de formações acadêmicas validadas (+2 pts por formação, max 4 pts)
+    const formBonus = Math.min(4, matchedFormations.length * 2);
+    // Bônus de tags clínicas e relato (+2 pts por tag clínica coincidente, max 4 pts)
+    const clinicalTagBonus = Math.min(4, matchedClinicalTags.length * 2);
 
-    reasonsScore = Math.min(30, baseComplaintPoints + clinicalTagBonus);
+    reasonsScore = Math.min(30, baseComplaintPoints + specBonus + formBonus + clinicalTagBonus);
 
+    if (matchedSpecializations.length > 0) {
+      highlights.push(`Especialização clínica afim: ${matchedSpecializations.join(', ')}`);
+    }
+    if (matchedFormations.length > 0) {
+      highlights.push(`Formação acadêmica qualificada: ${matchedFormations.join(', ')}`);
+    }
     if (matchedClinicalTags.length > 0) {
-      highlights.push(`Especialidade clínica confirmada: ${matchedClinicalTags.join(', ')} (${reasonsScore}/30 pts)`);
+      highlights.push(`Experiência clínica comprovada: ${matchedClinicalTags.join(', ')}`);
     } else if (matchedReasonsCount > 0) {
-      highlights.push(`Afinidade com as queixas selecionadas (${matchedReasonsCount}/${patProfile.reasonsForCare.length} motivos - ${reasonsScore}/30 pts)`);
+      highlights.push(`Afinidade com as queixas selecionadas (${matchedReasonsCount}/${patProfile.reasonsForCare.length} motivos)`);
+    }
+
+    if (patProfile.personalNote && (matchedSpecializations.length > 0 || matchedClinicalTags.length > 0)) {
+      highlights.push('Relato pessoal do paciente contemplado diretamente nas especialidades');
     }
   } else {
-    // Sem motivos preenchidos: pontuação neutra
     reasonsScore = 15;
   }
   reasonsScore = Math.max(0, Math.min(30, reasonsScore));
@@ -334,6 +404,8 @@ export function calculateMatchScore(
     highlights,
     sharedTags,
     matchedClinicalTags,
+    matchedSpecializations,
+    matchedFormations,
   };
 }
 
@@ -347,7 +419,15 @@ export function getRecommendedPatientsForProfessional(
   const results: PatientMatchResult[] = allPatients
     .filter(patient => patient.role === 'patient')
     .map(patient => {
-      const { score, scoreBreakdown, highlights, sharedTags, matchedClinicalTags } = calculateMatchScore(professional, patient);
+      const {
+        score,
+        scoreBreakdown,
+        highlights,
+        sharedTags,
+        matchedClinicalTags,
+        matchedSpecializations,
+        matchedFormations,
+      } = calculateMatchScore(professional, patient);
       return {
         patient,
         score,
@@ -355,6 +435,8 @@ export function getRecommendedPatientsForProfessional(
         matchHighlights: highlights,
         sharedTags,
         matchedClinicalTags,
+        matchedSpecializations,
+        matchedFormations,
       };
     });
 

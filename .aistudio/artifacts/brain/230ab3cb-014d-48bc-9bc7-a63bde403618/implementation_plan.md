@@ -127,4 +127,9 @@ export interface ProfessionalMatchingProfile {
 5. **Aba de Matching no Painel do Profissional (`src/components/PsychologistDashboard.tsx`):**
    - Configuração de tags no perfil do profissional.
    - Nova aba "Pacientes Recomendados" com ordenação por afinidade, tags em comum e botão de ação.
-6. **Compilação e Verificação:** Garantir build sem erros com `compile_applet`.
+6. **Jornada do Paciente com Gráfico Interativo D3 (`src/components/psychologicalRecord/PatientJourneyD3Chart.tsx`):**
+   - Gráfico de linhas interativo desenvolvido em D3 com interpolação suave MonotoneX, gradiente de área e faixas clínicas (Melhora, Estável, Atenção).
+   - Marcadores de marcos clínicos (estrelas e flags) plotados ao longo da curva com tooltips dinâmicos e cards de marcos.
+   - Painel integrado no `PsychologistDashboard` (nova aba "Jornada do Paciente (D3)") e no prontuário (`RecordDetailView`).
+7. **Compilação e Verificação:** Garantir build sem erros com `compile_applet` e `lint_applet`.
+

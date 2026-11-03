@@ -10,6 +10,8 @@ import {
   Copy,
   Check,
   HeartHandshake,
+  Award,
+  GraduationCap,
 } from 'lucide-react';
 
 interface PatientInviteModalProps {
@@ -64,10 +66,10 @@ export const PatientInviteModal: React.FC<PatientInviteModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm p-3 sm:p-4 flex items-start sm:items-center justify-center">
+      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[calc(100dvh-2rem)] flex flex-col">
         {/* Header */}
-        <div className="px-6 py-5 bg-gradient-to-r from-sky-700 to-indigo-800 text-white flex items-start justify-between">
+        <div className="shrink-0 px-6 py-5 bg-gradient-to-r from-sky-700 to-indigo-800 text-white flex items-start justify-between z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
               <HeartHandshake className="w-5 h-5 text-sky-200" />
@@ -83,7 +85,7 @@ export const PatientInviteModal: React.FC<PatientInviteModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors shrink-0"
             aria-label="Fechar"
           >
             <X className="w-5 h-5" />
@@ -91,7 +93,7 @@ export const PatientInviteModal: React.FC<PatientInviteModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-5">
+        <div className="overflow-y-auto flex-1 overscroll-contain p-6 space-y-5">
           {/* Match summary badge */}
           <div className="p-3.5 bg-sky-50/80 rounded-xl border border-sky-100 space-y-2.5">
             <div className="flex items-center justify-between text-xs font-semibold text-sky-950">
@@ -130,6 +132,30 @@ export const PatientInviteModal: React.FC<PatientInviteModalProps> = ({
                 </li>
               ))}
             </ul>
+
+            {((matchResult.matchedSpecializations && matchResult.matchedSpecializations.length > 0) ||
+              (matchResult.matchedFormations && matchResult.matchedFormations.length > 0)) && (
+              <div className="pt-1.5 border-t border-sky-200/50 flex flex-wrap gap-1">
+                {matchResult.matchedSpecializations?.map(spec => (
+                  <span
+                    key={spec}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-900 border border-emerald-300"
+                  >
+                    <Award className="w-3 h-3 text-emerald-600" />
+                    <span>{spec}</span>
+                  </span>
+                ))}
+                {matchResult.matchedFormations?.map(form => (
+                  <span
+                    key={form}
+                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold bg-indigo-100 text-indigo-900 border border-indigo-300"
+                  >
+                    <GraduationCap className="w-3 h-3 text-indigo-600" />
+                    <span>{form}</span>
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           {isSent ? (

@@ -10,6 +10,9 @@ import { PatientMatchingModal } from './components/PatientMatchingModal';
 import { Appointment } from './types';
 import { Shield, Heart, PhoneCall, CheckCircle2 } from 'lucide-react';
 import { isProfessionalRole, UserRole } from './types';
+import { clinicalFormStorage } from './services/clinicalFormStorage';
+import { ClinicalForm, FormDispatch } from './types/clinicalForm';
+import { FormFillModal } from './components/clinicalForms/FormFillModal';
 
 const MainApp: React.FC = () => {
   const { user, role } = useAuth();
@@ -17,6 +20,31 @@ const MainApp: React.FC = () => {
 
   // Tab state: defaults to 'home'
   const [activeTab, setActiveTab] = useState<string>('home');
+
+  // Direct share link form modal
+  const [sharedFormToFill, setSharedFormToFill] = useState<{
+    form: ClinicalForm;
+    dispatch?: FormDispatch;
+  } | null>(null);
+
+  React.useEffect(() => {
+    const handleHash = () => {
+      const hash = window.location.hash;
+      if (hash.startsWith('#form-')) {
+        const token = hash.replace('#form-', '');
+        const disp = clinicalFormStorage.getDispatchByToken(token);
+        if (disp) {
+          const form = clinicalFormStorage.getPublishedFormForPatient(disp.formId);
+          if (form) {
+            setSharedFormToFill({ form, dispatch: disp });
+          }
+        }
+      }
+    };
+    handleHash();
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
 
   // Modal Auth state
   const [authModalOpen, setAuthModalOpen] = useState(false);
@@ -210,9 +238,26 @@ const MainApp: React.FC = () => {
         isInitialOnboarding={true}
         onClose={() => setPatientMatchingModalOpen(false)}
       />
+
+      {/* Direct Link Form Fill Modal */}
+      {sharedFormToFill && (
+        <FormFillModal
+          isOpen={!!sharedFormToFill}
+          onClose={() => {
+            setSharedFormToFill(null);
+            window.location.hash = '';
+          }}
+          form={sharedFormToFill.form}
+          dispatch={sharedFormToFill.dispatch}
+          patientId={user?.id || sharedFormToFill.dispatch?.patientId || 'anonimo'}
+          patientName={user?.name || sharedFormToFill.dispatch?.patientName || 'Paciente'}
+          patientEmail={user?.email || sharedFormToFill.dispatch?.patientEmail}
+        />
+      )}
     </div>
   );
 };
+
 
 export default function App() {
   return (

@@ -134,8 +134,78 @@ export interface ProfessionalMatchingProfile {
   preferredPatientAgeGroups?: AgeGroup[];
   acceptsNewMatchedPatients?: boolean;
   welcomeIntro?: string;
+  formations?: string[];
+  specializations?: string[];
   updatedAt: string;
 }
+
+export const SUGGESTED_FORMATIONS_BY_TYPE: Record<ProfessionalType, string[]> = {
+  psychologist: [
+    'Graduação em Psicologia',
+    'Pós-Graduação em Saúde Mental',
+    'Mestrado em Psicologia Clínica',
+    'Especialização em Psicoterapia',
+    'Aprimoramento em Hospital Geral',
+  ],
+  therapist: [
+    'Graduação em Terapias Integrativas',
+    'Formação em Terapia Emocional',
+    'Certificação Internacional em Mindfulness',
+    'Formação em PNL e Coaching Clínico',
+    'Especialização em Práticas Integrativas',
+  ],
+  psychoanalyst: [
+    'Formação em Teoria e Clínica Psicanalítica',
+    'Graduação em Psicologia ou Filosofia',
+    'Membro de Sociedade Psicanalítica',
+    'Especialização em Psicanálise Lacaniana/Freudiana',
+    'Pós-Graduação em Psicopatologia Psicanalítica',
+  ],
+  pastor: [
+    'Bacharel em Teologia',
+    'Formação em Aconselhamento Bíblico Pastoral',
+    'Pós-Graduação em Família e Sociedade',
+    'Especialização em Cuidado Pastoral de Crises',
+    'Mestrado em Teologia Prática',
+  ],
+};
+
+export const SUGGESTED_SPECIALIZATIONS_BY_TYPE: Record<ProfessionalType, string[]> = {
+  psychologist: [
+    'Terapia Cognitivo-Comportamental (TCC)',
+    'Transtornos de Ansiedade e Pânico',
+    'Neuropsicologia Clínica',
+    'Depressão e Transtornos de Humor',
+    'Terapia de Casal e Família',
+    'Luto e Perdas',
+    'Burnout e Saúde Ocupacional',
+    'Avaliação Psicológica',
+  ],
+  therapist: [
+    'Regulação Emocional e Redução do Estresse',
+    'Mindfulness e Atenção Plena',
+    'Inteligência Emocional',
+    'Terapia Floral e Práticas Integrativas',
+    'Desenvolvimento Pessoal e Autoestima',
+    'Transição de Carreira e Propósito',
+  ],
+  psychoanalyst: [
+    'Psicanálise Freudiana',
+    'Psicanálise Lacaniana',
+    'Análise de Traumas e Sintomas Inconscientes',
+    'Elaboração de Luto e Angústia',
+    'Psicopatologia do Adulto',
+    'Clínica dos Vínculos e Desejo',
+  ],
+  pastor: [
+    'Aconselhamento Pré-Matrimonial e Conjugal',
+    'Restauração Familiar e Paternidade',
+    'Orientação Bíblica de Crises e Luto',
+    'Fortalecimento Espiritual e Vencendo a Culpa',
+    'Aconselhamento de Jovens e Liderança Cristã',
+    'Cuidado Pastoral com a Saúde Emocional',
+  ],
+};
 
 export const CLINICAL_EXPERIENCE_TAGS = [
   'Ansiedade',
@@ -170,6 +240,8 @@ export interface PatientMatchResult {
   matchHighlights: string[]; // Motivos claros da afinidade (ex: "Mesma faixa etária", "Ambos casados com filhos")
   sharedTags: string[];
   matchedClinicalTags?: string[]; // Tags de experiência clínica que coincidem com as demandas do paciente
+  matchedSpecializations?: string[]; // Especializações que coincidem com queixas do paciente
+  matchedFormations?: string[]; // Formações que validam qualificação na queixa
 }
 
 export interface User {
@@ -188,6 +260,8 @@ export interface User {
   hourlyRate?: number;
   sessionDuration?: number; // em minutos (ex: 50)
   approaches?: string[];
+  formations?: string[]; // Formações acadêmicas e cursos formativos (+ de 1)
+  specializations?: string[]; // Especializações clínicas e áreas de especialidade (+ de 1)
   clinicalTags?: string[]; // Tags de experiência clínica (ex: Ansiedade, Luto, Relacionamentos)
   avatar?: string;
   city?: string;
@@ -266,3 +340,4 @@ export interface ChatMessage {
 }
 
 export * from './psychologicalRecord';
+export * from './clinicalForm';

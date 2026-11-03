@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { isProfessionalRole, ProfessionalType } from '../types';
+import { clinicalFormStorage } from '../services/clinicalFormStorage';
 import { 
   Activity, 
   User as UserIcon, 
@@ -45,6 +46,18 @@ export const Navbar: React.FC<NavbarProps> = ({
   const userDropdownRef = useRef<HTMLDivElement>(null);
 
   const isProf = isProfessionalRole(role);
+
+  const [unreadFormsCount, setUnreadFormsCount] = useState<number>(() =>
+    user ? clinicalFormStorage.getUnreadSubmissionsCount(user.id) : 0
+  );
+
+  useEffect(() => {
+    if (!user) return;
+    const unsub = clinicalFormStorage.subscribe(() => {
+      setUnreadFormsCount(clinicalFormStorage.getUnreadSubmissionsCount(user.id));
+    });
+    return () => unsub();
+  }, [user]);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -147,6 +160,20 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {user.role === 'pastor' ? 'Fichas de Aconselhamento' : 'Prontuários (PEP)'}
                 </button>
                 <button
+                  onClick={() => setActiveTab('forms')}
+                  className={`flex items-center gap-1.5 hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                    activeTab === 'forms' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                  }`}
+                >
+                  <FileText className="w-4 h-4 text-sky-700" />
+                  <span>Formulários</span>
+                  {unreadFormsCount > 0 && (
+                    <span className="px-1.5 py-0.2 bg-amber-400 text-slate-900 rounded-full text-[10px] font-black">
+                      {unreadFormsCount}
+                    </span>
+                  )}
+                </button>
+                <button
                   onClick={() => setActiveTab('profile')}
                   className={`flex items-center gap-2 hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
                     activeTab === 'profile' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
@@ -177,6 +204,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                   Minhas Consultas
                 </button>
                 <button
+                  onClick={() => setActiveTab('patient_forms')}
+                  className={`flex items-center gap-2 hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                    activeTab === 'patient_forms' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                  }`}
+                >
+                  <FileText className="w-4 h-4" />
+                  Meus Questionários
+                </button>
+                <button
                   onClick={() => setActiveTab('patient_records')}
                   className={`flex items-center gap-2 hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
                     activeTab === 'patient_records' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
@@ -187,6 +223,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
               </>
             )
+
           ) : (
             <>
               <button

@@ -12,11 +12,18 @@ import {
   ProfessionalMatchingProfile,
   User,
   CLINICAL_EXPERIENCE_TAGS,
+  SUGGESTED_FORMATIONS_BY_TYPE,
+  SUGGESTED_SPECIALIZATIONS_BY_TYPE,
 } from '../types';
 import { AvailabilityManager } from './AvailabilityManager';
 import { MedicalRecordModal } from './MedicalRecordModal';
 import { PatientInviteModal } from './PatientInviteModal';
 import { PsychologicalRecordModule } from './psychologicalRecord/PsychologicalRecordModule';
+import { PatientJourneyD3Chart } from './psychologicalRecord/PatientJourneyD3Chart';
+import { ClinicalFormsModule } from './clinicalForms/ClinicalFormsModule';
+import { psychologicalRecordStorage } from '../services/psychologicalRecordStorage';
+import { clinicalFormStorage } from '../services/clinicalFormStorage';
+import { PsychologicalRecord } from '../types/psychologicalRecord';
 import {
   getRecommendedPatientsForProfessional,
   PROFESSIONAL_AFFINITY_TAGS,
@@ -51,6 +58,10 @@ import {
   ShieldCheck,
   Target,
   BarChart3,
+  GraduationCap,
+  X,
+  Plus,
+  Activity,
 } from 'lucide-react';
 
 interface PsychologistDashboardProps {
@@ -63,10 +74,40 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
   activeSubTab = 'agenda',
 }) => {
   const { user, updateProfile } = useAuth();
-  const [currentTab, setCurrentTab] = useState<'agenda' | 'availability' | 'records' | 'matching' | 'profile'>(
-    (activeSubTab as any) || 'agenda'
-  );
+  const [currentTab, setCurrentTab] = useState<
+    'agenda' | 'availability' | 'records' | 'matching' | 'profile' | 'journey' | 'forms'
+  >((activeSubTab as any) || 'agenda');
   const [selectedProntuarioPatientId, setSelectedProntuarioPatientId] = useState<string | undefined>(undefined);
+  const [selectedJourneyPatientId, setSelectedJourneyPatientId] = useState<string | undefined>(undefined);
+
+  // Unread forms count for real-time notification badge
+  const [unreadFormsCount, setUnreadFormsCount] = useState<number>(() =>
+    clinicalFormStorage.getUnreadSubmissionsCount(user?.id || 'psy_clara')
+  );
+
+  React.useEffect(() => {
+    const unsub = clinicalFormStorage.subscribe(() => {
+      setUnreadFormsCount(clinicalFormStorage.getUnreadSubmissionsCount(user?.id || 'psy_clara'));
+    });
+    return () => unsub();
+  }, [user?.id]);
+
+  // Psychological Records for Patient Journey D3 Chart
+  const [psychologicalRecords, setPsychologicalRecords] = useState<PsychologicalRecord[]>(() =>
+    psychologicalRecordStorage.getRecordsByProfessional(user?.id || 'psy_clara')
+  );
+
+  React.useEffect(() => {
+    const profId = user?.id || 'psy_clara';
+    const recs = psychologicalRecordStorage.getRecordsByProfessional(profId);
+    setPsychologicalRecords(recs);
+
+    const unsubscribe = psychologicalRecordStorage.subscribe(allRecs => {
+      const filtered = allRecs.filter(r => r.professionalId === profId);
+      setPsychologicalRecords(filtered);
+    });
+    return () => unsubscribe();
+  }, [user?.id]);
 
   React.useEffect(() => {
     if (activeSubTab) {
@@ -165,6 +206,54 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
     }
   };
 
+  // Formações acadêmicas (+ de 1)
+  const [profFormations, setProfFormations] = useState<string[]>(
+    user?.formations || user?.professionalProfile?.formations || [SUGGESTED_FORMATIONS_BY_TYPE[pType]?.[0] || 'Graduação']
+  );
+  const [customFormationInput, setCustomFormationInput] = useState('');
+
+  // Especializações clínicas (+ de 1)
+  const [profSpecializations, setProfSpecializations] = useState<string[]>(
+    user?.specializations || user?.professionalProfile?.specializations || [SUGGESTED_SPECIALIZATIONS_BY_TYPE[pType]?.[0] || 'Atendimento Clínico']
+  );
+  const [customSpecializationInput, setCustomSpecializationInput] = useState('');
+
+  const toggleFormation = (f: string) => {
+    setProfFormations(prev =>
+      prev.includes(f) ? prev.filter(item => item !== f) : [...prev, f]
+    );
+  };
+
+  const handleAddCustomFormation = () => {
+    const trimmed = customFormationInput.trim();
+    if (trimmed && !profFormations.includes(trimmed)) {
+      setProfFormations(prev => [...prev, trimmed]);
+      setCustomFormationInput('');
+    }
+  };
+
+  const handleRemoveFormation = (f: string) => {
+    setProfFormations(prev => prev.filter(item => item !== f));
+  };
+
+  const toggleSpecialization = (s: string) => {
+    setProfSpecializations(prev =>
+      prev.includes(s) ? prev.filter(item => item !== s) : [...prev, s]
+    );
+  };
+
+  const handleAddCustomSpecialization = () => {
+    const trimmed = customSpecializationInput.trim();
+    if (trimmed && !profSpecializations.includes(trimmed)) {
+      setProfSpecializations(prev => [...prev, trimmed]);
+      setCustomSpecializationInput('');
+    }
+  };
+
+  const handleRemoveSpecialization = (s: string) => {
+    setProfSpecializations(prev => prev.filter(item => item !== s));
+  };
+
   // Profile edit states
   const [bio, setBio] = useState(user?.bio || '');
   const [registrationNumber, setRegistrationNumber] = useState(user?.registrationNumber || user?.crp || '');
@@ -214,6 +303,8 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
       hasChildren: profHasChildren,
       yearsOfExperience: profYearsOfExp ? parseInt(profYearsOfExp, 10) : undefined,
       affinityTags: mergedAffinityTags,
+      formations: profFormations,
+      specializations: profSpecializations,
       welcomeIntro: welcomeIntro.trim(),
       updatedAt: new Date().toISOString(),
     };
@@ -232,6 +323,8 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
       phone,
       approaches: appArray,
       clinicalTags: profClinicalTags,
+      formations: profFormations,
+      specializations: profSpecializations,
       professionalProfile: updatedProfProfile,
     });
 
@@ -387,6 +480,33 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
             {pType === 'pastor' ? 'Fichas Pastorais' : 'Prontuários (PEP)'}
           </button>
           <button
+            onClick={() => setCurrentTab('journey')}
+            className={`px-3.5 py-2 rounded-lg transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              currentTab === 'journey'
+                ? 'bg-white text-emerald-950 shadow-xs font-bold ring-1 ring-emerald-300'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <Activity className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Jornada do Paciente (D3)</span>
+          </button>
+          <button
+            onClick={() => setCurrentTab('forms')}
+            className={`px-3.5 py-2 rounded-lg transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              currentTab === 'forms'
+                ? 'bg-sky-700 text-white shadow-xs font-bold'
+                : 'text-slate-600 hover:text-slate-900'
+            }`}
+          >
+            <FileText className="w-3.5 h-3.5 text-sky-400" />
+            <span>Formulários Clínicos</span>
+            {unreadFormsCount > 0 && (
+              <span className="px-1.5 py-0.2 bg-amber-400 text-slate-900 rounded-full text-[10px] font-black">
+                {unreadFormsCount}
+              </span>
+            )}
+          </button>
+          <button
             onClick={() => setCurrentTab('profile')}
             className={`px-3.5 py-2 rounded-lg transition-all whitespace-nowrap ${
               currentTab === 'profile' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
@@ -396,6 +516,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
           </button>
         </div>
       </div>
+
 
       {/* KPI Cards Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -606,6 +727,30 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                           {pType === 'pastor' ? 'Ficha de Aconselhamento' : 'Prontuário (PEP)'}
                         </button>
 
+                        <button
+                          onClick={() => {
+                            setSelectedJourneyPatientId(apt.patientId);
+                            setCurrentTab('journey');
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-800 hover:text-emerald-950 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"
+                          title="Visualizar a Jornada Clínica e Gráfico D3 do Paciente"
+                        >
+                          <Activity className="w-3.5 h-3.5 text-emerald-700" />
+                          <span>Jornada (D3)</span>
+                        </button>
+
+                        <button
+                          onClick={() => {
+                            setSelectedProntuarioPatientId(apt.patientId);
+                            setCurrentTab('forms');
+                          }}
+                          className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-indigo-800 hover:text-indigo-950 bg-indigo-50 border border-indigo-200 rounded-lg hover:bg-indigo-100 transition-colors"
+                          title="Enviar ou ver formulários e pesquisas clínicas deste paciente"
+                        >
+                          <FileText className="w-3.5 h-3.5 text-indigo-700" />
+                          <span>Formulários</span>
+                        </button>
+
                         {apt.status === 'scheduled' && (
                           <button
                             onClick={() => handleUpdateStatus(apt.id, 'completed')}
@@ -631,6 +776,66 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
       {/* Tab 3: Módulo de Prontuário Psicológico (PEP) Completo */}
       {currentTab === 'records' && (
         <PsychologicalRecordModule initialPatientId={selectedProntuarioPatientId} />
+      )}
+
+      {/* Tab 4: Jornada do Paciente com Gráfico Interativo D3 */}
+      {currentTab === 'journey' && (
+        <div className="space-y-6">
+          {psychologicalRecords.length === 0 ? (
+            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
+              <Compass className="w-12 h-12 text-slate-300 mx-auto" />
+              <h3 className="text-base font-bold text-slate-800">Nenhum prontuário encontrado</h3>
+              <p className="text-xs text-slate-500 max-w-md mx-auto">
+                Para visualizar a Jornada Clínica e os marcos alcançados, abra um prontuário na aba Prontuários (PEP) e registre a primeira sessão.
+              </p>
+              <button
+                onClick={() => setCurrentTab('records')}
+                className="px-4 py-2 text-xs font-bold text-white bg-sky-700 hover:bg-sky-800 rounded-xl transition-colors shadow-xs"
+              >
+                Ir para Prontuários (PEP)
+              </button>
+            </div>
+          ) : (
+            (() => {
+              const activeRecord =
+                psychologicalRecords.find(r => r.patientId === selectedJourneyPatientId) ||
+                psychologicalRecords[0];
+
+              return (
+                <PatientJourneyD3Chart
+                  record={activeRecord}
+                  allRecords={psychologicalRecords}
+                  onSelectPatient={patientId => setSelectedJourneyPatientId(patientId)}
+                  onAddMilestone={milestone => {
+                    const profMeta = {
+                      id: user?.id || 'psy_clara',
+                      name: user?.name || 'Dra. Clara Vasconcellos',
+                      role: (user?.professionalType as string) || 'psychologist',
+                    };
+                    psychologicalRecordStorage.addMilestoneToRecord(
+                      activeRecord.id,
+                      milestone,
+                      profMeta
+                    );
+                  }}
+                  onOpenSessionModal={() => {
+                    setSelectedProntuarioPatientId(activeRecord.patientId);
+                    setCurrentTab('records');
+                  }}
+                />
+              );
+            })()
+          )}
+        </div>
+      )}
+
+      {/* Tab Forms: Módulo de Formulários de Pesquisa & Acompanhamento Clínico */}
+      {currentTab === 'forms' && (
+        <ClinicalFormsModule
+          professionalId={user?.id || 'psy_clara'}
+          professionalName={user?.name || 'Profissional'}
+          initialPatientId={selectedProntuarioPatientId}
+        />
       )}
 
       {/* Tab Matching: Pacientes Sugeridos por Inteligência de Afinidade */}
@@ -974,17 +1179,53 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                             ))}
                           </ul>
 
+                          {/* Especializações Clínicas que deram match */}
+                          {match.matchedSpecializations && match.matchedSpecializations.length > 0 && (
+                            <div className="pt-2 border-t border-sky-200/60 flex items-center gap-1.5 flex-wrap">
+                              <span className="text-[11px] font-bold text-emerald-950 flex items-center gap-1">
+                                <Award className="w-3.5 h-3.5 text-emerald-600" />
+                                Especializações Afins:
+                              </span>
+                              {match.matchedSpecializations.map(spec => (
+                                <span
+                                  key={spec}
+                                  className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-950 border border-emerald-300 shadow-2xs"
+                                >
+                                  {spec}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Formações Acadêmicas que qualificam para a demanda */}
+                          {match.matchedFormations && match.matchedFormations.length > 0 && (
+                            <div className="pt-1.5 border-t border-sky-200/60 flex items-center gap-1.5 flex-wrap">
+                              <span className="text-[11px] font-bold text-indigo-950 flex items-center gap-1">
+                                <GraduationCap className="w-3.5 h-3.5 text-indigo-600" />
+                                Formações Acadêmicas Qualificadas:
+                              </span>
+                              {match.matchedFormations.map(form => (
+                                <span
+                                  key={form}
+                                  className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-100 text-indigo-950 border border-indigo-300 shadow-2xs"
+                                >
+                                  {form}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
                           {/* Tags de Experiência Clínica que deram match */}
                           {match.matchedClinicalTags && match.matchedClinicalTags.length > 0 && (
                             <div className="pt-1.5 border-t border-sky-200/60 flex items-center gap-1.5 flex-wrap">
-                              <span className="text-[11px] font-bold text-emerald-900 flex items-center gap-1">
-                                <Sparkles className="w-3 h-3 text-emerald-600" />
-                                Experiência Clínica Sintonizada:
+                              <span className="text-[11px] font-bold text-sky-950 flex items-center gap-1">
+                                <Sparkles className="w-3 h-3 text-sky-600" />
+                                Foco Clínico Sintonizado:
                               </span>
                               {match.matchedClinicalTags.map(ct => (
                                 <span
                                   key={ct}
-                                  className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs"
+                                  className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-sky-100 text-sky-900 border border-sky-300 shadow-2xs"
                                 >
                                   {ct}
                                 </span>
@@ -1417,6 +1658,196 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                 placeholder="Ex: TCC, Ansiedade, Mindfulness ou Aconselhamento Bíblico, Família"
                 className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
               />
+            </div>
+
+            {/* Formações Acadêmicas (+ de 1) */}
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <GraduationCap className="w-4 h-4 text-indigo-700" />
+                  <label className="text-xs font-bold text-slate-800">
+                    Formações Acadêmicas & Cursos Formativos (+ de 1)
+                  </label>
+                </div>
+                <span className="text-[11px] font-semibold text-indigo-800 bg-indigo-100/80 border border-indigo-200 px-2 py-0.5 rounded-full">
+                  {profFormations.length} cadastrada(s)
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500">
+                Graduações, mestrados, doutorados e especializações acadêmicas. O matching utiliza essas formações para conectar com pacientes com demandas qualificadas.
+              </p>
+
+              {/* Formações ativas */}
+              <div className="flex flex-wrap gap-1.5">
+                {profFormations.map(f => (
+                  <span
+                    key={f}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-indigo-50 text-indigo-900 border border-indigo-200 rounded-lg"
+                  >
+                    <GraduationCap className="w-3 h-3 text-indigo-600 shrink-0" />
+                    <span>{f}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveFormation(f)}
+                      className="text-indigo-400 hover:text-indigo-700 hover:bg-indigo-100 rounded p-0.5 transition-colors"
+                      title="Remover formação"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+
+              {/* Sugestões rápidas */}
+              <div className="space-y-1">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
+                  Sugestões rápidas para seu perfil (clique para alternar):
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {(SUGGESTED_FORMATIONS_BY_TYPE[selectedType] || []).map(f => {
+                    const isSelected = profFormations.includes(f);
+                    return (
+                      <button
+                        key={f}
+                        type="button"
+                        onClick={() => toggleFormation(f)}
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg border transition-all ${
+                          isSelected
+                            ? 'bg-indigo-700 text-white border-indigo-700 shadow-2xs font-semibold'
+                            : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-100/80'
+                        }`}
+                      >
+                        <span>{f}</span>
+                        {isSelected ? (
+                          <Check className="w-3 h-3 text-indigo-200 shrink-0" />
+                        ) : (
+                          <Plus className="w-3 h-3 text-slate-400 shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Input customizado */}
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="text"
+                  value={customFormationInput}
+                  onChange={e => setCustomFormationInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddCustomFormation();
+                    }
+                  }}
+                  placeholder="Adicionar outra formação (ex: Mestrado em Psicologia Clínica - PUC-SP)..."
+                  className="flex-1 px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-indigo-600"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddCustomFormation}
+                  disabled={!customFormationInput.trim()}
+                  className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 disabled:opacity-40 border border-slate-200 rounded-lg transition-colors whitespace-nowrap"
+                >
+                  Adicionar
+                </button>
+              </div>
+            </div>
+
+            {/* Especializações Clínicas (+ de 1) */}
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Award className="w-4 h-4 text-emerald-700" />
+                  <label className="text-xs font-bold text-slate-800">
+                    Especializações Clínicas & Títulos (+ de 1)
+                  </label>
+                </div>
+                <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100/80 border border-emerald-200 px-2 py-0.5 rounded-full">
+                  {profSpecializations.length} cadastrada(s)
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-500">
+                Especialidades de atuação clínica direta. Pacientes com queixas relacionadas a essas áreas serão sugeridos com alta pontuação de compatibilidade.
+              </p>
+
+              {/* Especializações ativas */}
+              <div className="flex flex-wrap gap-1.5">
+                {profSpecializations.map(s => (
+                  <span
+                    key={s}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-medium bg-emerald-50 text-emerald-900 border border-emerald-200 rounded-lg"
+                  >
+                    <Award className="w-3 h-3 text-emerald-600 shrink-0" />
+                    <span>{s}</span>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveSpecialization(s)}
+                      className="text-emerald-400 hover:text-emerald-700 hover:bg-emerald-100 rounded p-0.5 transition-colors"
+                      title="Remover especialização"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+
+              {/* Sugestões rápidas */}
+              <div className="space-y-1">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-slate-400 block">
+                  Sugestões clínicas para seu perfil (clique para alternar):
+                </span>
+                <div className="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto pr-1">
+                  {(SUGGESTED_SPECIALIZATIONS_BY_TYPE[selectedType] || []).map(s => {
+                    const isSelected = profSpecializations.includes(s);
+                    return (
+                      <button
+                        key={s}
+                        type="button"
+                        onClick={() => toggleSpecialization(s)}
+                        className={`inline-flex items-center gap-1 px-2.5 py-1 text-xs font-medium rounded-lg border transition-all ${
+                          isSelected
+                            ? 'bg-emerald-700 text-white border-emerald-700 shadow-2xs font-semibold'
+                            : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300 hover:bg-slate-100/80'
+                        }`}
+                      >
+                        <span>{s}</span>
+                        {isSelected ? (
+                          <Check className="w-3 h-3 text-emerald-200 shrink-0" />
+                        ) : (
+                          <Plus className="w-3 h-3 text-slate-400 shrink-0" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Input customizado */}
+              <div className="flex items-center gap-2 pt-1">
+                <input
+                  type="text"
+                  value={customSpecializationInput}
+                  onChange={e => setCustomSpecializationInput(e.target.value)}
+                  onKeyDown={e => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleAddCustomSpecialization();
+                    }
+                  }}
+                  placeholder="Adicionar outra especialização (ex: TCC em Transtornos de Ansiedade)..."
+                  className="flex-1 px-3 py-1.5 text-xs bg-white border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-emerald-600"
+                />
+                <button
+                  type="button"
+                  onClick={handleAddCustomSpecialization}
+                  disabled={!customSpecializationInput.trim()}
+                  className="px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-100 disabled:opacity-40 border border-slate-200 rounded-lg transition-colors whitespace-nowrap"
+                >
+                  Adicionar
+                </button>
+              </div>
             </div>
 
             <div>

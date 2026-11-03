@@ -8,6 +8,7 @@ import {
   GeneralAttachment,
 } from '../../types/psychologicalRecord';
 import { EvolutionChart } from './EvolutionChart';
+import { PatientJourneyD3Chart } from './PatientJourneyD3Chart';
 import { SessionModalForm } from './SessionModalForm';
 import { ReportPdfExporter } from './ReportPdfExporter';
 import { EncryptionInspectorModal } from './EncryptionInspectorModal';
@@ -312,7 +313,7 @@ export const RecordDetailView: React.FC<RecordDetailViewProps> = ({
       <div className="border-b border-slate-200 bg-white rounded-t-2xl px-6 pt-3 flex items-center gap-2 overflow-x-auto shadow-2xs">
         {[
           { id: 'timeline', label: `Linha do Tempo de Sessões (${record.sessions.length})`, icon: Clock },
-          { id: 'grafico', label: 'Gráfico de Evolução', icon: TrendingUp },
+          { id: 'grafico', label: 'Jornada do Paciente & Evolução (D3)', icon: TrendingUp },
           { id: 'dados', label: 'Dados & Histórico Clínico', icon: UserIcon },
           { id: 'plano', label: 'Plano Terapêutico', icon: Target },
           { id: 'anexos', label: `Anexos & Documentos (${record.attachments.length})`, icon: Paperclip },
@@ -578,9 +579,21 @@ export const RecordDetailView: React.FC<RecordDetailViewProps> = ({
         </div>
       )}
 
-      {/* TAB 2: GRÁFICO DE EVOLUÇÃO */}
+      {/* TAB 2: JORNADA DO PACIENTE & GRÁFICO DE EVOLUÇÃO (D3) */}
       {activeTab === 'grafico' && (
-        <EvolutionChart sessions={record.sessions} />
+        <PatientJourneyD3Chart
+          record={record}
+          onAddMilestone={(milestone) => {
+            const updated = psychologicalRecordStorage.addMilestoneToRecord(
+              record.id,
+              milestone,
+              currentProfessional
+            );
+            if (updated) {
+              onRecordUpdated(updated);
+            }
+          }}
+        />
       )}
 
       {/* TAB 3: DADOS CADASTRAIS & HISTÓRICO CLÍNICO */}

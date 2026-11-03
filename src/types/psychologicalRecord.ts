@@ -85,6 +85,19 @@ export interface EvolutionSession {
   createdAt: string;
   updatedAt: string;
   versions: SessionVersionHistory[]; // Histórico imutável de alterações
+  milestoneAchieved?: string; // Marco clínico alcançado nesta sessão
+  milestoneCategory?: 'alliance' | 'insight' | 'symptom_reduction' | 'behavioral' | 'autonomy' | 'discharge';
+}
+
+export interface ClinicalMilestone {
+  id: string;
+  title: string;
+  description: string;
+  sessionNumber?: number;
+  date: string;
+  category: 'alliance' | 'insight' | 'symptom_reduction' | 'behavioral' | 'autonomy' | 'discharge';
+  achieved: boolean;
+  notes?: string;
 }
 
 export interface RecordIdentification {
@@ -239,6 +252,9 @@ export interface PsychologicalRecord {
 
   // Registros de Sessões (Evoluções)
   sessions: EvolutionSession[];
+
+  // Marcos Clínicos da Jornada do Paciente
+  milestones?: ClinicalMilestone[];
 
   // Anexos gerais do prontuário
   attachments: GeneralAttachment[];

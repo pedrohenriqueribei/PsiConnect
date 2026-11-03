@@ -81,10 +81,10 @@ export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-6">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs p-3 sm:p-4 flex items-start sm:items-center justify-center">
+      <div className="relative w-full max-w-3xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[calc(100dvh-2rem)] flex flex-col">
         {/* Top Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/80">
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-slate-50/90 backdrop-blur-xs z-10">
           <div className="flex items-center gap-2.5">
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isPastor ? 'bg-amber-100 text-amber-800' : 'bg-sky-100 text-sky-800'}`}>
               {isPastor ? <BookOpen className="w-4 h-4" /> : <Shield className="w-4 h-4" />}
@@ -105,14 +105,18 @@ export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors shrink-0"
+            title="Fechar"
+            aria-label="Fechar"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Patient & Appointment Quick Meta */}
-        <div className="px-6 py-3 bg-sky-50/40 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4 text-xs">
+        {/* Scrollable Body */}
+        <div className="overflow-y-auto flex-1 overscroll-contain">
+          {/* Patient & Appointment Quick Meta */}
+          <div className="px-6 py-3 bg-sky-50/40 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4 text-xs">
           <div className="flex items-center gap-2">
             <UserIcon className="w-4 h-4 text-slate-400" />
             <span className="font-bold text-slate-900">{appointment.patientName}</span>
@@ -262,6 +266,7 @@ export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
             </div>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

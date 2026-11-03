@@ -108,10 +108,10 @@ export const PatientMatchingModal: React.FC<PatientMatchingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm p-3 sm:p-4 flex items-start sm:items-center justify-center">
+      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[calc(100dvh-2rem)] flex flex-col">
         {/* Header */}
-        <div className="px-6 py-5 bg-gradient-to-r from-teal-700 to-slate-800 text-white flex items-start justify-between">
+        <div className="shrink-0 px-6 py-5 bg-gradient-to-r from-teal-700 to-slate-800 text-white flex items-start justify-between z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center shrink-0 border border-white/20">
               <HeartHandshake className="w-5 h-5 text-teal-200" />
@@ -130,7 +130,7 @@ export const PatientMatchingModal: React.FC<PatientMatchingModalProps> = ({
           <button
             onClick={onClose}
             type="button"
-            className="p-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+            className="p-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 transition-colors shrink-0"
             aria-label="Fechar"
           >
             <X className="w-5 h-5" />
@@ -138,7 +138,7 @@ export const PatientMatchingModal: React.FC<PatientMatchingModalProps> = ({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto flex-1 overscroll-contain">
           {/* Privacy Note */}
           <div className="flex items-start gap-3 p-3.5 rounded-xl bg-teal-50/80 border border-teal-100 text-xs text-teal-900">
             <ShieldCheck className="w-4 h-4 text-teal-700 shrink-0 mt-0.5" />

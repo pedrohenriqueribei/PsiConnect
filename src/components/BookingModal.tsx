@@ -155,10 +155,10 @@ export const BookingModal: React.FC<BookingModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-6">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs p-3 sm:p-4 flex items-start sm:items-center justify-center">
+      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[calc(100dvh-2rem)] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/70">
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/90 backdrop-blur-xs z-10">
           <div className="flex items-center gap-3">
             {psychologist.avatar ? (
               <img
@@ -204,15 +204,19 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors"
+            className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors shrink-0"
+            title="Fechar"
+            aria-label="Fechar"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Pricing & Duration Bar with dynamic Social Rate */}
-        <div
-          className={`px-6 py-2.5 border-b flex items-center justify-between text-xs transition-colors ${
+        {/* Scrollable Body */}
+        <div className="overflow-y-auto flex-1 overscroll-contain">
+          {/* Pricing & Duration Bar with dynamic Social Rate */}
+          <div
+            className={`px-6 py-2.5 border-b flex items-center justify-between text-xs transition-colors ${
             currentSelectedSlot?.isSocial
               ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
               : 'bg-sky-50/50 border-sky-100 text-sky-900'
@@ -390,6 +394,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             </button>
           </div>
         </form>
+        </div>
       </div>
     </div>
   );

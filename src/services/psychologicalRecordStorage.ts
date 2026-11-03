@@ -5,6 +5,7 @@ import {
   AuditLogEntry,
   RecordStatus,
   GeneralAttachment,
+  ClinicalMilestone,
 } from '../types/psychologicalRecord';
 import { recordSecurity } from './recordSecurity';
 import { db, auth, OperationType, handleFirestoreError } from './firebase';
@@ -119,6 +120,8 @@ const INITIAL_PSYCHOLOGICAL_RECORDS: PsychologicalRecord[] = [
         evolutionScore: 2,
         evolutionNotes:
           'Quadro de ansiedade aguda com sofrimento psíquico significativo. Paciente colaborativo e muito reflexivo.',
+        milestoneAchieved: 'Aliança Terapêutica & Contrato de Sigilo',
+        milestoneCategory: 'alliance',
         risks: {
           suicideRisk: 'passive',
           selfHarmRisk: 'none',
@@ -151,6 +154,8 @@ const INITIAL_PSYCHOLOGICAL_RECORDS: PsychologicalRecord[] = [
         evolutionScore: 3,
         evolutionNotes:
           'Estabilização dos sintomas mais agudos. Houve adesão excelente à psicoeducação ministrada.',
+        milestoneAchieved: 'Regulação Fisiológica da Crise (Respiração 4-7-8)',
+        milestoneCategory: 'symptom_reduction',
         risks: {
           suicideRisk: 'none',
           selfHarmRisk: 'none',
@@ -181,6 +186,8 @@ const INITIAL_PSYCHOLOGICAL_RECORDS: PsychologicalRecord[] = [
         evolutionScore: 4,
         evolutionNotes:
           'Melhora progressiva nítida na capacidade de auto-observação e interrupção da espiral de pensamentos catastróficos.',
+        milestoneAchieved: 'Descatastrofização & RPD 5 Colunas',
+        milestoneCategory: 'insight',
         risks: {
           suicideRisk: 'none',
           selfHarmRisk: 'none',
@@ -227,6 +234,8 @@ const INITIAL_PSYCHOLOGICAL_RECORDS: PsychologicalRecord[] = [
         evolutionScore: 4,
         evolutionNotes:
           'Evolução muito favorável. Paciente já reconhece ansiedade como sinal fisiológico manejável e não como ameaça fatal.',
+        milestoneAchieved: 'Apresentação Corporativa sem Pânico',
+        milestoneCategory: 'behavioral',
         risks: {
           suicideRisk: 'none',
           selfHarmRisk: 'none',
@@ -239,6 +248,123 @@ const INITIAL_PSYCHOLOGICAL_RECORDS: PsychologicalRecord[] = [
         createdAt: '2025-02-26T14:53:00Z',
         updatedAt: '2025-02-26T14:53:00Z',
         versions: [],
+      },
+      {
+        id: 'sess_lucas_5',
+        sessionNumber: 5,
+        date: '2025-03-05',
+        startTime: '14:00',
+        endTime: '14:50',
+        modality: 'online',
+        emotionalState: 'Seguro, motivado e focado na consolidação da autonomia.',
+        summaryContent:
+          'Avaliação de desempenho na empresa. Paciente relatou ter conseguido solicitar prazos realistas à gerência sem sensação de culpa ou catastrofização.',
+        interventions:
+          'Treinamento avançado de comunicação assertiva com técnica DEAR MAN. Role-playing de negociação de prazos.',
+        evolutionTrend: 'melhora',
+        evolutionScore: 5,
+        evolutionNotes:
+          'Excelente apropriação dos recursos da TCC. Remissão de sintomas fóbicos no trabalho.',
+        milestoneAchieved: 'Comunicação Assertiva com Liderança',
+        milestoneCategory: 'autonomy',
+        risks: {
+          suicideRisk: 'none',
+          selfHarmRisk: 'none',
+          violenceRisk: 'none',
+          hasActiveRisk: false,
+        },
+        nextSessionTasks:
+          'Registrar 1 situação na semana onde estabeleceu limite com assertividade.',
+        nextSessionDate: '2025-03-12 às 14:00',
+        createdAt: '2025-03-05T14:55:00Z',
+        updatedAt: '2025-03-05T14:55:00Z',
+        versions: [],
+      },
+      {
+        id: 'sess_lucas_6',
+        sessionNumber: 6,
+        date: '2025-03-12',
+        startTime: '14:00',
+        endTime: '14:50',
+        modality: 'online',
+        emotionalState: 'Eutímico, expressando satisfação com sua rotina de sono e bem-estar.',
+        summaryContent:
+          'Revisão do plano de prevenção de recaídas. Paciente relata estar dormindo 7h por noite e sem crises de pânico há 4 semanas.',
+        interventions:
+          'Mapeamento de gatilhos futuros, construção de cartão de enfrentamento e consolidação de hábitos protetivos.',
+        evolutionTrend: 'melhora',
+        evolutionScore: 5,
+        evolutionNotes:
+          'Autonomia clínica plenamente consolidada. Espaçamento de sessões para quinzenais.',
+        milestoneAchieved: 'Autonomia & Plano de Prevenção de Recaídas',
+        milestoneCategory: 'autonomy',
+        risks: {
+          suicideRisk: 'none',
+          selfHarmRisk: 'none',
+          violenceRisk: 'none',
+          hasActiveRisk: false,
+        },
+        nextSessionTasks: 'Manter rotina de autocuidado e corrida aos fins de semana.',
+        nextSessionDate: '2025-03-26 às 14:00',
+        createdAt: '2025-03-12T14:52:00Z',
+        updatedAt: '2025-03-12T14:52:00Z',
+        versions: [],
+      },
+    ],
+    milestones: [
+      {
+        id: 'ms_lucas_1',
+        title: 'Aliança Terapêutica & Contrato de Sigilo',
+        description: 'Vínculo terapêutico estabelecido e TCLE assinado digitalmente.',
+        sessionNumber: 1,
+        date: '2025-02-05',
+        category: 'alliance',
+        achieved: true,
+      },
+      {
+        id: 'ms_lucas_2',
+        title: 'Regulação Fisiológica da Crise (Respiração 4-7-8)',
+        description: 'Domínio da técnica diafragmática para controle de taquicardia sem ida a pronto-socorro.',
+        sessionNumber: 2,
+        date: '2025-02-12',
+        category: 'symptom_reduction',
+        achieved: true,
+      },
+      {
+        id: 'ms_lucas_3',
+        title: 'Descatastrofização & RPD 5 Colunas',
+        description: 'Capacidade de identificar pensamentos automáticos de demissão e aplicar questionamento socrático.',
+        sessionNumber: 3,
+        date: '2025-02-19',
+        category: 'insight',
+        achieved: true,
+      },
+      {
+        id: 'ms_lucas_4',
+        title: 'Apresentação Corporativa sem Ataque de Pânico',
+        description: 'Conseguiu apresentar projeto técnico para 12 colegas com nervosismo adaptativo sem pânico.',
+        sessionNumber: 4,
+        date: '2025-02-26',
+        category: 'behavioral',
+        achieved: true,
+      },
+      {
+        id: 'ms_lucas_5',
+        title: 'Comunicação Assertiva com Diretoria',
+        description: 'Postura clara para negociar entregas e estabelecer limites de horário de trabalho.',
+        sessionNumber: 5,
+        date: '2025-03-05',
+        category: 'autonomy',
+        achieved: true,
+      },
+      {
+        id: 'ms_lucas_6',
+        title: 'Consolidação de Autonomia & Prevenção de Recaídas',
+        description: 'Plano de enfrentamento estruturado e espaçamento para sessões de manutenção.',
+        sessionNumber: 6,
+        date: '2025-03-12',
+        category: 'autonomy',
+        achieved: true,
       },
     ],
     attachments: [
@@ -441,6 +567,8 @@ const INITIAL_PSYCHOLOGICAL_RECORDS: PsychologicalRecord[] = [
         evolutionTrend: 'melhora',
         evolutionScore: 4,
         evolutionNotes: 'Melhora progressiva perceptível em humor e nível de disposição.',
+        milestoneAchieved: 'Comunicação Assertiva no Casamento & Autocuidado',
+        milestoneCategory: 'behavioral',
         risks: {
           suicideRisk: 'none',
           selfHarmRisk: 'none',
@@ -452,6 +580,111 @@ const INITIAL_PSYCHOLOGICAL_RECORDS: PsychologicalRecord[] = [
         createdAt: '2025-02-24T16:55:00Z',
         updatedAt: '2025-02-24T16:55:00Z',
         versions: [],
+      },
+      {
+        id: 'sess_luciana_4',
+        sessionNumber: 4,
+        date: '2025-03-03',
+        startTime: '16:00',
+        endTime: '16:50',
+        modality: 'online',
+        emotionalState: 'Estável, confiante e com senso de clareza sobre seus limites.',
+        summaryContent:
+          'Discussão sobre demandas de trabalho. Paciente recusou assumir um comitê extra no trabalho de forma cordial e sem culpa.',
+        interventions:
+          'Treinamento da técnica da assertividade empática corporativa. Desconstrução da crença de valor atrelado à produtividade desmedida.',
+        evolutionTrend: 'melhora',
+        evolutionScore: 4,
+        evolutionNotes: 'Avanço significativo na imposição de limites saudáveis no ambiente corporativo.',
+        milestoneAchieved: 'Estabelecimento de Limites no Trabalho',
+        milestoneCategory: 'autonomy',
+        risks: {
+          suicideRisk: 'none',
+          selfHarmRisk: 'none',
+          violenceRisk: 'none',
+          hasActiveRisk: false,
+        },
+        nextSessionTasks: 'Manter o final de semana protegido de e-mails corporativos.',
+        nextSessionDate: '2025-03-10 às 16:00',
+        createdAt: '2025-03-03T16:55:00Z',
+        updatedAt: '2025-03-03T16:55:00Z',
+        versions: [],
+      },
+      {
+        id: 'sess_luciana_5',
+        sessionNumber: 5,
+        date: '2025-03-10',
+        startTime: '16:00',
+        endTime: '16:50',
+        modality: 'online',
+        emotionalState: 'Serena, realizada e animada com projetos pessoais recém-retomados.',
+        summaryContent:
+          'Paciente retomou curso de cerâmica aos sábados que havia abandonado há 5 anos. Relata melhora acentuada no relacionamento conjugal.',
+        interventions:
+          'Validação dos marcos conquistados. Elaboração de rotina preventiva contra recaídas de sobrecarga.',
+        evolutionTrend: 'melhora',
+        evolutionScore: 5,
+        evolutionNotes: 'Quadro de burnout revertido. Paciente em excelente recuperação e autonomia.',
+        milestoneAchieved: 'Retomada de Projetos de Vida & Reequilíbrio',
+        milestoneCategory: 'autonomy',
+        risks: {
+          suicideRisk: 'none',
+          selfHarmRisk: 'none',
+          violenceRisk: 'none',
+          hasActiveRisk: false,
+        },
+        nextSessionTasks: 'Consolidar rotina e agendar manutenção mensal.',
+        nextSessionDate: '2025-04-07 às 16:00',
+        createdAt: '2025-03-10T16:55:00Z',
+        updatedAt: '2025-03-10T16:55:00Z',
+        versions: [],
+      },
+    ],
+    milestones: [
+      {
+        id: 'ms_luciana_1',
+        title: 'Mapeamento de Sobrecarga e Auto-sacrifício',
+        description: 'Identificação dos fatores mantenedores de estresse e adesão ao diário de energia.',
+        sessionNumber: 1,
+        date: '2025-02-10',
+        category: 'insight',
+        achieved: true,
+      },
+      {
+        id: 'ms_luciana_2',
+        title: 'Delegação Efetiva de Tarefas Domésticas',
+        description: 'Divisão de responsabilidades da casa com os filhos e o cônjuge.',
+        sessionNumber: 2,
+        date: '2025-02-17',
+        category: 'behavioral',
+        achieved: true,
+      },
+      {
+        id: 'ms_luciana_3',
+        title: 'Comunicação Assertiva Conjugal & Autocuidado',
+        description: 'Conversa aberta sobre necessidades afetivas e reserva de tempo para si.',
+        sessionNumber: 3,
+        date: '2025-02-24',
+        category: 'alliance',
+        achieved: true,
+      },
+      {
+        id: 'ms_luciana_4',
+        title: 'Estabelecimento de Limites no Trabalho',
+        description: 'Capacidade de recusar sobrecarga corporativa sem culpa.',
+        sessionNumber: 4,
+        date: '2025-03-03',
+        category: 'autonomy',
+        achieved: true,
+      },
+      {
+        id: 'ms_luciana_5',
+        title: 'Retomada de Projetos de Vida & Reequilíbrio',
+        description: 'Resgate de hobbies pessoais e remissão dos sintomas de burnout.',
+        sessionNumber: 5,
+        date: '2025-03-10',
+        category: 'autonomy',
+        achieved: true,
       },
     ],
     attachments: [],
@@ -1152,6 +1385,48 @@ class PsychologicalRecordStorageService {
     // Write to Firestore
     this.syncRecordToFirestore(updated).catch(err => {
       console.error('Failed to sync attachment to Firestore:', err);
+    });
+
+    return updated;
+  }
+
+  /**
+   * Adds a clinical milestone to the patient's therapeutic journey.
+   */
+  addMilestoneToRecord(
+    recordId: string,
+    milestone: ClinicalMilestone,
+    actor: { id: string; name: string; role: string }
+  ): PsychologicalRecord | undefined {
+    const records = this.getRecords();
+    const index = records.findIndex(r => r.id === recordId);
+    if (index === -1) return undefined;
+
+    const current = records[index];
+    const now = new Date().toISOString();
+    const existingMilestones = current.milestones || [];
+
+    const updatedMilestones = [...existingMilestones, milestone];
+
+    const auditEntry = recordSecurity.createAuditEntry(
+      'edicao_dados',
+      actor,
+      `Registro de marco clínico na Jornada do Paciente: "${milestone.title}".`
+    );
+
+    const updated: PsychologicalRecord = {
+      ...current,
+      milestones: updatedMilestones,
+      updatedAt: now,
+      auditLogs: [auditEntry, ...current.auditLogs],
+    };
+
+    this.recordsCache = this.recordsCache.map(r => r.id === updated.id ? updated : r);
+    this.notifyListeners();
+
+    // Write to Firestore
+    this.syncRecordToFirestore(updated).catch(err => {
+      console.error('Failed to sync milestone to Firestore:', err);
     });
 
     return updated;
