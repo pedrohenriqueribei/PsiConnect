@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { isProfessionalRole, ProfessionalType } from '../types';
 import { clinicalFormStorage } from '../services/clinicalFormStorage';
+import { BrandLogo } from './BrandLogo';
 import { 
   Activity, 
   User as UserIcon, 
@@ -96,7 +97,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             setActiveTab(isProf ? 'agenda' : role === 'patient' ? 'catalog' : 'home');
             setMobileMenuOpen(false);
           }}
-          className="flex items-center gap-2.5 cursor-pointer whitespace-nowrap shrink-0 group"
+          className="flex items-center cursor-pointer whitespace-nowrap shrink-0 group"
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
@@ -105,17 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             }
           }}
         >
-          <div className="w-9 h-9 rounded-xl bg-sky-700 flex items-center justify-center text-white shadow-xs group-hover:bg-sky-800 transition-colors">
-            <Activity className="w-5 h-5" />
-          </div>
-          <div>
-            <span className="text-xl font-bold tracking-tight text-slate-900 block leading-none">
-              Psi<span className="text-sky-700">Connect</span>
-            </span>
-            <span className="text-[11px] text-slate-500 font-medium block mt-0.5">
-              Terapias & Aconselhamento Bíblico
-            </span>
-          </div>
+          <BrandLogo size="md" animated={true} />
         </div>
 
         {/* Zone 2: Navigation Links (Desktop) */}
@@ -249,6 +240,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
               >
                 Ética, Sigilo & Princípios
+              </button>
+              <button
+                onClick={() => setActiveTab('contact')}
+                className={`hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                  activeTab === 'contact' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                }`}
+              >
+                Fale Conosco
               </button>
             </>
           )}
@@ -531,6 +530,17 @@ export const Navbar: React.FC<NavbarProps> = ({
               }`}
             >
               Ética, Sigilo & Princípios
+            </button>
+            <button
+              onClick={() => {
+                setActiveTab('contact');
+                setMobileMenuOpen(false);
+              }}
+              className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
+                activeTab === 'contact' ? 'bg-sky-50 text-sky-800 font-semibold' : 'text-slate-700 hover:bg-slate-50'
+              }`}
+            >
+              Fale Conosco
             </button>
           </div>
 

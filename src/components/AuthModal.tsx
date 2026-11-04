@@ -8,6 +8,7 @@ import {
   SUGGESTED_FORMATIONS_BY_TYPE,
   SUGGESTED_SPECIALIZATIONS_BY_TYPE,
 } from '../types';
+import { BrandLogo } from './BrandLogo';
 import {
   X,
   Lock,
@@ -311,28 +312,31 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[calc(100dvh-2rem)] flex flex-col">
         {/* Modal Header (Fixed at the top) */}
         <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/90 backdrop-blur-xs z-10">
-          <div>
-            <div className="flex items-center gap-2">
-              <h3 className="text-base font-bold text-slate-900">
+          <div className="flex items-center gap-3">
+            <BrandLogo size="sm" showText={false} animated={true} />
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-slate-900">
+                  {mode === 'login'
+                    ? 'Fazer Login no PsiConnect'
+                    : accountCategory === 'professional'
+                    ? `Cadastro de ${currentProfConfig.label}`
+                    : 'Cadastro de Paciente'}
+                </h3>
+                <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-full">
+                  Firebase Firestore Ativo
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
                 {mode === 'login'
-                  ? 'Fazer Login no PsiConnect'
+                  ? 'Acesse com sua conta para gerenciar consultas e atendimentos'
                   : accountCategory === 'professional'
-                  ? `Cadastro de ${currentProfConfig.label}`
-                  : 'Cadastro de Paciente'}
-              </h3>
-              <span className="px-2 py-0.5 text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-full">
-                Firebase Firestore Ativo
-              </span>
+                  ? selectedProfessionalType === 'pastor'
+                    ? 'Cadastre seu ministério para acolhimento e aconselhamento bíblico'
+                    : 'Cadastre seu perfil clínico para atendimentos de terapia emocional e psicológica'
+                  : 'Cadastre-se para agendar sessões de terapia ou aconselhamento bíblico'}
+              </p>
             </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {mode === 'login'
-                ? 'Acesse com sua conta para gerenciar consultas e atendimentos'
-                : accountCategory === 'professional'
-                ? selectedProfessionalType === 'pastor'
-                  ? 'Cadastre seu ministério para acolhimento e aconselhamento bíblico'
-                  : 'Cadastre seu perfil clínico para atendimentos de terapia emocional e psicológica'
-                : 'Cadastre-se para agendar sessões de terapia ou aconselhamento bíblico'}
-            </p>
           </div>
           <button
             onClick={onClose}

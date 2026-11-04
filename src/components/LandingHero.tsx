@@ -1,4 +1,7 @@
 import React from 'react';
+import { ContactUs } from './ContactUs';
+import { BrandLogo } from './BrandLogo';
+import brainGlowBadge from '../assets/images/psiconnect_brain_glow_badge_1793757777196.jpg';
 import { 
   Shield, 
   Clock, 
@@ -8,12 +11,12 @@ import {
   Heart, 
   LogIn, 
   Sparkles, 
-  BookOpen,
-  Brain,
-  Leaf,
-  Compass,
-  Users,
-  Award
+  BookOpen, 
+  Brain, 
+  Leaf, 
+  Compass, 
+  Users, 
+  Award 
 } from 'lucide-react';
 
 interface LandingHeroProps {
@@ -37,8 +40,10 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
           {/* Left Text Column */}
           <div className="lg:col-span-7 flex flex-col justify-between space-y-6">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-sky-50 border border-sky-200/80 rounded-full text-xs font-semibold text-sky-800">
-                <Sparkles className="w-3.5 h-3.5 text-sky-600" />
+              <div className="inline-flex items-center gap-2.5 px-3 py-1.5 bg-sky-50/80 border border-sky-200/80 rounded-full text-xs font-semibold text-sky-900 shadow-xs">
+                <span className="w-5 h-5 rounded-md overflow-hidden bg-white ring-1 ring-cyan-400/50 p-0.5 flex items-center justify-center shrink-0">
+                  <img src={brainGlowBadge} alt="Cérebro com Circuitos" className="w-full h-full object-contain" />
+                </span>
                 <span>Boas-vindas ao PsiConnect</span>
                 <span aria-hidden="true" className="text-sky-300">·</span>
                 <span className="text-slate-600 font-normal">Plataforma Abrangente de Cuidado</span>
@@ -118,6 +123,27 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
               referrerPolicy="no-referrer"
               className="w-full h-full object-cover"
             />
+
+            {/* Brand Logo Floating Badge */}
+            <div className="absolute top-4 right-4 bg-slate-950/85 backdrop-blur-md border border-cyan-500/40 rounded-2xl p-2.5 flex items-center gap-3 shadow-xl">
+              <div className="relative w-11 h-11 rounded-xl overflow-hidden ring-1 ring-cyan-400/50 p-1 bg-white flex items-center justify-center shrink-0 shadow-sm">
+                <img
+                  src={brainGlowBadge}
+                  alt="PsiConnect Logo Cérebro & Circuitos"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div className="pr-1">
+                <div className="flex items-center gap-1">
+                  <span className="text-xs font-bold text-white">PsiConnect</span>
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                </div>
+                <span className="text-[10px] text-cyan-300 font-medium block">
+                  Mente & Circuitos Integrados
+                </span>
+              </div>
+            </div>
+
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/25 to-transparent flex items-end p-6">
               <div className="text-white space-y-1.5">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-sky-300">
@@ -310,6 +336,12 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
           </div>
         </div>
       </section>
+
+      {/* 4. Seção Fale Conosco (Contact Us) */}
+      <ContactUs 
+        id="fale-conosco" 
+        onNavigateHome={() => window.scrollTo({ top: 0, behavior: 'smooth' })} 
+      />
     </div>
   );
 };

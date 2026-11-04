@@ -13,6 +13,8 @@ import { isProfessionalRole, UserRole } from './types';
 import { clinicalFormStorage } from './services/clinicalFormStorage';
 import { ClinicalForm, FormDispatch } from './types/clinicalForm';
 import { FormFillModal } from './components/clinicalForms/FormFillModal';
+import { ContactUs } from './components/ContactUs';
+import { BrandLogo } from './components/BrandLogo';
 
 const MainApp: React.FC = () => {
   const { user, role } = useAuth();
@@ -98,7 +100,14 @@ const MainApp: React.FC = () => {
 
       {/* Main View Router */}
       <main className="flex-1">
-        {user ? (
+        {activeTab === 'contact' ? (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-12">
+            <ContactUs
+              isStandalonePage={true}
+              onNavigateHome={() => setActiveTab(user ? (isProf ? 'agenda' : 'catalog') : 'home')}
+            />
+          </div>
+        ) : user ? (
           activeTab === 'home' ? (
             <div className="space-y-6">
               {/* Logged in welcome helper banner */}
@@ -167,12 +176,10 @@ const MainApp: React.FC = () => {
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 mt-16 py-10 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
-          <div className="space-y-2 md:col-span-2">
-            <span className="text-base font-bold text-slate-900 block">
-              Psi<span className="text-sky-700">Connect</span>
-            </span>
+          <div className="space-y-3 md:col-span-2">
+            <BrandLogo size="md" subtitle="Tecnologia & Conexão em Saúde Mental e Aconselhamento" animated={true} />
             <p className="max-w-md text-slate-500 leading-relaxed">
-              Plataforma de intermediação e telepsicologia que aproxima psicólogos e pacientes com segurança técnica e conformidade rigorosa com as resoluções do Conselho Federal de Psicologia (CFP nº 011/2018).
+              Plataforma de intermediação e telepsicologia que aproxima especialistas e pacientes com segurança técnica e conformidade rigorosa com as resoluções do Conselho Federal de Psicologia (CFP nº 011/2018).
             </p>
             <div className="flex items-center gap-2 text-emerald-700 font-semibold pt-1">
               <CheckCircle2 className="w-4 h-4" />
@@ -182,13 +189,21 @@ const MainApp: React.FC = () => {
 
           <div>
             <span className="font-bold text-slate-800 uppercase tracking-wider block mb-2">
-              Regulamentação
+              Atendimento & Ética
             </span>
             <ul className="space-y-1.5 text-slate-500">
+              <li>
+                <button 
+                  onClick={() => setActiveTab('contact')}
+                  className="hover:text-sky-700 font-semibold text-slate-700 transition-colors text-left"
+                >
+                  Fale Conosco (Suporte & Contato)
+                </button>
+              </li>
               <li>Resolução CFP nº 011/2018</li>
               <li>Código de Ética do Psicólogo</li>
               <li>Prontuário (Res. CFP nº 001/2009)</li>
-              <li>Proteção de Dados & Sigilo</li>
+              <li>Proteção de Dados & Sigilo (LGPD)</li>
             </ul>
           </div>
 
@@ -209,6 +224,13 @@ const MainApp: React.FC = () => {
         <div className="max-w-7xl mx-auto px-6 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>© {new Date().getFullYear()} PsiConnect. Todos os direitos reservados.</p>
           <div className="flex items-center gap-4 text-slate-400">
+            <button 
+              onClick={() => setActiveTab('contact')}
+              className="hover:text-sky-700 text-slate-600 transition-colors"
+            >
+              Fale Conosco
+            </button>
+            <span>·</span>
             <span>Privacidade</span>
             <span>·</span>
             <span>Termos de Uso</span>
