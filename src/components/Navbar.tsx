@@ -92,14 +92,14 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-200">
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 px-4 sm:px-6 py-3.5">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4 px-3 sm:px-6 py-2.5 sm:py-3.5">
         {/* Zone 1: Brand Wordmark */}
         <div 
           onClick={() => {
             setActiveTab(isProf ? 'agenda' : role === 'patient' ? 'catalog' : 'home');
             setMobileMenuOpen(false);
           }}
-          className="flex items-center cursor-pointer whitespace-nowrap shrink-0 group"
+          className="flex items-center cursor-pointer whitespace-nowrap shrink-0 group min-w-0"
           role="button"
           tabIndex={0}
           onKeyDown={(e) => {
@@ -112,18 +112,18 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Zone 2: Navigation Links (Desktop) */}
-        <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
+        <nav className="hidden xl:flex items-center gap-4 2xl:gap-6 text-sm font-medium text-slate-600 dark:text-slate-300 min-w-0 overflow-hidden">
           {user ? (
             isProf ? (
               <>
                 <button
                   onClick={() => setActiveTab('agenda')}
-                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                  className={`flex items-center gap-1.5 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
                     activeTab === 'agenda' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
-                  <Calendar className="w-4 h-4" />
-                  Minha Agenda
+                  <Calendar className="w-4 h-4 shrink-0" />
+                  <span>Minha Agenda</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('matching')}
@@ -131,26 +131,26 @@ export const Navbar: React.FC<NavbarProps> = ({
                     activeTab === 'matching' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
-                  <Sparkles className="w-4 h-4 text-sky-700 dark:text-sky-400" />
-                  Pacientes Sugeridos
+                  <Sparkles className="w-4 h-4 text-sky-700 dark:text-sky-400 shrink-0" />
+                  <span>Pacientes Sugeridos</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('availability')}
-                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                  className={`flex items-center gap-1.5 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
                     activeTab === 'availability' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
-                  <Clock className="w-4 h-4" />
-                  Disponibilidade
+                  <Clock className="w-4 h-4 shrink-0" />
+                  <span>Disponibilidade</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('records')}
-                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                  className={`flex items-center gap-1.5 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
                     activeTab === 'records' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
-                  <FileText className="w-4 h-4" />
-                  {user.role === 'pastor' ? 'Fichas de Aconselhamento' : 'Prontuários (PEP)'}
+                  <FileText className="w-4 h-4 shrink-0" />
+                  <span>{user.role === 'pastor' ? 'Aconselhamento' : 'Prontuários (PEP)'}</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('forms')}
@@ -158,70 +158,70 @@ export const Navbar: React.FC<NavbarProps> = ({
                     activeTab === 'forms' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
-                  <FileText className="w-4 h-4 text-sky-700 dark:text-sky-400" />
+                  <FileText className="w-4 h-4 text-sky-700 dark:text-sky-400 shrink-0" />
                   <span>Formulários</span>
                   {unreadFormsCount > 0 && (
-                    <span className="px-1.5 py-0.2 bg-amber-400 text-slate-900 rounded-full text-[10px] font-black">
+                    <span className="px-1.5 py-0.2 bg-amber-400 text-slate-900 rounded-full text-[10px] font-black shrink-0">
                       {unreadFormsCount}
                     </span>
                   )}
                 </button>
                 <button
                   onClick={() => setActiveTab('profile')}
-                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                  className={`flex items-center gap-1.5 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
                     activeTab === 'profile' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
-                  <UserIcon className="w-4 h-4" />
-                  Meu Perfil
+                  <UserIcon className="w-4 h-4 shrink-0" />
+                  <span>Meu Perfil</span>
                 </button>
               </>
             ) : (
               <>
                 <button
                   onClick={() => setActiveTab('catalog')}
-                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                  className={`flex items-center gap-1.5 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
                     activeTab === 'catalog' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
-                  <Search className="w-4 h-4" />
-                  Encontrar Especialistas
+                  <Search className="w-4 h-4 shrink-0" />
+                  <span>Especialistas</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('appointments')}
-                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                  className={`flex items-center gap-1.5 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
                     activeTab === 'appointments' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
-                  <Calendar className="w-4 h-4" />
-                  Minhas Consultas
+                  <Calendar className="w-4 h-4 shrink-0" />
+                  <span>Consultas</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('patient_forms')}
-                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                  className={`flex items-center gap-1.5 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
                     activeTab === 'patient_forms' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
-                  <FileText className="w-4 h-4" />
-                  Meus Questionários
+                  <FileText className="w-4 h-4 shrink-0" />
+                  <span>Questionários</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('patient_records')}
-                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                  className={`flex items-center gap-1.5 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
                     activeTab === 'patient_records' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
-                  <Shield className="w-4 h-4" />
-                  Orientações de Cuidado
+                  <Shield className="w-4 h-4 shrink-0" />
+                  <span>Orientações</span>
                 </button>
                 <button
                   onClick={() => setActiveTab('mood_tracker')}
-                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                  className={`flex items-center gap-1.5 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
                     activeTab === 'mood_tracker' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
-                  <Smile className="w-4 h-4 text-sky-600 dark:text-sky-400" />
-                  Diário de Humor
+                  <Smile className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
+                  <span>Diário de Humor</span>
                 </button>
               </>
             )
@@ -250,7 +250,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   activeTab === 'ethics' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                 }`}
               >
-                Ética, Sigilo & Princípios
+                Ética & Princípios
               </button>
               <button
                 onClick={() => setActiveTab('contact')}
@@ -500,7 +500,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors ml-1"
+            className="xl:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors ml-0.5 sm:ml-1"
             aria-label="Abrir menu de navegação"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -510,7 +510,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-4 space-y-3">
+        <div className="xl:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-4 space-y-3 shadow-lg">
           {/* Quick theme switcher row in mobile menu */}
           <div className="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-slate-700/80 mb-2">
             <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
