@@ -507,21 +507,21 @@ export const AvailabilityManager: React.FC = () => {
       {/* Main Form: Launch Availability */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left 2 Cols: Form Panel */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs overflow-hidden transition-colors duration-200">
           {/* Form Mode Selector Tabs */}
-          <div className="flex items-center border-b border-slate-200 bg-slate-50/70 p-2 gap-2">
+          <div className="flex items-center border-b border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/60 p-2 gap-2">
             <button
               type="button"
               onClick={() => setCreationMode('period')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
                 creationMode === 'period'
-                  ? 'bg-white text-sky-900 shadow-xs border border-slate-200'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
+                  ? 'bg-white dark:bg-slate-700 text-sky-900 dark:text-sky-300 shadow-xs border border-slate-200 dark:border-slate-600'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-700/60'
               }`}
             >
-              <CalendarDays className="w-4 h-4 text-sky-700" />
+              <CalendarDays className="w-4 h-4 text-sky-700 dark:text-sky-400" />
               <span>Lançar por Período de Atendimento</span>
-              <span className="px-1.5 py-0.5 text-[10px] font-bold bg-sky-100 text-sky-800 rounded-md">
+              <span className="px-1.5 py-0.5 text-[10px] font-bold bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300 rounded-md">
                 Recomendado
               </span>
             </button>
@@ -531,11 +531,11 @@ export const AvailabilityManager: React.FC = () => {
               onClick={() => setCreationMode('single')}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
                 creationMode === 'single'
-                  ? 'bg-white text-slate-900 shadow-xs border border-slate-200'
-                  : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs border border-slate-200 dark:border-slate-600'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100/70 dark:hover:bg-slate-700/60'
               }`}
             >
-              <Clock className="w-4 h-4 text-slate-500" />
+              <Clock className="w-4 h-4 text-slate-500 dark:text-slate-400" />
               <span>Lançar Horário Semanal Contínuo</span>
             </button>
           </div>
@@ -1380,21 +1380,21 @@ export const AvailabilityManager: React.FC = () => {
         </div>
 
         {/* Right Col: Teleconsultation Mode Settings */}
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs flex flex-col justify-between">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs flex flex-col justify-between transition-colors duration-200">
           <div>
-            <div className="flex items-center gap-2 pb-3 mb-3 border-b border-slate-100">
-              <Video className="w-5 h-5 text-sky-700" />
-              <h3 className="text-base font-semibold text-slate-900">
+            <div className="flex items-center gap-2 pb-3 mb-3 border-b border-slate-100 dark:border-slate-800">
+              <Video className="w-5 h-5 text-sky-700 dark:text-sky-400" />
+              <h3 className="text-base font-semibold text-slate-900 dark:text-white">
                 Modalidade de Vídeo
               </h3>
             </div>
 
-            <p className="text-xs text-slate-500 mb-4">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">
               Escolha a ferramenta padrão para realização das sessões com os pacientes.
             </p>
 
             <div className="space-y-3">
-              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
+              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors">
                 <input
                   type="radio"
                   name="meetingType"
@@ -1404,16 +1404,16 @@ export const AvailabilityManager: React.FC = () => {
                   className="mt-0.5 text-sky-700 focus:ring-sky-600"
                 />
                 <div>
-                  <span className="text-xs font-semibold text-slate-800 block">
+                  <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
                     Sala Virtual PsiConnect
                   </span>
-                  <span className="text-[11px] text-slate-500 block leading-tight mt-0.5">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block leading-tight mt-0.5">
                     Ambiente criptografado com vídeo, áudio, chat privativo e bloco de notas.
                   </span>
                 </div>
               </label>
 
-              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50 transition-colors">
+              <label className="flex items-start gap-2.5 p-3 rounded-xl border border-slate-200 dark:border-slate-700 cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-colors">
                 <input
                   type="radio"
                   name="meetingType"
@@ -1423,10 +1423,10 @@ export const AvailabilityManager: React.FC = () => {
                   className="mt-0.5 text-sky-700 focus:ring-sky-600"
                 />
                 <div>
-                  <span className="text-xs font-semibold text-slate-800 block">
+                  <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 block">
                     Link Externo (Google Meet / Zoom)
                   </span>
-                  <span className="text-[11px] text-slate-500 block leading-tight mt-0.5">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400 block leading-tight mt-0.5">
                     Redireciona o paciente para uma sala externa permanente.
                   </span>
                 </div>
@@ -1434,17 +1434,17 @@ export const AvailabilityManager: React.FC = () => {
 
               {defaultMeetingType === 'external' && (
                 <div className="pt-2">
-                  <label className="block text-[11px] font-semibold text-slate-700 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Link Permanente da Reunião
                   </label>
                   <div className="relative">
-                    <ExternalLink className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-slate-400" />
+                    <ExternalLink className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                     <input
                       type="url"
                       value={externalMeetingUrl}
                       onChange={e => setExternalMeetingUrl(e.target.value)}
                       placeholder="https://meet.google.com/sua-sala"
-                      className="w-full pl-8 pr-3 py-1.5 text-xs border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
+                      className="w-full pl-8 pr-3 py-1.5 text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
                     />
                   </div>
                 </div>
@@ -1455,7 +1455,7 @@ export const AvailabilityManager: React.FC = () => {
           <button
             type="button"
             onClick={handleSaveTeleconsultationSettings}
-            className="w-full mt-4 py-2 px-3 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+            className="w-full mt-4 py-2 px-3 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg transition-colors"
           >
             Salvar Preferência de Teleconsulta
           </button>
@@ -1463,28 +1463,28 @@ export const AvailabilityManager: React.FC = () => {
       </div>
 
       {/* Grade de Horários Ativos & Filtros */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs space-y-6 transition-colors duration-200">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-sky-700" />
+            <Calendar className="w-5 h-5 text-sky-700 dark:text-sky-400" />
             <div>
-              <h3 className="text-base font-bold text-slate-900">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 Grade de Disponibilidade ({filteredSlots.length} vagas ativas)
               </h3>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Horários sincronizados em tempo real para os pacientes agendarem.
               </p>
             </div>
           </div>
 
           {/* Filter tabs for slots: All / Social Care / Regular */}
-          <div className="flex items-center gap-1 p-1 bg-slate-100 rounded-lg text-xs font-semibold">
+          <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-semibold">
             <button
               onClick={() => setSlotTypeFilter('all')}
               className={`px-3 py-1.5 rounded-md transition-all ${
                 slotTypeFilter === 'all'
-                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs font-bold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Todos ({slots.length})
@@ -1494,7 +1494,7 @@ export const AvailabilityManager: React.FC = () => {
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md transition-all ${
                 slotTypeFilter === 'social'
                   ? 'bg-emerald-600 text-white shadow-2xs font-bold'
-                  : 'text-emerald-700 hover:text-emerald-900'
+                  : 'text-emerald-700 dark:text-emerald-400 hover:text-emerald-900 dark:hover:text-emerald-300'
               }`}
             >
               <HeartHandshake className="w-3.5 h-3.5" />
@@ -1504,8 +1504,8 @@ export const AvailabilityManager: React.FC = () => {
               onClick={() => setSlotTypeFilter('regular')}
               className={`px-3 py-1.5 rounded-md transition-all ${
                 slotTypeFilter === 'regular'
-                  ? 'bg-white text-slate-900 shadow-2xs font-bold'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-2xs font-bold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               Regulares ({slots.length - socialSlotsCount})
@@ -1530,11 +1530,11 @@ export const AvailabilityManager: React.FC = () => {
               return (
                 <div
                   key={dayObj.index}
-                  className="rounded-xl border border-slate-200 bg-slate-50/70 p-4 space-y-3"
+                  className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-800/50 p-4 space-y-3"
                 >
-                  <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                    <span className="text-xs font-bold text-slate-900">{dayObj.name}</span>
-                    <span className="text-[11px] font-semibold text-sky-800">
+                  <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-2">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white">{dayObj.name}</span>
+                    <span className="text-[11px] font-semibold text-sky-800 dark:text-sky-400">
                       {daySlots.length} {daySlots.length === 1 ? 'vaga' : 'vagas'}
                     </span>
                   </div>
@@ -1546,17 +1546,17 @@ export const AvailabilityManager: React.FC = () => {
                         className={`p-2.5 rounded-lg border text-xs transition-colors space-y-1.5 ${
                           slot.isActive
                             ? slot.isSocial
-                              ? 'bg-white border-emerald-200 shadow-2xs ring-1 ring-emerald-100'
-                              : 'bg-white border-slate-200 text-slate-800 shadow-2xs'
-                            : 'bg-slate-100 border-slate-200 text-slate-400 line-through'
+                              ? 'bg-white dark:bg-slate-900 border-emerald-200 dark:border-emerald-800 text-slate-900 dark:text-white shadow-2xs ring-1 ring-emerald-100 dark:ring-emerald-900/50'
+                              : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 shadow-2xs'
+                            : 'bg-slate-100 dark:bg-slate-800/80 border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 line-through'
                         }`}
                       >
                         <div className="flex items-center justify-between">
                           <div>
-                            <span className="font-bold tabular-nums text-slate-900">
+                            <span className="font-bold tabular-nums text-slate-900 dark:text-white">
                               {slot.startTime} às {slot.endTime}
                             </span>
-                            <span className="text-[11px] font-medium text-sky-800 ml-1.5">
+                            <span className="text-[11px] font-medium text-sky-800 dark:text-sky-400 ml-1.5">
                               ({formatTimeRangeDisplay(slot.startTime, slot.endTime)})
                             </span>
                           </div>
@@ -1566,8 +1566,8 @@ export const AvailabilityManager: React.FC = () => {
                               type="button"
                               onClick={() => handleToggleSlot(slot.id)}
                               title={slot.isActive ? 'Pausar este horário' : 'Reativar este horário'}
-                              className={`p-1 rounded hover:bg-slate-100 ${
-                                slot.isActive ? 'text-emerald-600' : 'text-slate-400'
+                              className={`p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-800 ${
+                                slot.isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-400 dark:text-slate-500'
                               }`}
                             >
                               <CheckCircle2 className="w-3.5 h-3.5" />
@@ -1576,7 +1576,7 @@ export const AvailabilityManager: React.FC = () => {
                               type="button"
                               onClick={() => handleRemoveSlot(slot.id)}
                               title="Remover horário"
-                              className="p-1 rounded text-red-500 hover:bg-red-50 hover:text-red-700"
+                              className="p-1 rounded text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 hover:text-red-700 dark:hover:text-red-400"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1586,7 +1586,7 @@ export const AvailabilityManager: React.FC = () => {
                         {/* Badges for period dates and social care */}
                         <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
                           {slot.startDate && slot.endDate ? (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-sky-800 bg-sky-50 px-2 py-0.5 rounded border border-sky-100">
+                            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-sky-800 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 px-2 py-0.5 rounded border border-sky-100 dark:border-sky-800">
                               <Calendar className="w-2.5 h-2.5" />
                               <span>
                                 {slot.startDate.split('-').slice(1).reverse().join('/')} até{' '}
@@ -1594,14 +1594,14 @@ export const AvailabilityManager: React.FC = () => {
                               </span>
                             </span>
                           ) : (
-                            <span className="text-[10px] font-medium text-slate-400">
+                            <span className="text-[10px] font-medium text-slate-400 dark:text-slate-500">
                               Semanal Contínuo
                             </span>
                           )}
 
                           {slot.isSocial && (
-                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                              <HeartHandshake className="w-2.5 h-2.5 text-emerald-600" />
+                            <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
+                              <HeartHandshake className="w-2.5 h-2.5 text-emerald-600 dark:text-emerald-400" />
                               <span>
                                 Social{slot.socialRate !== undefined ? ` · R$ ${slot.socialRate}` : ''}
                               </span>

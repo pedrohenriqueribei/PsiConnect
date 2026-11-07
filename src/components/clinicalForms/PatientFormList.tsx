@@ -64,19 +64,19 @@ export const PatientFormList: React.FC<PatientFormListProps> = ({
   return (
     <div className="space-y-8">
       {/* Pending Questionnaires Section */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-5">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-4 border-b border-slate-100">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs space-y-5 transition-colors duration-200">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <FileText className="w-5 h-5 text-sky-700" />
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <FileText className="w-5 h-5 text-sky-700 dark:text-sky-400" />
               <span>Questionários Pendentes de Preenchimento</span>
               {pendingDispatches.length > 0 && (
-                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-900 border border-amber-200">
+                <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-amber-100 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                   {pendingDispatches.length} pendente(s)
                 </span>
               )}
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Formulários enviados pelo seu profissional para acompanhar seu progresso clínico entre as sessões.
             </p>
           </div>
@@ -85,10 +85,10 @@ export const PatientFormList: React.FC<PatientFormListProps> = ({
         {pendingDispatches.length === 0 ? (
           <div className="py-10 text-center space-y-2">
             <CheckCircle2 className="w-10 h-10 text-emerald-500 mx-auto" />
-            <h3 className="text-sm font-bold text-slate-800">
+            <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">
               Você está em dia com seus questionários!
             </h3>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+            <p className="text-xs text-slate-400 dark:text-slate-500 max-w-sm mx-auto">
               Quando seu profissional enviar uma nova pesquisa de acompanhamento ou check-in, ela aparecerá aqui em destaque.
             </p>
           </div>
@@ -101,22 +101,22 @@ export const PatientFormList: React.FC<PatientFormListProps> = ({
               return (
                 <div
                   key={disp.id}
-                  className="p-5 rounded-xl border border-sky-200 bg-sky-50/40 hover:bg-sky-50/70 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs"
+                  className="p-5 rounded-xl border border-sky-200 dark:border-sky-800 bg-sky-50/40 dark:bg-sky-950/40 hover:bg-sky-50/70 dark:hover:bg-sky-950/60 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-2xs"
                 >
                   <div className="space-y-1.5 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-bold text-slate-900">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">
                         {disp.formTitle}
                       </span>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200">
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/80 text-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
                         Aguardando Resposta
                       </span>
                       {disp.deadline && (
                         <span
                           className={`text-[10px] font-semibold px-2 py-0.5 rounded-md ${
                             isExpired
-                              ? 'bg-rose-100 text-rose-800'
-                              : 'bg-slate-100 text-slate-700'
+                              ? 'bg-rose-100 dark:bg-rose-950/80 text-rose-800 dark:text-rose-300'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                           }`}
                         >
                           Prazo: até {new Date(disp.deadline).toLocaleDateString('pt-BR')}
@@ -124,9 +124,9 @@ export const PatientFormList: React.FC<PatientFormListProps> = ({
                       )}
                     </div>
 
-                    <div className="flex items-center gap-3 text-xs text-slate-500 tabular-nums">
+                    <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 tabular-nums">
                       <span className="flex items-center gap-1">
-                        <Calendar className="w-3.5 h-3.5 text-sky-700" />
+                        <Calendar className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />
                         Enviado em {new Date(disp.sentAt).toLocaleDateString('pt-BR')} às{' '}
                         {new Date(disp.sentAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
                       </span>
@@ -135,7 +135,7 @@ export const PatientFormList: React.FC<PatientFormListProps> = ({
 
                   <button
                     onClick={() => handleOpenFormToFill(disp)}
-                    className="px-5 py-2.5 text-xs font-bold text-white bg-sky-700 hover:bg-sky-800 rounded-xl shadow-xs transition-colors whitespace-nowrap flex items-center gap-2 shrink-0 self-stretch sm:self-auto justify-center"
+                    className="px-5 py-2.5 text-xs font-bold text-white bg-sky-700 hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-500 rounded-xl shadow-xs transition-colors whitespace-nowrap flex items-center gap-2 shrink-0 self-stretch sm:self-auto justify-center"
                   >
                     <span>Responder Agora</span>
                     <ChevronRight className="w-4 h-4" />
@@ -148,21 +148,21 @@ export const PatientFormList: React.FC<PatientFormListProps> = ({
       </div>
 
       {/* Submissions History Section */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-5">
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs space-y-5 transition-colors duration-200">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+            <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               <span>Histórico de Questionários Respondidos ({submissions.length})</span>
             </h2>
-            <p className="text-xs text-slate-500 mt-0.5">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
               Registros protegidos por criptografia de ponta a ponta e sigilo clínico profissional.
             </p>
           </div>
         </div>
 
         {submissions.length === 0 ? (
-          <div className="py-8 text-center text-xs text-slate-400">
+          <div className="py-8 text-center text-xs text-slate-400 dark:text-slate-500">
             Nenhum questionário respondido anteriormente.
           </div>
         ) : (
@@ -174,23 +174,23 @@ export const PatientFormList: React.FC<PatientFormListProps> = ({
               return (
                 <div
                   key={sub.id}
-                  className="p-4 sm:p-5 rounded-xl border border-slate-200 bg-white hover:border-slate-300 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3"
+                  className="p-4 sm:p-5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-2xs"
                 >
                   <div className="space-y-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="text-xs font-bold text-slate-900">
+                      <span className="text-xs font-bold text-slate-900 dark:text-white">
                         {sub.formTitle}
                       </span>
-                      <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                      <span className="text-[10px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">
                         Enviado com Sucesso
                       </span>
-                      <span className="text-[10px] text-slate-400 font-mono flex items-center gap-1">
-                        <Lock className="w-3 h-3 text-emerald-600" />
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 font-mono flex items-center gap-1">
+                        <Lock className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                         Criptografado
                       </span>
                     </div>
 
-                    <p className="text-xs text-slate-500 flex items-center gap-2">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-2">
                       <span>
                         Respondido em {subDate.toLocaleDateString('pt-BR')} às{' '}
                         {subDate.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
@@ -202,11 +202,11 @@ export const PatientFormList: React.FC<PatientFormListProps> = ({
 
                   <div className="flex items-center gap-3 self-end sm:self-center">
                     {scoreAnswer && (
-                      <div className="text-right px-3 py-1 bg-slate-50 border border-slate-100 rounded-lg">
-                        <span className="text-[10px] text-slate-400 block leading-none">
+                      <div className="text-right px-3 py-1 bg-slate-50 dark:bg-slate-900 border border-slate-100 dark:border-slate-700 rounded-lg">
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 block leading-none">
                           Sua Pontuação
                         </span>
-                        <span className="text-sm font-black text-slate-900 tabular-nums">
+                        <span className="text-sm font-black text-slate-900 dark:text-white tabular-nums">
                           {String(scoreAnswer.scaleValue ?? scoreAnswer.value)}/10
                         </span>
                       </div>
@@ -214,7 +214,7 @@ export const PatientFormList: React.FC<PatientFormListProps> = ({
 
                     <button
                       onClick={() => setViewingSubmission(sub)}
-                      className="px-3.5 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors flex items-center gap-1.5"
+                      className="px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-xl transition-colors flex items-center gap-1.5"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>Ver Respostas</span>
@@ -250,36 +250,36 @@ export const PatientFormList: React.FC<PatientFormListProps> = ({
       {/* View answers Modal */}
       {viewingSubmission && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
-            <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg max-h-[85vh] flex flex-col overflow-hidden">
+            <div className="p-5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50 dark:bg-slate-800/80">
               <div>
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">
                   Cópia de Segurança do Paciente
                 </span>
-                <h3 className="text-sm font-bold text-slate-900">
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white">
                   {viewingSubmission.formTitle}
                 </h3>
               </div>
               <button
                 onClick={() => setViewingSubmission(null)}
-                className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-200"
+                className="p-1.5 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="p-5 overflow-y-auto space-y-4">
-              <div className="text-xs text-slate-500 font-mono bg-slate-50 p-2.5 rounded-lg">
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-mono bg-slate-50 dark:bg-slate-800/80 p-2.5 rounded-lg border border-slate-200/50 dark:border-slate-700/50">
                 Timestamp de Envio: {viewingSubmission.submittedAt}
               </div>
 
               <div className="space-y-3">
                 {viewingSubmission.answers.map((ans, idx) => (
-                  <div key={idx} className="p-3 bg-slate-50 rounded-xl space-y-1">
-                    <span className="text-xs font-bold text-slate-800 block">
+                  <div key={idx} className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl space-y-1">
+                    <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
                       {idx + 1}. {ans.questionTitle}
                     </span>
-                    <p className="text-xs text-slate-700 bg-white p-2 rounded-lg border border-slate-200">
+                    <p className="text-xs text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 p-2 rounded-lg border border-slate-200 dark:border-slate-700">
                       {ans.questionType === 'likert_scale'
                         ? `${String(ans.scaleValue ?? ans.value)} / 10`
                         : ans.questionType === 'yes_no_justification'
@@ -293,10 +293,10 @@ export const PatientFormList: React.FC<PatientFormListProps> = ({
               </div>
             </div>
 
-            <div className="p-4 border-t border-slate-100 bg-slate-50 text-right">
+            <div className="p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/80 text-right">
               <button
                 onClick={() => setViewingSubmission(null)}
-                className="px-4 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-300 rounded-xl hover:bg-slate-50"
+                className="px-4 py-2 text-xs font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-600"
               >
                 Fechar
               </button>

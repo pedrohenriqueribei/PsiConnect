@@ -689,35 +689,35 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
 
       {/* KPI Cards Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
             <span className="text-xs font-medium">Sessões Hoje</span>
-            <Calendar className="w-4 h-4 text-sky-700" />
+            <Calendar className="w-4 h-4 text-sky-700 dark:text-sky-400" />
           </div>
-          <span className="text-2xl font-bold text-slate-900 tabular-nums">{todayApts.length}</span>
-          <span className="block text-[11px] text-slate-400 mt-1">
+          <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">{todayApts.length}</span>
+          <span className="block text-[11px] text-slate-400 dark:text-slate-500 mt-1">
             {todayApts.length > 0 ? 'Consultas marcadas para hoje' : 'Nenhuma consulta pendente hoje'}
           </span>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
             <span className="text-xs font-medium">Pessoas Atendidas</span>
-            <Users className="w-4 h-4 text-sky-700" />
+            <Users className="w-4 h-4 text-sky-700 dark:text-sky-400" />
           </div>
-          <span className="text-2xl font-bold text-slate-900 tabular-nums">{uniquePatients}</span>
-          <span className="block text-[11px] text-slate-400 mt-1">Pacientes / assessorados cadastrados</span>
+          <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">{uniquePatients}</span>
+          <span className="block text-[11px] text-slate-400 dark:text-slate-500 mt-1">Pacientes / assessorados cadastrados</span>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
             <span className="text-xs font-medium">Horários na Grade</span>
-            <Clock className="w-4 h-4 text-sky-700" />
+            <Clock className="w-4 h-4 text-sky-700 dark:text-sky-400" />
           </div>
-          <span className="text-2xl font-bold text-slate-900 tabular-nums">{activeSlots}</span>
-          <span className="block text-[11px] text-slate-400 mt-1">
+          <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">{activeSlots}</span>
+          <span className="block text-[11px] text-slate-400 dark:text-slate-500 mt-1">
             {activeSocialSlots > 0 ? (
-              <span className="text-emerald-700 font-semibold">
+              <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
                 {activeSocialSlots} {activeSocialSlots === 1 ? 'vaga social' : 'vagas sociais'} ativas
               </span>
             ) : (
@@ -726,22 +726,22 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
           </span>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-2">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-2">
             <span className="text-xs font-medium">Honorário / Sessão</span>
-            <DollarSign className="w-4 h-4 text-sky-700" />
+            <DollarSign className="w-4 h-4 text-sky-700 dark:text-sky-400" />
           </div>
-          <span className="text-2xl font-bold text-slate-900 tabular-nums">
+          <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">
             R$ {user?.hourlyRate || currentProfConfig.defaultRate}
           </span>
-          <span className="block text-[11px] text-slate-400 mt-1">Duração média de 50 minutos</span>
+          <span className="block text-[11px] text-slate-400 dark:text-slate-500 mt-1">Duração média de 50 minutos</span>
         </div>
       </div>
 
       {/* Tab 1: Agenda de Consultas */}
       {currentTab === 'agenda' && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
             <div>
               <h2 className="text-lg font-bold text-slate-900 tracking-tight">
                 Agenda de Atendimentos
@@ -797,39 +797,39 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                     key={apt.id}
                     className={`p-5 rounded-xl border transition-all ${
                       isToday && apt.status === 'scheduled'
-                        ? 'bg-sky-50/40 border-sky-300 shadow-xs'
-                        : 'bg-white border-slate-200'
+                        ? 'bg-sky-50/40 dark:bg-sky-950/40 border-sky-300 dark:border-sky-800 shadow-xs'
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
                     }`}
                   >
                     <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
                       {/* Left: Patient info & DateTime */}
                       <div className="space-y-1.5">
                         <div className="flex items-center gap-2.5 flex-wrap">
-                          <span className="text-sm font-bold text-slate-900">
+                          <span className="text-sm font-bold text-slate-900 dark:text-white">
                             {apt.patientName}
                           </span>
-                          <span className="text-xs text-slate-400">·</span>
-                          <span className="text-xs text-slate-500">{apt.patientEmail}</span>
+                          <span className="text-xs text-slate-400 dark:text-slate-500">·</span>
+                          <span className="text-xs text-slate-500 dark:text-slate-400">{apt.patientEmail}</span>
                           {apt.patientPhone && (
                             <>
-                              <span className="text-xs text-slate-400">·</span>
-                              <span className="text-xs text-slate-500">{apt.patientPhone}</span>
+                              <span className="text-xs text-slate-400 dark:text-slate-500">·</span>
+                              <span className="text-xs text-slate-500 dark:text-slate-400">{apt.patientPhone}</span>
                             </>
                           )}
                           <span
                             className={`text-[11px] font-semibold px-2 py-0.5 rounded-md ${
                               apt.status === 'scheduled'
-                                ? 'bg-sky-100 text-sky-800'
+                                ? 'bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300'
                                 : apt.status === 'completed'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : 'bg-slate-100 text-slate-600'
+                                ? 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300'
+                                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
                             }`}
                           >
                             {apt.status === 'scheduled' ? 'Agendada' : apt.status === 'completed' ? 'Concluída' : 'Cancelada'}
                           </span>
                           {apt.isSocial && (
-                            <span className="text-[11px] font-bold bg-emerald-50 text-emerald-900 border border-emerald-200 px-2 py-0.5 rounded-md inline-flex items-center gap-1 shadow-2xs">
-                              <HeartHandshake className="w-3.5 h-3.5 text-emerald-600" />
+                            <span className="text-[11px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-md inline-flex items-center gap-1 shadow-2xs">
+                              <HeartHandshake className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                               <span>
                                 Atendimento Social{apt.socialRate !== undefined ? ` (R$ ${apt.socialRate})` : ''}
                               </span>
@@ -837,17 +837,17 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                           )}
                         </div>
 
-                        <div className="flex items-center gap-3 text-xs text-slate-600 tabular-nums">
-                          <span className="flex items-center gap-1 font-semibold text-slate-800">
-                            <Calendar className="w-3.5 h-3.5 text-sky-700" />
+                        <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300 tabular-nums">
+                          <span className="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
+                            <Calendar className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />
                             {apt.date}
                           </span>
-                          <span className="flex items-center gap-1 font-semibold text-slate-800">
-                            <Clock className="w-3.5 h-3.5 text-sky-700" />
+                          <span className="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
+                            <Clock className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />
                             {apt.time} às {apt.endTime}
                           </span>
                           {isToday && (
-                            <span className="text-[11px] font-bold text-sky-700 uppercase tracking-wider">
+                            <span className="text-[11px] font-bold text-sky-700 dark:text-sky-400 uppercase tracking-wider">
                               (Hoje)
                             </span>
                           )}
@@ -951,15 +951,15 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
       {currentTab === 'journey' && (
         <div className="space-y-6">
           {psychologicalRecords.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
-              <Compass className="w-12 h-12 text-slate-300 mx-auto" />
-              <h3 className="text-base font-bold text-slate-800">Nenhum prontuário encontrado</h3>
-              <p className="text-xs text-slate-500 max-w-md mx-auto">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center space-y-3 transition-colors duration-200">
+              <Compass className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto" />
+              <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">Nenhum prontuário encontrado</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
                 Para visualizar a Jornada Clínica e os marcos alcançados, abra um prontuário na aba Prontuários (PEP) e registre a primeira sessão.
               </p>
               <button
                 onClick={() => setCurrentTab('records')}
-                className="px-4 py-2 text-xs font-bold text-white bg-sky-700 hover:bg-sky-800 rounded-xl transition-colors shadow-xs"
+                className="px-4 py-2 text-xs font-bold text-white bg-sky-700 hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-500 rounded-xl transition-colors shadow-xs"
               >
                 Ir para Prontuários (PEP)
               </button>
@@ -1011,20 +1011,20 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
       {currentTab === 'matching' && (
         <div className="space-y-6">
           {/* Header & Methodology Info */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-xs">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-xs transition-colors duration-200">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-6 border-b border-slate-100 dark:border-slate-800">
               <div className="flex items-start gap-4">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-sky-600 to-indigo-700 text-white flex items-center justify-center shrink-0 shadow-xs">
                   <Sparkles className="w-6 h-6" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                     <span>Pacientes Recomendados por Compatibilidade</span>
-                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 text-sky-800 border border-sky-200">
+                    <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 border border-sky-200 dark:border-sky-800">
                       Score Ponderado (100%)
                     </span>
                   </h2>
-                  <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
                     Algoritmo refinado com pesos estritos: <strong>Faixa etária (30%)</strong>, <strong>Motivos do atendimento & experiência clínica (30%)</strong>, <strong>Estado civil (20%)</strong> e <strong>Filhos (20%)</strong>.
                   </p>
                 </div>
@@ -1033,7 +1033,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
               <button
                 type="button"
                 onClick={() => setCurrentTab('profile')}
-                className="px-4 py-2 text-xs font-semibold text-sky-800 bg-sky-50 border border-sky-200 hover:bg-sky-100 rounded-xl transition-colors whitespace-nowrap self-start md:self-auto flex items-center gap-1.5"
+                className="px-4 py-2 text-xs font-semibold text-sky-800 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900/60 rounded-xl transition-colors whitespace-nowrap self-start md:self-auto flex items-center gap-1.5"
               >
                 <Tag className="w-3.5 h-3.5" />
                 <span>Configurar Minhas Tags ({selectedAffinityTags.length})</span>
@@ -1041,26 +1041,26 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
             </div>
 
             {/* Active Professional Matching Profile Context Bar */}
-            <div className="mt-5 p-4 rounded-xl bg-slate-50 border border-slate-200/80 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div className="mt-5 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
               <div>
-                <span className="text-slate-400 font-medium block text-[11px]">Sua Vivência Pessoal:</span>
-                <span className="font-semibold text-slate-800">
+                <span className="text-slate-400 dark:text-slate-500 font-medium block text-[11px]">Sua Vivência Pessoal:</span>
+                <span className="font-semibold text-slate-800 dark:text-slate-200">
                   {AGE_GROUP_LABELS[profAgeGroup]} ({profApproximateAge} anos) · {MARITAL_STATUS_LABELS[profMaritalStatus]}
                 </span>
-                <span className="block text-slate-500 text-[11px] mt-0.5">
+                <span className="block text-slate-500 dark:text-slate-400 text-[11px] mt-0.5">
                   {profHasChildren ? 'Com filhos' : 'Sem filhos'} · {profYearsOfExp} anos de prática clínica
                 </span>
               </div>
 
               <div className="md:col-span-2">
-                <span className="text-slate-400 font-medium block text-[11px] mb-1">
+                <span className="text-slate-400 dark:text-slate-500 font-medium block text-[11px] mb-1">
                   Tags de Identificação com as quais você mais se identifica:
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {selectedAffinityTags.map(tag => (
                     <span
                       key={tag}
-                      className="px-2 py-0.5 bg-white border border-slate-200 rounded-md text-[11px] font-medium text-slate-700 shadow-2xs"
+                      className="px-2 py-0.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-md text-[11px] font-medium text-slate-700 dark:text-slate-300 shadow-2xs"
                     >
                       {tag}
                     </span>
@@ -1070,19 +1070,19 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
             </div>
 
             {/* Sub-Filters */}
-            <div className="mt-6 pt-5 border-t border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-2 flex-wrap text-xs">
-                <span className="text-slate-500 font-medium flex items-center gap-1">
+                <span className="text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1">
                   <Filter className="w-3.5 h-3.5" />
                   Filtrar por Compatibilidade:
                 </span>
-                <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-lg">
+                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-lg">
                   <button
                     onClick={() => setMinScoreFilter('all')}
                     className={`px-3 py-1 rounded-md transition-colors ${
                       minScoreFilter === 'all'
-                        ? 'bg-white text-slate-900 font-bold shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white font-bold shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     Todos ({recommendedPatients.length})
@@ -1091,8 +1091,8 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                     onClick={() => setMinScoreFilter('80')}
                     className={`px-3 py-1 rounded-md transition-colors ${
                       minScoreFilter === '80'
-                        ? 'bg-white text-sky-900 font-bold shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-700 text-sky-900 dark:text-sky-300 font-bold shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     Alta Compatibilidade (80%+)
@@ -1101,8 +1101,8 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                     onClick={() => setMinScoreFilter('90')}
                     className={`px-3 py-1 rounded-md transition-colors ${
                       minScoreFilter === '90'
-                        ? 'bg-white text-emerald-900 font-bold shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-white dark:bg-slate-700 text-emerald-900 dark:text-emerald-300 font-bold shadow-2xs'
+                        : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                     }`}
                   >
                     Máxima Compatibilidade (90%+)
@@ -1114,7 +1114,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                 <select
                   value={ageGroupFilter}
                   onChange={e => setAgeGroupFilter(e.target.value)}
-                  className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-600"
+                  className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-sky-600"
                 >
                   <option value="all">Todas as faixas etárias</option>
                   <option value="18-25">18 a 25 anos (Jovens)</option>
@@ -1126,7 +1126,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                 <select
                   value={reasonFilter}
                   onChange={e => setReasonFilter(e.target.value)}
-                  className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-600 max-w-xs truncate"
+                  className="px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-slate-700 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-sky-600 max-w-xs truncate"
                 >
                   <option value="all">Todas as queixas de busca</option>
                   {REASONS_FOR_CARE_LIST.map(r => (
@@ -1141,12 +1141,12 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
 
           {/* Matches List */}
           {filteredMatches.length === 0 ? (
-            <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center space-y-3">
-              <Users className="w-12 h-12 text-slate-300 mx-auto" />
-              <h3 className="text-base font-bold text-slate-800">
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center space-y-3 transition-colors duration-200">
+              <Users className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto" />
+              <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
                 Nenhum paciente encontrado com estes filtros
               </h3>
-              <p className="text-xs text-slate-500 max-w-md mx-auto">
+              <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
                 Tente ajustar os filtros de pontuação mínima ou alterar as tags selecionadas no seu perfil profissional.
               </p>
               <button
@@ -1155,7 +1155,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                   setAgeGroupFilter('all');
                   setReasonFilter('all');
                 }}
-                className="px-4 py-2 text-xs font-semibold text-sky-800 bg-sky-50 rounded-lg hover:bg-sky-100 transition-colors"
+                className="px-4 py-2 text-xs font-semibold text-sky-800 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-colors"
               >
                 Limpar Filtros
               </button>
@@ -1170,8 +1170,8 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                 return (
                   <div
                     key={patient.id}
-                    className={`bg-white rounded-2xl border transition-all p-6 shadow-xs hover:shadow-md ${
-                      isHighMatch ? 'border-sky-300 ring-1 ring-sky-200/60' : 'border-slate-200'
+                    className={`bg-white dark:bg-slate-900 rounded-2xl border transition-all p-6 shadow-xs hover:shadow-md ${
+                      isHighMatch ? 'border-sky-300 dark:border-sky-700 ring-1 ring-sky-200/60 dark:ring-sky-800/40' : 'border-slate-200 dark:border-slate-800'
                     }`}
                   >
                     <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-5">
@@ -1179,32 +1179,32 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                       <div className="space-y-4 flex-1">
                         <div className="flex items-start justify-between sm:justify-start sm:gap-4 flex-wrap">
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 text-slate-800 flex items-center justify-center font-bold text-base border border-slate-200/80 shrink-0">
+                            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center font-bold text-base border border-slate-200/80 dark:border-slate-700 shrink-0">
                               {patient.name.charAt(0)}
                             </div>
                             <div>
                               <div className="flex items-center gap-2 flex-wrap">
-                                <h3 className="text-base font-bold text-slate-900">
+                                <h3 className="text-base font-bold text-slate-900 dark:text-white">
                                   {patient.name}
                                 </h3>
                                 <span
                                   className={`px-3 py-1 rounded-full text-xs font-bold tabular-nums inline-flex items-center gap-1.5 border shadow-2xs ${
                                     match.score >= 90
-                                      ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                                      ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800'
                                       : match.score >= 80
-                                      ? 'bg-sky-50 text-sky-800 border-sky-300'
-                                      : 'bg-slate-50 text-slate-700 border-slate-300'
+                                      ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 border-sky-300 dark:border-sky-800'
+                                      : 'bg-slate-50 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-300 dark:border-slate-700'
                                   }`}
                                 >
                                   {match.score >= 90 ? (
-                                    <Flame className="w-3.5 h-3.5 text-emerald-600" />
+                                    <Flame className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                                   ) : (
-                                    <Sparkles className="w-3.5 h-3.5 text-sky-600" />
+                                    <Sparkles className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                                   )}
                                   {match.score}% Compatibilidade
                                 </span>
                               </div>
-                              <div className="flex items-center gap-2 text-xs text-slate-500 mt-1 flex-wrap">
+                              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-1 flex-wrap">
                                 <span>{profile?.approximateAge ? `${profile.approximateAge} anos` : 'Idade informada'}</span>
                                 <span aria-hidden="true">·</span>
                                 <span>{profile ? AGE_GROUP_LABELS[profile.ageGroup] : 'Faixa etária não declarada'}</span>
@@ -1213,7 +1213,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                                 {profile?.hasChildren && (
                                   <>
                                     <span aria-hidden="true">·</span>
-                                    <span className="text-sky-800 font-medium">
+                                    <span className="text-sky-800 dark:text-sky-400 font-medium">
                                       {profile.childrenDetails || 'Tem filhos'}
                                     </span>
                                   </>
@@ -1224,34 +1224,34 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                         </div>
 
                         {/* Score de Compatibilidade com Decomposição dos 4 Pesos (30% + 30% + 20% + 20%) */}
-                        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/90 space-y-3">
+                        <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/90 dark:border-slate-700 space-y-3">
                           <div className="flex items-center justify-between flex-wrap gap-2">
                             <div className="flex items-center gap-2">
-                              <div className="w-7 h-7 rounded-lg bg-sky-100 text-sky-800 flex items-center justify-center font-bold text-xs border border-sky-200">
+                              <div className="w-7 h-7 rounded-lg bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 flex items-center justify-center font-bold text-xs border border-sky-200 dark:border-sky-800">
                                 <Target className="w-4 h-4" />
                               </div>
                               <div>
-                                <span className="text-xs font-bold text-slate-900 block leading-tight">
+                                <span className="text-xs font-bold text-slate-900 dark:text-white block leading-tight">
                                   Score de Compatibilidade Ponderado
                                 </span>
-                                <span className="text-[11px] text-slate-500">
+                                <span className="text-[11px] text-slate-500 dark:text-slate-400">
                                   Faixa (30%), Motivos (30%), Estado Civil (20%), Filhos (20%)
                                 </span>
                               </div>
                             </div>
                             <div className="text-right">
-                              <span className="text-sm font-extrabold text-slate-900 tabular-nums">
+                              <span className="text-sm font-extrabold text-slate-900 dark:text-white tabular-nums">
                                 {match.scoreBreakdown?.totalScore ?? match.score}
-                                <span className="text-xs font-medium text-slate-500"> / 100 pts</span>
+                                <span className="text-xs font-medium text-slate-500 dark:text-slate-400"> / 100 pts</span>
                               </span>
-                              <span className="block text-[10px] font-bold text-sky-700">
+                              <span className="block text-[10px] font-bold text-sky-700 dark:text-sky-400">
                                 {match.score}% Compatível
                               </span>
                             </div>
                           </div>
 
                           {/* Barra de Progresso Segmentada por Pilar */}
-                          <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden flex shadow-inner">
+                          <div className="w-full bg-slate-200 dark:bg-slate-700 h-2.5 rounded-full overflow-hidden flex shadow-inner">
                             <div
                               style={{ width: `${((match.scoreBreakdown?.ageGroupScore ?? 0) / 100) * 100}%` }}
                               className="bg-indigo-500 h-full transition-all"
@@ -1276,59 +1276,59 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
 
                           {/* 4 Cards de Pontuação Individual */}
                           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                            <div className="p-2.5 rounded-lg bg-white border border-slate-200 shadow-2xs">
+                            <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs">
                               <div className="flex items-center gap-1.5 mb-1">
                                 <span className="w-2 h-2 rounded-full bg-indigo-500 shrink-0" />
-                                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">Faixa Etária</span>
+                                <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-tight">Faixa Etária</span>
                               </div>
                               <div className="flex items-baseline justify-between">
-                                <span className="text-sm font-bold text-slate-900 tabular-nums">
+                                <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
                                   {match.scoreBreakdown?.ageGroupScore ?? 0}
-                                  <span className="text-[10px] font-normal text-slate-400">/30</span>
+                                  <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500">/30</span>
                                 </span>
-                                <span className="text-[10px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded">30%</span>
+                                <span className="text-[10px] font-bold text-indigo-700 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/60 px-1.5 py-0.5 rounded">30%</span>
                               </div>
                             </div>
 
-                            <div className="p-2.5 rounded-lg bg-white border border-slate-200 shadow-2xs">
+                            <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs">
                               <div className="flex items-center gap-1.5 mb-1">
                                 <span className="w-2 h-2 rounded-full bg-sky-500 shrink-0" />
-                                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">Motivos</span>
+                                <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-tight">Motivos</span>
                               </div>
                               <div className="flex items-baseline justify-between">
-                                <span className="text-sm font-bold text-slate-900 tabular-nums">
+                                <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
                                   {match.scoreBreakdown?.reasonsScore ?? 0}
-                                  <span className="text-[10px] font-normal text-slate-400">/30</span>
+                                  <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500">/30</span>
                                 </span>
-                                <span className="text-[10px] font-bold text-sky-700 bg-sky-50 px-1.5 py-0.5 rounded">30%</span>
+                                <span className="text-[10px] font-bold text-sky-700 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 px-1.5 py-0.5 rounded">30%</span>
                               </div>
                             </div>
 
-                            <div className="p-2.5 rounded-lg bg-white border border-slate-200 shadow-2xs">
+                            <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs">
                               <div className="flex items-center gap-1.5 mb-1">
                                 <span className="w-2 h-2 rounded-full bg-amber-500 shrink-0" />
-                                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">Estado Civil</span>
+                                <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-tight">Estado Civil</span>
                               </div>
                               <div className="flex items-baseline justify-between">
-                                <span className="text-sm font-bold text-slate-900 tabular-nums">
+                                <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
                                   {match.scoreBreakdown?.maritalScore ?? 0}
-                                  <span className="text-[10px] font-normal text-slate-400">/20</span>
+                                  <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500">/20</span>
                                 </span>
-                                <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">20%</span>
+                                <span className="text-[10px] font-bold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/60 px-1.5 py-0.5 rounded">20%</span>
                               </div>
                             </div>
 
-                            <div className="p-2.5 rounded-lg bg-white border border-slate-200 shadow-2xs">
+                            <div className="p-2.5 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-2xs">
                               <div className="flex items-center gap-1.5 mb-1">
                                 <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-                                <span className="text-[10px] font-bold text-slate-600 uppercase tracking-tight">Filhos</span>
+                                <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 uppercase tracking-tight">Filhos</span>
                               </div>
                               <div className="flex items-baseline justify-between">
-                                <span className="text-sm font-bold text-slate-900 tabular-nums">
+                                <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
                                   {match.scoreBreakdown?.childrenScore ?? 0}
-                                  <span className="text-[10px] font-normal text-slate-400">/20</span>
+                                  <span className="text-[10px] font-normal text-slate-400 dark:text-slate-500">/20</span>
                                 </span>
-                                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">20%</span>
+                                <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded">20%</span>
                               </div>
                             </div>
                           </div>
@@ -1485,45 +1485,45 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
 
       {/* Tab Profile: Editar Perfil e Configurar Tags de Matching */}
       {currentTab === 'profile' && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-xs max-w-4xl space-y-6">
-          <div className="pb-4 border-b border-slate-100">
-            <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-xs max-w-4xl space-y-6 transition-colors duration-200">
+          <div className="pb-4 border-b border-slate-100 dark:border-slate-800">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
               Perfil Profissional, Vivência Pessoal e Tags de Identificação
             </h2>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Configure seus dados profissionais e as tags de afinidade com as quais mais se identifica para potencializar o motor de matching inteligente com pacientes.
             </p>
           </div>
 
           {profileSuccess && (
-            <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs rounded-lg flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="p-3 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs rounded-lg flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>Perfil e tags de afinidade atualizados com sucesso!</span>
             </div>
           )}
 
           <form onSubmit={handleSaveProfile} className="space-y-6">
             {/* Seção Nova de Matching: Vivência Pessoal e Tags */}
-            <div className="p-5 rounded-2xl bg-sky-50/60 border border-sky-100 space-y-4">
-              <div className="border-b border-sky-200/60 pb-2">
-                <h3 className="text-sm font-bold text-sky-950 flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-sky-700" />
+            <div className="p-5 rounded-2xl bg-sky-50/60 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-800 space-y-4">
+              <div className="border-b border-sky-200/60 dark:border-sky-800/80 pb-2">
+                <h3 className="text-sm font-bold text-sky-950 dark:text-sky-200 flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-sky-700 dark:text-sky-400" />
                   Critérios de Afinidade & Vivência Pessoal (Motor de Matching)
                 </h3>
-                <p className="text-xs text-sky-800/80 mt-0.5">
+                <p className="text-xs text-sky-800/80 dark:text-sky-300/80 mt-0.5">
                   Estes dados permitem conectar você a pessoas em fases de vida afins (ex: psicóloga de meia-idade e mãe de família sugerida para pacientes com demandas e idades compatíveis).
                 </p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
                     Sua Faixa Etária
                   </label>
                   <select
                     value={profAgeGroup}
                     onChange={e => setProfAgeGroup(e.target.value as AgeGroup)}
-                    className="w-full px-3 py-2 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-600"
+                    className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
                   >
                     {(Object.keys(AGE_GROUP_LABELS) as AgeGroup[]).map(ag => (
                       <option key={ag} value={ag}>

@@ -170,22 +170,22 @@ export const PsychologicalRecordModule: React.FC<PsychologicalRecordModuleProps>
   return (
     <div className="space-y-6">
       {/* Top Banner & Module Identification */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6 transition-colors duration-200">
         <div className="flex items-start sm:items-center gap-4">
-          <div className="w-14 h-14 rounded-2xl bg-sky-700 text-white flex items-center justify-center shrink-0 shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-sky-700 dark:bg-sky-600 text-white flex items-center justify-center shrink-0 shadow-xs">
             <FileText className="w-7 h-7" />
           </div>
           <div>
             <div className="flex items-center gap-2 flex-wrap">
-              <h2 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
+              <h2 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                 Módulo de Prontuário Psicológico (PEP)
               </h2>
-              <span className="text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
-                <Shield className="w-3 h-3 text-emerald-600" />
+              <span className="text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-300 dark:border-emerald-800 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+                <Shield className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                 <span>CFP nº 01/2009 & LGPD Art. 11</span>
               </span>
             </div>
-            <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
               Prontuário único por paciente com histórico de evoluções, versionamento auditável, guarda mínima de 5 anos e relatórios nos padrões da Resolução CFP nº 06/2019.
             </p>
           </div>
@@ -193,7 +193,7 @@ export const PsychologicalRecordModule: React.FC<PsychologicalRecordModuleProps>
 
         <button
           onClick={() => setNewRecordModalOpen(true)}
-          className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-sky-700 hover:bg-sky-800 rounded-xl shadow-xs transition-colors whitespace-nowrap self-start md:self-auto"
+          className="flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-sky-700 hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-500 rounded-xl shadow-xs transition-colors whitespace-nowrap self-start md:self-auto"
         >
           <Plus className="w-4 h-4" />
           <span>Cadastrar Novo Prontuário</span>
@@ -202,53 +202,53 @@ export const PsychologicalRecordModule: React.FC<PsychologicalRecordModuleProps>
 
       {/* KPI Stats Strip */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-1.5">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs transition-colors duration-200">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1.5">
             <span className="text-xs font-medium">Pacientes Cadastrados</span>
-            <UserIcon className="w-4 h-4 text-sky-700" />
+            <UserIcon className="w-4 h-4 text-sky-700 dark:text-sky-400" />
           </div>
-          <span className="text-2xl font-bold text-slate-900 tabular-nums">{totalRecords}</span>
-          <span className="block text-[11px] text-slate-400 mt-0.5">
+          <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">{totalRecords}</span>
+          <span className="block text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
             {activeRecords} em atendimento ativo
           </span>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-1.5">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs transition-colors duration-200">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1.5">
             <span className="text-xs font-medium">Sessões Arquivadas</span>
-            <Clock className="w-4 h-4 text-sky-700" />
+            <Clock className="w-4 h-4 text-sky-700 dark:text-sky-400" />
           </div>
-          <span className="text-2xl font-bold text-slate-900 tabular-nums">{totalSessionsCount}</span>
-          <span className="block text-[11px] text-slate-400 mt-0.5">
+          <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">{totalSessionsCount}</span>
+          <span className="block text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
             Registros de evolução com notas de 1 a 5
           </span>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-1.5">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs transition-colors duration-200">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1.5">
             <span className="text-xs font-medium">Casos com Alerta de Risco</span>
-            <AlertTriangle className="w-4 h-4 text-rose-600" />
+            <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
           </div>
-          <span className="text-2xl font-bold text-rose-700 tabular-nums">{recordsWithActiveRisk}</span>
-          <span className="block text-[11px] text-slate-400 mt-0.5">
+          <span className="text-2xl font-bold text-rose-700 dark:text-rose-400 tabular-nums">{recordsWithActiveRisk}</span>
+          <span className="block text-[11px] text-slate-400 dark:text-slate-500 mt-0.5">
             {recordsWithActiveRisk > 0 ? 'Atenção a protocolo de contingência' : 'Nenhum paciente em risco ativo'}
           </span>
         </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
-          <div className="flex items-center justify-between text-slate-500 mb-1.5">
+        <div className="bg-white dark:bg-slate-900 p-5 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs transition-colors duration-200">
+          <div className="flex items-center justify-between text-slate-500 dark:text-slate-400 mb-1.5">
             <span className="text-xs font-medium">Guarda Legal Obrigatória</span>
-            <Shield className="w-4 h-4 text-emerald-700" />
+            <Shield className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
           </div>
-          <span className="text-2xl font-bold text-slate-900 tabular-nums">5 Anos</span>
-          <span className="block text-[11px] text-emerald-700 font-semibold mt-0.5">
+          <span className="text-2xl font-bold text-slate-900 dark:text-white tabular-nums">5 Anos</span>
+          <span className="block text-[11px] text-emerald-700 dark:text-emerald-400 font-semibold mt-0.5">
             {dischargedRecords} altas preservadas em arquivo
           </span>
         </div>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-4 transition-colors duration-200">
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
           {/* Search Box */}
           <div className="relative flex-1">
@@ -312,12 +312,12 @@ export const PsychologicalRecordModule: React.FC<PsychologicalRecordModuleProps>
 
       {/* Patient Records Cards / List */}
       {filteredRecords.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center space-y-3">
-          <FileText className="w-12 h-12 text-slate-300 mx-auto" />
-          <h3 className="text-base font-bold text-slate-800">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-16 text-center space-y-3 transition-colors duration-200">
+          <FileText className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto" />
+          <h3 className="text-base font-bold text-slate-800 dark:text-slate-200">
             Nenhum prontuário encontrado com estes filtros
           </h3>
-          <p className="text-xs text-slate-500 max-w-md mx-auto">
+          <p className="text-xs text-slate-500 dark:text-slate-400 max-w-md mx-auto">
             Tente buscar com outro termo ou clique no botão abaixo para abrir o primeiro prontuário deste paciente.
           </p>
           <button
@@ -326,7 +326,7 @@ export const PsychologicalRecordModule: React.FC<PsychologicalRecordModuleProps>
               setStatusFilter('all');
               setRiskOnlyFilter(false);
             }}
-            className="px-4 py-2 text-xs font-semibold text-sky-800 bg-sky-50 rounded-lg hover:bg-sky-100 transition-colors"
+            className="px-4 py-2 text-xs font-semibold text-sky-800 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/60 transition-colors"
           >
             Limpar Filtros de Busca
           </button>
@@ -343,39 +343,39 @@ export const PsychologicalRecordModule: React.FC<PsychologicalRecordModuleProps>
             return (
               <div
                 key={record.id}
-                className={`bg-white rounded-2xl border transition-all p-5 sm:p-6 shadow-xs hover:shadow-md ${
-                  hasActiveRisk ? 'border-rose-300 ring-1 ring-rose-200/80' : 'border-slate-200'
+                className={`bg-white dark:bg-slate-900 rounded-2xl border transition-all p-5 sm:p-6 shadow-xs hover:shadow-md ${
+                  hasActiveRisk ? 'border-rose-300 dark:border-rose-800 ring-1 ring-rose-200/80 dark:ring-rose-900/50' : 'border-slate-200 dark:border-slate-800'
                 }`}
               >
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
                   {/* Left: Patient Identity & Medical Badges */}
                   <div className="space-y-3 flex-1">
                     <div className="flex items-start gap-3.5">
-                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 text-slate-800 flex items-center justify-center font-bold text-lg border border-slate-200/80 shrink-0">
+                      <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 text-slate-800 dark:text-slate-200 flex items-center justify-center font-bold text-lg border border-slate-200/80 dark:border-slate-700 shrink-0">
                         {record.identification.fullName.charAt(0)}
                       </div>
 
                       <div className="space-y-1">
                         <div className="flex items-center gap-2.5 flex-wrap">
-                          <h3 className="text-base font-bold text-slate-900">
+                          <h3 className="text-base font-bold text-slate-900 dark:text-white">
                             {record.identification.fullName}
                           </h3>
                           {record.identification.socialName && (
-                            <span className="text-xs text-slate-500 font-medium">
+                            <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
                               ({record.identification.socialName})
                             </span>
                           )}
 
                           {/* Status Badge */}
                           <span
-                            className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${statusMeta.bg} ${statusMeta.color} ${statusMeta.border}`}
+                            className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${statusMeta.bg} ${statusMeta.color} ${statusMeta.border} dark:bg-slate-800 dark:border-slate-700`}
                           >
                             {statusMeta.label}
                           </span>
 
                           {/* Minor Badge if < 18 */}
                           {isMinor && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-300">
+                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-300 dark:border-amber-800">
                               Menor de 18 anos (Responsável: {record.legalGuardian?.name})
                             </span>
                           )}
@@ -390,7 +390,7 @@ export const PsychologicalRecordModule: React.FC<PsychologicalRecordModuleProps>
                         </div>
 
                         {/* Patient Meta Strip */}
-                        <div className="flex items-center gap-3 text-xs text-slate-500 flex-wrap">
+                        <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
                           <span>CPF: {record.identification.cpf}</span>
                           <span aria-hidden="true">·</span>
                           <span>
@@ -405,22 +405,22 @@ export const PsychologicalRecordModule: React.FC<PsychologicalRecordModuleProps>
                     </div>
 
                     {/* Queixa Principal Snippet */}
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-700 space-y-1">
-                      <div className="flex items-center justify-between text-[11px] font-bold text-slate-900 uppercase tracking-wider">
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-100 dark:border-slate-700 text-xs text-slate-700 dark:text-slate-300 space-y-1">
+                      <div className="flex items-center justify-between text-[11px] font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                         <span>Queixa Principal & Demanda Inicial:</span>
-                        <span className="text-sky-700 font-medium lowercase">
+                        <span className="text-sky-700 dark:text-sky-400 font-medium lowercase">
                           iniciado em {record.initialDemand.treatmentStartDate || record.createdAt.split('T')[0]}
                         </span>
                       </div>
-                      <p className="line-clamp-2 leading-relaxed text-slate-600">
+                      <p className="line-clamp-2 leading-relaxed text-slate-600 dark:text-slate-300">
                         {record.initialDemand.chiefComplaint}
                       </p>
                     </div>
 
                     {/* Latest Session & Progress Info */}
-                    <div className="flex items-center gap-4 text-xs text-slate-600 flex-wrap">
+                    <div className="flex items-center gap-4 text-xs text-slate-600 dark:text-slate-300 flex-wrap">
                       <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 text-sky-700" />
+                        <Clock className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />
                         <span>
                           <strong>{record.sessions.length}</strong>{' '}
                           {record.sessions.length === 1 ? 'sessão realizada' : 'sessões realizadas'}

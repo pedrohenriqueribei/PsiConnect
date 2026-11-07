@@ -174,35 +174,35 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
       case 'pastor':
         return {
           label: 'Pastor · Aconselhamento Bíblico',
-          bg: 'bg-amber-50',
-          text: 'text-amber-900',
-          border: 'border-amber-200',
-          icon: <BookOpen className="w-3.5 h-3.5 text-amber-700" />,
+          bg: 'bg-amber-50 dark:bg-amber-950/60',
+          text: 'text-amber-900 dark:text-amber-300',
+          border: 'border-amber-200 dark:border-amber-800',
+          icon: <BookOpen className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />,
         };
       case 'therapist':
         return {
           label: 'Terapeuta · Emocional & Integrativa',
-          bg: 'bg-emerald-50',
-          text: 'text-emerald-900',
-          border: 'border-emerald-200',
-          icon: <Leaf className="w-3.5 h-3.5 text-emerald-700" />,
+          bg: 'bg-emerald-50 dark:bg-emerald-950/60',
+          text: 'text-emerald-900 dark:text-emerald-300',
+          border: 'border-emerald-200 dark:border-emerald-800',
+          icon: <Leaf className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />,
         };
       case 'psychoanalyst':
         return {
           label: 'Psicanalista · Análise Clínica',
-          bg: 'bg-purple-50',
-          text: 'text-purple-900',
-          border: 'border-purple-200',
-          icon: <Compass className="w-3.5 h-3.5 text-purple-700" />,
+          bg: 'bg-purple-50 dark:bg-purple-950/60',
+          text: 'text-purple-900 dark:text-purple-300',
+          border: 'border-purple-200 dark:border-purple-800',
+          icon: <Compass className="w-3.5 h-3.5 text-purple-700 dark:text-purple-400" />,
         };
       case 'psychologist':
       default:
         return {
           label: 'Psicólogo(a) · Saúde Mental & CRP',
-          bg: 'bg-sky-50',
-          text: 'text-sky-900',
-          border: 'border-sky-200',
-          icon: <Brain className="w-3.5 h-3.5 text-sky-700" />,
+          bg: 'bg-sky-50 dark:bg-sky-950/60',
+          text: 'text-sky-900 dark:text-sky-300',
+          border: 'border-sky-200 dark:border-sky-800',
+          icon: <Brain className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />,
         };
     }
   };
@@ -287,21 +287,21 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
 
       {/* Patient Matching Profile Banner */}
       {user && (
-        <div className="bg-gradient-to-r from-teal-50 to-slate-50 border border-teal-200/80 rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="bg-gradient-to-r from-teal-50 to-slate-50 dark:from-teal-950/40 dark:to-slate-900 border border-teal-200/80 dark:border-teal-800/60 rounded-2xl p-5 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3.5">
-            <div className="w-10 h-10 rounded-xl bg-teal-700 text-white flex items-center justify-center shrink-0 shadow-2xs">
+            <div className="w-10 h-10 rounded-xl bg-teal-700 dark:bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
               <Sparkles className="w-5 h-5 text-teal-200" />
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-sm font-bold text-teal-950">
+                <h2 className="text-sm font-bold text-teal-950 dark:text-teal-200">
                   {user.patientProfile ? 'Perfil de Acolhimento & Matching Ativo' : 'Complete seu Perfil de Acolhimento'}
                 </h2>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 text-teal-800 border border-teal-200">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-700">
                   {user.patientProfile ? 'Compatibilidade Ativa' : 'Recomendado'}
                 </span>
               </div>
-              <p className="text-xs text-teal-900/80 mt-0.5 max-w-2xl leading-relaxed">
+              <p className="text-xs text-teal-900/80 dark:text-teal-300/80 mt-0.5 max-w-2xl leading-relaxed">
                 {user.patientProfile
                   ? `Seu contexto (${user.patientProfile.reasonsForCare.length} queixa(s) informadas) está sendo utilizado para sugerir seu perfil aos profissionais com vivência pessoal e abordagem compatíveis.`
                   : 'Informe os motivos da sua busca, sua faixa etária e vivência familiar para ser sugerido aos profissionais que têm o perfil exato para acolher sua história.'}
@@ -312,7 +312,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           <button
             type="button"
             onClick={() => setIsMatchingModalOpen(true)}
-            className="px-4 py-2 text-xs font-bold text-white bg-teal-700 hover:bg-teal-800 rounded-xl shadow-xs transition-colors whitespace-nowrap self-stretch sm:self-auto flex items-center justify-center gap-2"
+            className="px-4 py-2 text-xs font-bold text-white bg-teal-700 hover:bg-teal-800 dark:bg-teal-600 dark:hover:bg-teal-500 rounded-xl shadow-xs transition-colors whitespace-nowrap self-stretch sm:self-auto flex items-center justify-center gap-2"
           >
             {user.patientProfile ? (
               <>
@@ -330,8 +330,8 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
       )}
 
       {bookingSuccessMsg && (
-        <div className="flex items-center gap-2 p-4 text-sm text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-xl shadow-xs">
-          <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+        <div className="flex items-center gap-2 p-4 text-sm text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-xl shadow-xs">
+          <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400 shrink-0" />
           <span className="font-medium">{bookingSuccessMsg}</span>
         </div>
       )}
@@ -412,16 +412,16 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
             </div>
 
             {/* Sub-Filters: Type of Professional, Keyword Search, Max Price */}
-            <div className="pt-3 border-t border-slate-100 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 grid grid-cols-1 md:grid-cols-12 gap-3 items-center">
               {/* Search input */}
               <div className="md:col-span-5 relative">
-                <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
+                <Search className="absolute left-3 top-2.5 w-4 h-4 text-slate-400 dark:text-slate-500" />
                 <input
                   type="text"
                   value={searchTerm}
                   onChange={e => setSearchTerm(e.target.value)}
                   placeholder="Buscar por nome, abordagem, igreja ou tema (ex: ansiedade, casamento)..."
-                  className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
+                  className="w-full pl-9 pr-3 py-2 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:outline-hidden focus:ring-2 focus:ring-sky-600 dark:focus:ring-sky-400"
                 />
               </div>
 
@@ -430,25 +430,25 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 <select
                   value={profTypeFilter}
                   onChange={e => setProfTypeFilter(e.target.value as any)}
-                  className="w-full px-3 py-2 text-xs border border-slate-300 rounded-lg bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-600"
+                  className="w-full px-3 py-2 text-xs border border-slate-300 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-sky-600 dark:focus:ring-sky-400"
                 >
-                  <option value="all">Todas as Especialidades</option>
+                  <option value="all" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white">Todas as Especialidades</option>
                   {(categoryFilter === 'all' || categoryFilter === 'therapy') && (
                     <>
-                      <option value="psychologist">Psicólogos(as) (CRP)</option>
-                      <option value="therapist">Terapeutas (Emocional / Integrativa)</option>
-                      <option value="psychoanalyst">Psicanalistas (Análise Clínica)</option>
+                      <option value="psychologist" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white">Psicólogos(as) (CRP)</option>
+                      <option value="therapist" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white">Terapeutas (Emocional / Integrativa)</option>
+                      <option value="psychoanalyst" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white">Psicanalistas (Análise Clínica)</option>
                     </>
                   )}
                   {(categoryFilter === 'all' || categoryFilter === 'biblical') && (
-                    <option value="pastor">Pastores(as) (Aconselhamento Bíblico)</option>
+                    <option value="pastor" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-white">Pastores(as) (Aconselhamento Bíblico)</option>
                   )}
                 </select>
               </div>
 
               {/* Price Filter Slider & Social Toggle */}
               <div className="md:col-span-3 space-y-2">
-                <div className="flex items-center justify-between text-xs text-slate-600 mb-1">
+                <div className="flex items-center justify-between text-xs text-slate-600 dark:text-slate-300 mb-1">
                   <span>Até R$ {maxPrice},00</span>
                 </div>
                 <input
@@ -458,7 +458,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                   step={10}
                   value={maxPrice}
                   onChange={e => setMaxPrice(Number(e.target.value))}
-                  className="w-full accent-sky-700 cursor-pointer"
+                  className="w-full accent-sky-700 dark:accent-sky-500 cursor-pointer"
                 />
               </div>
             </div>
@@ -471,7 +471,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
                   onlySocialFilter
                     ? 'bg-emerald-600 text-white border-emerald-700 shadow-2xs'
-                    : 'bg-emerald-50/70 text-emerald-900 border-emerald-200 hover:bg-emerald-100'
+                    : 'bg-emerald-50/70 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
                 }`}
               >
                 <HeartHandshake className="w-3.5 h-3.5" />
@@ -479,14 +479,14 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 {onlySocialFilter && <CheckCircle2 className="w-3.5 h-3.5 ml-1" />}
               </button>
 
-              <span className="text-[11px] text-slate-400">
+              <span className="text-[11px] text-slate-400 dark:text-slate-500">
                 Atendimento social voltado ao acolhimento acessível de pessoas em vulnerabilidade.
               </span>
             </div>
           </div>
 
           {/* Active filter count banner */}
-          <div className="flex items-center justify-between text-xs text-slate-500 px-1">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1">
             <span>
               Exibindo <strong>{filteredProfessionals.length}</strong> {filteredProfessionals.length === 1 ? 'profissional' : 'profissionais'} disponíveis
               {onlySocialFilter && ' com vagas sociais ativas'}
@@ -500,7 +500,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                   setMaxPrice(300);
                   setOnlySocialFilter(false);
                 }}
-                className="text-sky-700 hover:underline font-semibold"
+                className="text-sky-700 dark:text-sky-400 hover:underline font-semibold"
               >
                 Limpar filtros
               </button>
@@ -516,7 +516,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
               return (
                 <div
                   key={prof.id}
-                  className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:border-slate-300 hover:shadow-md transition-all flex flex-col justify-between"
+                  className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md transition-all flex flex-col justify-between"
                 >
                   <div className="p-6 space-y-4">
                     {/* Header with avatar & name */}
@@ -526,16 +526,16 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                           src={prof.avatar}
                           alt={prof.name}
                           referrerPolicy="no-referrer"
-                          className="w-16 h-16 rounded-2xl object-cover border border-slate-200 shrink-0"
+                          className="w-16 h-16 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shrink-0"
                         />
                       ) : (
-                        <div className="w-16 h-16 rounded-2xl bg-sky-100 text-sky-800 font-bold flex items-center justify-center text-xl shrink-0">
+                        <div className="w-16 h-16 rounded-2xl bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 font-bold flex items-center justify-center text-xl shrink-0">
                           {prof.name.charAt(0)}
                         </div>
                       )}
                       <div className="space-y-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
-                          <h3 className="text-base font-bold text-slate-900 leading-tight">
+                          <h3 className="text-base font-bold text-slate-900 dark:text-white leading-tight">
                             {prof.name}
                           </h3>
                         </div>
@@ -553,62 +553,62 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                               <div
                                 className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${
                                   match.score >= 85
-                                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
-                                    : 'bg-sky-50 text-sky-800 border-sky-200'
+                                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
+                                    : 'bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800'
                                 }`}
                                 title={match.highlights.join(' · ')}
                               >
-                                <Sparkles className="w-3 h-3 text-sky-600" />
+                                <Sparkles className="w-3 h-3 text-sky-600 dark:text-sky-400" />
                                 <span>{match.score}% Compatível</span>
                               </div>
                             );
                           })()}
 
                           {storage.getAvailabilitySlots(prof.id).some(s => s.isSocial && s.isActive) && (
-                            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-900 border border-emerald-200 shadow-2xs">
-                              <HeartHandshake className="w-3 h-3 text-emerald-600" />
+                            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-900 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 shadow-2xs">
+                              <HeartHandshake className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                               <span>Atendimento Social</span>
                             </div>
                           )}
                         </div>
 
                         {/* Credential or Church: CRP only for psychologists */}
-                        <div className="text-[11px] text-slate-500 font-medium">
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
                           {pType === 'psychologist' && (prof.crp || prof.registrationNumber) && (
-                            <span className="text-sky-900 font-semibold">
+                            <span className="text-sky-900 dark:text-sky-300 font-semibold">
                               {prof.crp || prof.registrationNumber}
                             </span>
                           )}
                           {pType === 'pastor' && prof.ministryOrChurch && (
-                            <span className="flex items-center gap-1 text-amber-900">
-                              <Building2 className="w-3 h-3 text-amber-700" />
+                            <span className="flex items-center gap-1 text-amber-900 dark:text-amber-300">
+                              <Building2 className="w-3 h-3 text-amber-700 dark:text-amber-400" />
                               {prof.ministryOrChurch}
                             </span>
                           )}
                         </div>
 
-                        <span className="text-[10px] text-slate-400 block">
+                        <span className="text-[10px] text-slate-400 dark:text-slate-500 block">
                           {prof.city ? `${prof.city}, ${prof.state}` : 'Atendimento Online no Brasil'}
                         </span>
                       </div>
                     </div>
 
                     {/* Bio */}
-                    <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed">
+                    <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-3 leading-relaxed">
                       {prof.bio || 'Profissional dedicado ao acolhimento e desenvolvimento humano.'}
                     </p>
 
                     {/* Tags de Experiência Clínica (ex: Ansiedade, Luto, Relacionamentos) */}
                     {prof.clinicalTags && prof.clinicalTags.length > 0 && (
                       <div className="space-y-1 pt-1">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
                           Foco Clínico & Temas:
                         </span>
                         <div className="flex flex-wrap gap-1">
                           {prof.clinicalTags.map((tag, idx) => (
                             <span
                               key={idx}
-                              className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-sky-50 text-sky-900 border border-sky-200/80"
+                              className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/60 text-sky-900 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800/80"
                             >
                               {tag}
                             </span>
@@ -627,8 +627,8 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                               key={idx}
                               className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${
                                 pType === 'pastor'
-                                  ? 'bg-amber-50 text-amber-900 border border-amber-100'
-                                  : 'bg-slate-100 text-slate-700'
+                                  ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-100 dark:border-amber-900'
+                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                               }`}
                             >
                               {app}
@@ -639,12 +639,12 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                   </div>
 
                   {/* Card Footer: Price & Booking Action */}
-                  <div className="p-4 bg-slate-50/70 border-t border-slate-100 flex items-center justify-between">
+                  <div className="p-4 bg-slate-50/70 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
                     <div>
-                      <span className="text-[10px] text-slate-400 uppercase font-semibold block">
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold block">
                         Sessão de 50 min
                       </span>
-                      <span className="text-sm font-bold text-slate-900 tabular-nums">
+                      <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
                         R$ {prof.hourlyRate || 180},00
                       </span>
                     </div>
@@ -659,8 +659,8 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                       }}
                       className={`px-4 py-2 text-xs font-semibold text-white rounded-lg shadow-xs transition-colors ${
                         pType === 'pastor'
-                          ? 'bg-amber-700 hover:bg-amber-800'
-                          : 'bg-sky-700 hover:bg-sky-800'
+                          ? 'bg-amber-700 hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-500'
+                          : 'bg-sky-700 hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-500'
                       }`}
                     >
                       {pType === 'pastor' ? 'Agendar Aconselhamento' : 'Agendar Consulta'}
@@ -672,10 +672,10 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           </div>
 
           {filteredProfessionals.length === 0 && (
-            <div className="py-16 text-center bg-white rounded-2xl border border-slate-200">
-              <Search className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-slate-700">Nenhum profissional encontrado com os filtros atuais</p>
-              <p className="text-xs text-slate-400 mt-1">Tente alternar para outra categoria ou redefinir a busca.</p>
+            <div className="py-16 text-center bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
+              <Search className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Nenhum profissional encontrado com os filtros atuais</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">Tente alternar para outra categoria ou redefinir a busca.</p>
               <button
                 onClick={() => {
                   setCategoryFilter('all');
@@ -694,13 +694,13 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
 
       {/* Tab 2: Minhas Consultas */}
       {currentTab === 'appointments' && (
-        <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-6">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs space-y-6 transition-colors duration-200">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
             <div>
-              <h2 className="text-lg font-bold text-slate-900 tracking-tight">
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
                 Minhas Consultas e Aconselhamentos Agendados
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-500 dark:text-slate-400">
                 Acesse suas teleconsultas online e visualize o histórico de atendimentos terapêuticos e bíblicos.
               </p>
             </div>
@@ -708,25 +708,25 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
 
           {!user ? (
             <div className="py-12 text-center">
-              <UserCheck className="w-10 h-10 text-slate-300 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-slate-700">Acesse sua conta para ver suas consultas</p>
+              <UserCheck className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Acesse sua conta para ver suas consultas</p>
               <button
                 onClick={onOpenAuth}
-                className="mt-3 px-4 py-2 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 rounded-lg shadow-xs"
+                className="mt-3 px-4 py-2 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-500 rounded-lg shadow-xs"
               >
                 Fazer Login
               </button>
             </div>
           ) : appointments.length === 0 ? (
             <div className="py-16 text-center">
-              <Calendar className="w-12 h-12 text-slate-300 mx-auto mb-2" />
-              <p className="text-sm font-semibold text-slate-700">Você ainda não tem consultas agendadas</p>
-              <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto mb-4">
+              <Calendar className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Você ainda não tem consultas agendadas</p>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 max-w-sm mx-auto mb-4">
                 Encontre o profissional ideal para a sua necessidade (psicólogo, terapeuta, psicanalista ou pastor) e agende seu horário com segurança.
               </p>
               <button
                 onClick={() => setCurrentTab('catalog')}
-                className="px-4 py-2 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 rounded-lg shadow-xs"
+                className="px-4 py-2 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-500 rounded-lg shadow-xs"
               >
                 Ver Especialistas Disponíveis
               </button>
@@ -741,8 +741,8 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                     key={apt.id}
                     className={`p-5 rounded-xl border transition-all ${
                       isToday && apt.status === 'scheduled'
-                        ? 'bg-sky-50/50 border-sky-300 shadow-xs'
-                        : 'bg-white border-slate-200'
+                        ? 'bg-sky-50/50 dark:bg-sky-950/40 border-sky-300 dark:border-sky-800 shadow-xs'
+                        : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'
                     }`}
                   >
                     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -752,35 +752,35 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                             src={apt.psychologistAvatar}
                             alt={apt.psychologistName}
                             referrerPolicy="no-referrer"
-                            className="w-12 h-12 rounded-xl object-cover border border-slate-200"
+                            className="w-12 h-12 rounded-xl object-cover border border-slate-200 dark:border-slate-700"
                           />
                         ) : (
-                          <div className="w-12 h-12 rounded-xl bg-sky-100 text-sky-800 font-bold flex items-center justify-center text-sm">
+                          <div className="w-12 h-12 rounded-xl bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 font-bold flex items-center justify-center text-sm">
                             {apt.psychologistName.charAt(0)}
                           </div>
                         )}
                         <div>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="text-sm font-bold text-slate-900">
+                            <span className="text-sm font-bold text-slate-900 dark:text-white">
                               {apt.psychologistName}
                             </span>
                             {apt.psychologistCrp && (
-                              <span className="text-xs text-sky-800 font-medium">
+                              <span className="text-xs text-sky-800 dark:text-sky-300 font-medium">
                                 {apt.psychologistCrp}
                               </span>
                             )}
                             <span
                               className={`text-[10px] font-semibold px-2 py-0.5 rounded ${
                                 apt.status === 'scheduled'
-                                  ? 'bg-sky-100 text-sky-800'
-                                  : 'bg-emerald-100 text-emerald-800'
+                                  ? 'bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300'
+                                  : 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300'
                               }`}
                             >
                               {apt.status === 'scheduled' ? 'Agendada' : 'Realizada'}
                             </span>
                             {apt.isSocial && (
-                              <span className="text-[10px] font-bold bg-emerald-50 text-emerald-900 border border-emerald-200 px-2 py-0.5 rounded inline-flex items-center gap-1 shadow-2xs">
-                                <HeartHandshake className="w-3 h-3 text-emerald-600" />
+                              <span className="text-[10px] font-bold bg-emerald-50 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded inline-flex items-center gap-1 shadow-2xs">
+                                <HeartHandshake className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                                 <span>
                                   Atendimento Social{apt.socialRate !== undefined ? ` (R$ ${apt.socialRate})` : ''}
                                 </span>
@@ -788,19 +788,19 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                             )}
                           </div>
 
-                          <div className="flex items-center gap-3 text-xs text-slate-600 mt-1 tabular-nums">
-                            <span className="flex items-center gap-1 font-semibold text-slate-800">
-                              <Calendar className="w-3.5 h-3.5 text-sky-700" />
+                          <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300 mt-1 tabular-nums">
+                            <span className="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
+                              <Calendar className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />
                               {apt.date}
                             </span>
-                            <span className="flex items-center gap-1 font-semibold text-slate-800">
-                              <Clock className="w-3.5 h-3.5 text-sky-700" />
+                            <span className="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
+                              <Clock className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />
                               {apt.time} às {apt.endTime}
                             </span>
                           </div>
 
                           {apt.notesFromPatient && (
-                            <p className="text-xs text-slate-500 mt-2">
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
                               Sua demanda inicial: "{apt.notesFromPatient}"
                             </p>
                           )}
@@ -812,7 +812,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                         {apt.status === 'scheduled' && (
                           <button
                             onClick={() => onJoinRoom(apt)}
-                            className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 rounded-lg shadow-xs transition-colors"
+                            className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-500 rounded-lg shadow-xs transition-colors"
                           >
                             <Video className="w-3.5 h-3.5" />
                             Entrar no Teleatendimento
@@ -824,9 +824,9 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                             href={apt.meetingUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-700 hover:text-slate-900 border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors"
+                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                           >
-                            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                            <ExternalLink className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
                             Google Meet
                           </a>
                         )}
@@ -853,16 +853,16 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
       {currentTab === 'patient_records' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Card: Como escolher entre Terapia e Aconselhamento Bíblico */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-            <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-              <Shield className="w-5 h-5 text-sky-700" />
-              <h3 className="text-base font-bold text-slate-900">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs space-y-4">
+            <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+              <Shield className="w-5 h-5 text-sky-700 dark:text-sky-400" />
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 Qual Modalidade de Cuidado Escolher?
               </h3>
             </div>
-            <div className="space-y-3 text-xs text-slate-600 leading-relaxed">
-              <div className="p-3 bg-sky-50/60 rounded-xl border border-sky-100">
-                <strong className="text-sky-950 font-bold block mb-1">
+            <div className="space-y-3 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+              <div className="p-3 bg-sky-50/60 dark:bg-sky-950/50 rounded-xl border border-sky-100 dark:border-sky-800/80">
+                <strong className="text-sky-950 dark:text-sky-200 font-bold block mb-1">
                   🧠 Terapia Emocional, Comportamental & Psicológica:
                 </strong>
                 <p>
@@ -870,8 +870,8 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                 </p>
               </div>
 
-              <div className="p-3 bg-amber-50/60 rounded-xl border border-amber-100">
-                <strong className="text-amber-950 font-bold block mb-1">
+              <div className="p-3 bg-amber-50/60 dark:bg-amber-950/50 rounded-xl border border-amber-100 dark:border-amber-800/80">
+                <strong className="text-amber-950 dark:text-amber-200 font-bold block mb-1">
                   📖 Aconselhamento Bíblico & Pastoral:
                 </strong>
                 <p>
@@ -882,26 +882,26 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           </div>
 
           {/* Card: Canais de Apoio Emergencial */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs space-y-4">
-            <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-              <PhoneCall className="w-5 h-5 text-amber-600" />
-              <h3 className="text-base font-bold text-slate-900">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs space-y-4">
+            <div className="flex items-center gap-2 pb-3 border-b border-slate-100 dark:border-slate-800">
+              <PhoneCall className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 Canais de Apoio Emergencial
               </h3>
             </div>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
               Teleconsultas e aconselhamentos não substituem prontos-socorros em situações de emergência grave, crise aguda ou risco iminente.
             </p>
-            <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 text-xs text-amber-900 space-y-2">
+            <div className="p-4 bg-amber-50 dark:bg-amber-950/50 rounded-xl border border-amber-200 dark:border-amber-800 text-xs text-amber-900 dark:text-amber-200 space-y-2">
               <div className="font-bold flex items-center justify-between">
                 <span>CVV - Centro de Valorização da Vida</span>
-                <span className="text-sm font-extrabold text-amber-800">Ligue 188</span>
+                <span className="text-sm font-extrabold text-amber-800 dark:text-amber-300">Ligue 188</span>
               </div>
-              <p className="text-[11px] text-amber-800">
+              <p className="text-[11px] text-amber-800 dark:text-amber-300">
                 Atendimento telefônico gratuito, confidencial e 24 horas por dia em todo o território nacional.
               </p>
             </div>
-            <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600">
+            <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-xs text-slate-600 dark:text-slate-300">
               <span><strong>SAMU:</strong> Ligue 192 em caso de emergência médica imediata.</span>
             </div>
           </div>

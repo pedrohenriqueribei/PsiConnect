@@ -156,37 +156,37 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs p-3 sm:p-4 flex items-start sm:items-center justify-center">
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[calc(100dvh-2rem)] flex flex-col">
+      <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto max-h-[calc(100dvh-2rem)] flex flex-col transition-colors duration-200">
         {/* Header */}
-        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/90 backdrop-blur-xs z-10">
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-800/90 backdrop-blur-xs z-10">
           <div className="flex items-center gap-3">
             {psychologist.avatar ? (
               <img
                 src={psychologist.avatar}
                 alt={psychologist.name}
                 referrerPolicy="no-referrer"
-                className="w-12 h-12 rounded-2xl object-cover border border-slate-200"
+                className="w-12 h-12 rounded-2xl object-cover border border-slate-200 dark:border-slate-700"
               />
             ) : (
-              <div className="w-12 h-12 rounded-2xl bg-sky-100 text-sky-800 font-bold flex items-center justify-center text-sm">
+              <div className="w-12 h-12 rounded-2xl bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 font-bold flex items-center justify-center text-sm">
                 {psychologist.name.charAt(0)}
               </div>
             )}
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-slate-900 leading-tight">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white leading-tight">
                   {psychologist.name}
                 </h3>
               </div>
-              <div className="text-xs text-slate-500 font-medium flex items-center gap-1.5 mt-0.5 flex-wrap">
-                <span className="inline-flex items-center gap-1 font-semibold text-slate-700">
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium flex items-center gap-1.5 mt-0.5 flex-wrap">
+                <span className="inline-flex items-center gap-1 font-semibold text-slate-700 dark:text-slate-300">
                   {getBadgeIcon()}
                   {currentProfConfig.label}
                 </span>
                 {pType === 'psychologist' && (psychologist.crp || psychologist.registrationNumber) && (
                   <>
                     <span>·</span>
-                    <span className="text-sky-800 font-medium">
+                    <span className="text-sky-800 dark:text-sky-300 font-medium">
                       {psychologist.crp || psychologist.registrationNumber}
                     </span>
                   </>
@@ -195,8 +195,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                 <span>{psychologist.city || 'Atendimento Online'}</span>
               </div>
               {psychologist.ministryOrChurch && (
-                <div className="text-[11px] text-amber-800 flex items-center gap-1 mt-0.5">
-                  <Building2 className="w-3 h-3 text-amber-600" />
+                <div className="text-[11px] text-amber-800 dark:text-amber-300 flex items-center gap-1 mt-0.5">
+                  <Building2 className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                   <span>{psychologist.ministryOrChurch}</span>
                 </div>
               )}
@@ -204,7 +204,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors shrink-0"
+            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
             title="Fechar"
             aria-label="Fechar"
           >
@@ -218,13 +218,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           <div
             className={`px-6 py-2.5 border-b flex items-center justify-between text-xs transition-colors ${
             currentSelectedSlot?.isSocial
-              ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950'
-              : 'bg-sky-50/50 border-sky-100 text-sky-900'
+              ? 'bg-emerald-50/80 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800 text-emerald-950 dark:text-emerald-200'
+              : 'bg-sky-50/50 dark:bg-sky-950/40 border-sky-100 dark:border-sky-800 text-sky-900 dark:text-sky-300'
           }`}
         >
           {currentSelectedSlot?.isSocial ? (
-            <div className="flex items-center gap-1.5 font-bold text-emerald-900">
-              <HeartHandshake className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="flex items-center gap-1.5 font-bold text-emerald-900 dark:text-emerald-300">
+              <HeartHandshake className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
               <span>
                 Atendimento Social:{' '}
                 {currentSelectedSlot.socialRate === 0
@@ -233,12 +233,12 @@ export const BookingModal: React.FC<BookingModalProps> = ({
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 font-semibold text-sky-900">
-              <DollarSign className="w-4 h-4 text-sky-700" />
+            <div className="flex items-center gap-1.5 font-semibold text-sky-900 dark:text-sky-300">
+              <DollarSign className="w-4 h-4 text-sky-700 dark:text-sky-400" />
               <span>Valor: R$ {psychologist.hourlyRate || currentProfConfig.defaultRate},00 / sessão</span>
             </div>
           )}
-          <div className="flex items-center gap-1.5 text-slate-600 tabular-nums">
+          <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 tabular-nums">
             <Clock className="w-3.5 h-3.5 text-slate-400" />
             <span>Duração: 50 minutos</span>
           </div>
@@ -255,8 +255,8 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
           {/* 1. Escolha a Data */}
           <div>
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <Calendar className="w-4 h-4 text-sky-700" />
+            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+              <Calendar className="w-4 h-4 text-sky-700 dark:text-sky-400" />
               1. Selecione a Data
             </label>
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
@@ -270,11 +270,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   }}
                   className={`flex-shrink-0 w-16 p-2 rounded-xl border text-center transition-all ${
                     selectedDate === d.dateStr
-                      ? 'border-sky-600 bg-sky-50 text-sky-900 font-bold ring-1 ring-sky-600'
-                      : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                      ? 'border-sky-600 bg-sky-50 dark:bg-sky-950/60 text-sky-900 dark:text-sky-200 font-bold ring-1 ring-sky-600'
+                      : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
                   }`}
                 >
-                  <span className="block text-[10px] uppercase font-semibold text-slate-400">
+                  <span className="block text-[10px] uppercase font-semibold text-slate-400 dark:text-slate-500">
                     {d.dayName}
                   </span>
                   <span className="block text-sm font-semibold mt-0.5 tabular-nums">
@@ -288,20 +288,20 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           {/* 2. Escolha o Horário Disponível */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-sky-700" />
+              <label className="text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-sky-700 dark:text-sky-400" />
                 2. Horários Livres para Esta Data
               </label>
               {slots.some(s => s.isSocial) && (
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md">
-                  <HeartHandshake className="w-3 h-3 text-emerald-600" />
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-md">
+                  <HeartHandshake className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                   Vagas Sociais disponíveis
                 </span>
               )}
             </div>
 
             {slots.length === 0 ? (
-              <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 text-center text-xs text-slate-500">
+              <div className="p-4 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 text-center text-xs text-slate-500 dark:text-slate-400">
                 O profissional não atende neste dia da semana ou para este período. Por favor, escolha outra data acima.
               </div>
             ) : (
@@ -318,21 +318,21 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                       onClick={() => setSelectedTime(slot.startTime)}
                       className={`py-2 px-2.5 text-xs rounded-xl border font-semibold tabular-nums transition-all flex flex-col items-center justify-center gap-0.5 ${
                         isBooked
-                          ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed line-through'
+                          ? 'border-slate-200 dark:border-slate-700 bg-slate-100 dark:bg-slate-800/80 text-slate-400 dark:text-slate-500 cursor-not-allowed line-through'
                           : isSelected
                           ? slot.isSocial
                             ? 'border-emerald-600 bg-emerald-700 text-white shadow-xs ring-2 ring-emerald-300'
                             : 'border-sky-700 bg-sky-700 text-white shadow-xs ring-2 ring-sky-300'
                           : slot.isSocial
-                          ? 'border-emerald-200 bg-emerald-50/70 text-emerald-900 hover:border-emerald-500'
-                          : 'border-slate-200 bg-white text-slate-700 hover:border-sky-500 hover:bg-sky-50/50'
+                          ? 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/70 dark:bg-emerald-950/50 text-emerald-900 dark:text-emerald-300 hover:border-emerald-500'
+                          : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:border-sky-500 hover:bg-sky-50/50 dark:hover:bg-slate-700'
                       }`}
                     >
                       <span className="font-bold">{slot.startTime}</span>
                       {slot.isSocial && (
                         <span
                           className={`text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.2 rounded ${
-                            isSelected ? 'bg-white/20 text-white' : 'bg-emerald-200/80 text-emerald-900'
+                            isSelected ? 'bg-white/20 text-white' : 'bg-emerald-200/80 dark:bg-emerald-900 text-emerald-900 dark:text-emerald-200'
                           }`}
                         >
                           Social{slot.socialRate !== undefined ? ` · R$ ${slot.socialRate}` : ''}
@@ -347,7 +347,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
           {/* 3. Motivo ou Assunto Principal */}
           <div>
-            <label className="block text-xs font-bold text-slate-800 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider mb-1.5">
               {pType === 'pastor'
                 ? '3. Assunto ou Motivo do Aconselhamento Bíblico (Opcional)'
                 : '3. Queixa Inicial ou Assunto Principal (Opcional)'}
@@ -361,13 +361,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
                   ? 'Ex: Gostaria de aconselhamento para relacionamento conjugal e sabedoria familiar...'
                   : 'Ex: Gostaria de apoio com ansiedade, estresse no trabalho ou autoconhecimento...'
               }
-              className="w-full p-2.5 text-xs border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
+              className="w-full p-2.5 text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-white border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
             />
           </div>
 
           {/* Ethical / Pastoral Security Note */}
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-start gap-2.5 text-[11px] text-slate-600">
-            <Shield className="w-4 h-4 text-sky-700 shrink-0 mt-0.5" />
+          <div className="p-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200 dark:border-slate-700 flex items-start gap-2.5 text-[11px] text-slate-600 dark:text-slate-300">
+            <Shield className="w-4 h-4 text-sky-700 dark:text-sky-400 shrink-0 mt-0.5" />
             <span>
               {pType === 'pastor'
                 ? 'Ao agendar, sua sessão é individual e mantida sob estrito sigilo pastoral e acolhimento fundamentado na Palavra de Deus.'
@@ -376,18 +376,18 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           </div>
 
           {/* Action button */}
-          <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100">
+          <div className="flex items-center justify-end gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 transition-colors"
+              className="px-4 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={isSubmitting || !selectedTime}
-              className="flex items-center gap-1.5 px-5 py-2.5 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 disabled:opacity-50 rounded-lg shadow-xs transition-colors"
+              className="flex items-center gap-1.5 px-5 py-2.5 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-500 disabled:opacity-50 rounded-lg shadow-xs transition-colors"
             >
               <CheckCircle2 className="w-4 h-4" />
               {user ? 'Confirmar Agendamento' : 'Acessar para Agendar'}
