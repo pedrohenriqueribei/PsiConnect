@@ -7,6 +7,8 @@ import { BookingModal } from './BookingModal';
 import { PatientMatchingModal } from './PatientMatchingModal';
 import { PatientFormList } from './clinicalForms/PatientFormList';
 import { clinicalFormStorage } from '../services/clinicalFormStorage';
+import { PatientMoodTrackerView } from './moodTracker/PatientMoodTrackerView';
+import { DailyMoodQuickCheck } from './moodTracker/DailyMoodQuickCheck';
 import {
   Search,
   Calendar,
@@ -28,6 +30,7 @@ import {
   HeartHandshake,
   Sparkles,
   Edit3,
+  Smile,
 } from 'lucide-react';
 
 interface PatientDashboardProps {
@@ -43,7 +46,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
 }) => {
   const { user } = useAuth();
   const [currentTab, setCurrentTab] = useState<
-    'catalog' | 'appointments' | 'patient_forms' | 'patient_records'
+    'catalog' | 'appointments' | 'patient_forms' | 'patient_records' | 'mood_tracker'
   >((activeSubTab as any) || 'catalog');
 
   const [pendingFormsCount, setPendingFormsCount] = useState<number>(() =>
@@ -207,25 +210,25 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
       {/* Top Banner */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div>
-          <span className="text-xs font-bold text-sky-800 uppercase tracking-wider block mb-1">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 md:p-8 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 transition-colors duration-200 min-w-0 max-w-full overflow-hidden">
+        <div className="min-w-0">
+          <span className="text-xs font-bold text-sky-800 dark:text-sky-400 uppercase tracking-wider block mb-1">
             Espaço de Cuidado & Acolhimento
           </span>
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
             Olá, {user ? user.name.split(' ')[0] : 'Visitante'}
           </h1>
-          <p className="text-xs text-slate-500 mt-1 max-w-xl">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
             Encontre o suporte adequado para o seu momento: <strong>terapia emocional, comportamental e psicológica</strong> com psicólogos, terapeutas e psicanalistas, ou <strong>aconselhamento bíblico</strong> com pastores experientes.
           </p>
         </div>
 
         {/* Tab Buttons */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl text-xs font-semibold self-stretch md:self-auto overflow-x-auto">
+        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-semibold self-stretch lg:self-auto overflow-x-auto min-w-0 max-w-full [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <button
             onClick={() => setCurrentTab('catalog')}
             className={`px-4 py-2 rounded-lg transition-all whitespace-nowrap ${
-              currentTab === 'catalog' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
+              currentTab === 'catalog' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             Encontrar Especialista
@@ -233,7 +236,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           <button
             onClick={() => setCurrentTab('appointments')}
             className={`px-4 py-2 rounded-lg transition-all whitespace-nowrap ${
-              currentTab === 'appointments' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
+              currentTab === 'appointments' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             Minhas Consultas ({appointments.length})
@@ -241,10 +244,10 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           <button
             onClick={() => setCurrentTab('patient_forms')}
             className={`px-4 py-2 rounded-lg transition-all whitespace-nowrap flex items-center gap-1.5 ${
-              currentTab === 'patient_forms' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
+              currentTab === 'patient_forms' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <FileText className="w-3.5 h-3.5 text-sky-700" />
+            <FileText className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />
             <span>Meus Questionários</span>
             {pendingFormsCount > 0 && (
               <span className="px-1.5 py-0.2 bg-amber-400 text-slate-900 rounded-full text-[10px] font-black">
@@ -255,14 +258,32 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           <button
             onClick={() => setCurrentTab('patient_records')}
             className={`px-4 py-2 rounded-lg transition-all whitespace-nowrap ${
-              currentTab === 'patient_records' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
+              currentTab === 'patient_records' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             Orientações de Cuidado
           </button>
+          <button
+            onClick={() => setCurrentTab('mood_tracker')}
+            className={`px-4 py-2 rounded-lg transition-all whitespace-nowrap flex items-center gap-1.5 ${
+              currentTab === 'mood_tracker' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-bold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Smile className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />
+            <span>Diário de Humor</span>
+          </button>
         </div>
       </div>
 
+
+      {/* Daily Mood Quick Check for logged in patient */}
+      {user && currentTab === 'catalog' && (
+        <DailyMoodQuickCheck
+          patientId={user.id}
+          patientName={user.name.split(' ')[0]}
+          onOpenLogModal={() => setCurrentTab('mood_tracker')}
+        />
+      )}
 
       {/* Patient Matching Profile Banner */}
       {user && (
@@ -319,9 +340,9 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
       {currentTab === 'catalog' && (
         <div className="space-y-6">
           {/* Main Category Segmentation */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 shadow-xs space-y-4 transition-colors duration-200">
             <div>
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">
+              <span className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider block mb-2">
                 O que você está buscando hoje?
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -333,15 +354,15 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                   }}
                   className={`p-3.5 rounded-xl border text-left transition-all ${
                     categoryFilter === 'all'
-                      ? 'border-sky-700 bg-sky-50/70 text-sky-950 ring-1 ring-sky-700 font-semibold shadow-xs'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      ? 'border-sky-700 dark:border-sky-500 bg-sky-50/70 dark:bg-sky-950/60 text-sky-950 dark:text-sky-200 ring-1 ring-sky-700 dark:ring-sky-500 font-semibold shadow-xs'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Heart className="w-4 h-4 text-sky-700" />
+                    <Heart className="w-4 h-4 text-sky-700 dark:text-sky-400" />
                     <span className="font-bold text-xs sm:text-sm">Todos os Especialistas</span>
                   </div>
-                  <p className="text-[11px] text-slate-500 leading-snug">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
                     Ver todos os profissionais cadastrados na plataforma.
                   </p>
                 </button>
@@ -354,15 +375,15 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                   }}
                   className={`p-3.5 rounded-xl border text-left transition-all ${
                     categoryFilter === 'therapy'
-                      ? 'border-sky-700 bg-sky-50/70 text-sky-950 ring-1 ring-sky-700 font-semibold shadow-xs'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      ? 'border-sky-700 dark:border-sky-500 bg-sky-50/70 dark:bg-sky-950/60 text-sky-950 dark:text-sky-200 ring-1 ring-sky-700 dark:ring-sky-500 font-semibold shadow-xs'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Brain className="w-4 h-4 text-sky-700" />
+                    <Brain className="w-4 h-4 text-sky-700 dark:text-sky-400" />
                     <span className="font-bold text-xs sm:text-sm">Terapia & Saúde Mental</span>
                   </div>
-                  <p className="text-[11px] text-slate-500 leading-snug">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
                     Terapia emocional, comportamental e psicológica (Psicólogos, Terapeutas e Psicanalistas).
                   </p>
                 </button>
@@ -375,15 +396,15 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                   }}
                   className={`p-3.5 rounded-xl border text-left transition-all ${
                     categoryFilter === 'biblical'
-                      ? 'border-amber-700 bg-amber-50/70 text-amber-950 ring-1 ring-amber-700 font-semibold shadow-xs'
-                      : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
+                      ? 'border-amber-700 dark:border-amber-500 bg-amber-50/70 dark:bg-amber-950/60 text-amber-950 dark:text-amber-200 ring-1 ring-amber-700 dark:ring-amber-500 font-semibold shadow-xs'
+                      : 'border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/60 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <BookOpen className="w-4 h-4 text-amber-700" />
+                    <BookOpen className="w-4 h-4 text-amber-700 dark:text-amber-400" />
                     <span className="font-bold text-xs sm:text-sm">Aconselhamento Bíblico</span>
                   </div>
-                  <p className="text-[11px] text-slate-500 leading-snug">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-snug">
                     Acolhimento pastoral e suporte espiritual fundamentado nas Sagradas Escrituras (Pastores).
                   </p>
                 </button>
@@ -885,6 +906,14 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Tab 4: Diário de Humor & Bem-Estar */}
+      {currentTab === 'mood_tracker' && (
+        <PatientMoodTrackerView
+          patientId={user?.id || 'pat_lucas'}
+          patientName={user ? user.name.split(' ')[0] : 'Lucas'}
+        />
       )}
 
       {/* Modal de Agendamento */}

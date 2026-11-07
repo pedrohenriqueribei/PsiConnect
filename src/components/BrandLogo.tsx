@@ -54,7 +54,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       >
         <div
           className={`w-full h-full rounded-[14px] overflow-hidden ${
-            variant === 'chip' ? 'bg-slate-950' : 'bg-white'
+            variant === 'chip' ? 'bg-slate-950' : 'bg-white dark:bg-slate-900'
           } flex items-center justify-center`}
         >
           <img
@@ -78,8 +78,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       {showText && (
         <div className="leading-tight">
           <div className={`font-bold tracking-tight ${currentSize.text} flex items-center gap-0.5`}>
-            <span className={textDark ? 'text-slate-900' : 'text-white'}>Psi</span>
-            <span className="bg-gradient-to-r from-sky-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent font-extrabold">
+            <span className={textDark ? 'text-slate-900 dark:text-white' : 'text-white'}>Psi</span>
+            <span className="bg-gradient-to-r from-sky-500 via-indigo-500 to-purple-500 dark:from-sky-400 dark:via-indigo-400 dark:to-purple-400 bg-clip-text text-transparent font-extrabold">
               Connect
             </span>
           </div>
@@ -87,7 +87,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
           {subtitleText && (
             <p
               className={`font-medium tracking-normal mt-0.5 ${currentSize.sub} ${
-                textDark ? 'text-slate-500' : 'text-slate-300'
+                textDark ? 'text-slate-500 dark:text-slate-400' : 'text-slate-300'
               }`}
             >
               {subtitleText}

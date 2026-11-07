@@ -36,24 +36,24 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
     <div className="space-y-16 py-6 sm:py-8">
       {/* 1. Hero Section Welcome Banner */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch bg-white rounded-3xl border border-slate-200 p-6 sm:p-10 md:p-12 shadow-xs overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 sm:p-10 md:p-12 shadow-xs overflow-hidden transition-colors duration-200">
           {/* Left Text Column */}
           <div className="lg:col-span-7 flex flex-col justify-between space-y-6">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2.5 px-3 py-1.5 bg-sky-50/80 border border-sky-200/80 rounded-full text-xs font-semibold text-sky-900 shadow-xs">
+              <div className="inline-flex items-center gap-2.5 px-3 py-1.5 bg-sky-50/80 dark:bg-sky-950/60 border border-sky-200/80 dark:border-sky-800/80 rounded-full text-xs font-semibold text-sky-900 dark:text-sky-300 shadow-xs">
                 <span className="w-5 h-5 rounded-md overflow-hidden bg-white ring-1 ring-cyan-400/50 p-0.5 flex items-center justify-center shrink-0">
                   <img src={brainGlowBadge} alt="Cérebro com Circuitos" className="w-full h-full object-contain" />
                 </span>
                 <span>Boas-vindas ao PsiConnect</span>
-                <span aria-hidden="true" className="text-sky-300">·</span>
-                <span className="text-slate-600 font-normal">Plataforma Abrangente de Cuidado</span>
+                <span aria-hidden="true" className="text-sky-300 dark:text-sky-600">·</span>
+                <span className="text-slate-600 dark:text-slate-400 font-normal">Plataforma Abrangente de Cuidado</span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 leading-tight text-balance">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight text-balance">
                 Cuidado emocional, psicológico e aconselhamento bíblico de onde você estiver.
               </h1>
 
-              <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-xl">
+              <p className="text-sm sm:text-base text-slate-600 dark:text-slate-300 leading-relaxed max-w-xl">
                 Uma plataforma inclusiva e segura desenvolvida para aproximar você do suporte certo: <strong>psicólogos</strong>, <strong>terapeutas</strong> e <strong>psicanalistas</strong> para terapia emocional e comportamental, e <strong>pastores ordenados</strong> para quem busca acolhimento e aconselhamento bíblico.
               </p>
             </div>
@@ -63,7 +63,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   onClick={onFindPsychologist}
-                  className="flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-sky-700 hover:bg-sky-800 rounded-xl shadow-xs transition-colors"
+                  className="flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-white bg-sky-700 hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-500 rounded-xl shadow-xs transition-colors"
                 >
                   <span>Explorar Especialistas</span>
                   <ArrowRight className="w-4 h-4" />
@@ -71,26 +71,26 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
 
                 <button
                   onClick={onRegisterPatient}
-                  className="flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-sky-900 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded-xl transition-colors"
+                  className="flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-sky-900 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 hover:bg-sky-100 dark:hover:bg-sky-900/60 border border-sky-200 dark:border-sky-800 rounded-xl transition-colors"
                 >
-                  <Heart className="w-4 h-4 text-sky-700" />
+                  <Heart className="w-4 h-4 text-sky-700 dark:text-sky-400" />
                   <span>Cadastrar como Paciente</span>
                 </button>
 
                 <button
                   onClick={onRegisterPsychologist}
-                  className="flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                  className="flex items-center justify-center gap-2 px-5 py-3 text-sm font-semibold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors"
                 >
-                  <UserPlus className="w-4 h-4 text-slate-600" />
+                  <UserPlus className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                   <span>Sou Profissional</span>
                 </button>
               </div>
 
-              <div className="flex items-center gap-2 text-xs text-slate-500 pt-1">
+              <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 pt-1">
                 <span>Já possui cadastro?</span>
                 <button
                   onClick={onOpenLogin}
-                  className="font-semibold text-sky-700 hover:text-sky-800 hover:underline flex items-center gap-1"
+                  className="font-semibold text-sky-700 dark:text-sky-400 hover:text-sky-800 dark:hover:text-sky-300 hover:underline flex items-center gap-1"
                 >
                   <LogIn className="w-3.5 h-3.5" />
                   <span>Fazer login (acessar conta)</span>
@@ -99,17 +99,17 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
             </div>
 
             {/* Trust points */}
-            <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-slate-600">
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-4 sm:gap-6 text-xs text-slate-600 dark:text-slate-400">
               <span className="flex items-center gap-1.5 font-medium">
-                <Brain className="w-4 h-4 text-sky-600 shrink-0" />
+                <Brain className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
                 Psicologia, Terapias & Psicanálise
               </span>
               <span className="flex items-center gap-1.5 font-medium">
-                <BookOpen className="w-4 h-4 text-amber-600 shrink-0" />
+                <BookOpen className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
                 Aconselhamento Bíblico Pastoral
               </span>
               <span className="flex items-center gap-1.5 font-medium">
-                <Clock className="w-4 h-4 text-emerald-600 shrink-0" />
+                <Clock className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 Agendamento 100% Online
               </span>
             </div>
@@ -165,62 +165,62 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
       {/* 2. Welcome Gateways: Duas Áreas Claras de Cuidado */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="text-center max-w-2xl mx-auto mb-10">
-          <span className="text-xs font-bold text-sky-800 uppercase tracking-wider block mb-1">
+          <span className="text-xs font-bold text-sky-800 dark:text-sky-400 uppercase tracking-wider block mb-1">
             Segmentos Especializados
           </span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
             Escolha o atendimento ideal para a sua necessidade
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-2">
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-2">
             Nossos profissionais são claramente organizados para que você encontre exatamente o suporte desejado.
           </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
           {/* Card 1: Terapia Emocional, Comportamental e Psicológica */}
-          <div className="bg-white p-7 sm:p-8 rounded-3xl border border-slate-200 shadow-xs flex flex-col justify-between hover:border-sky-300 hover:shadow-md transition-all">
+          <div className="bg-white dark:bg-slate-900 p-7 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between hover:border-sky-300 dark:hover:border-sky-700 hover:shadow-md transition-all">
             <div className="space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-700 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-sky-50 dark:bg-sky-950/60 text-sky-700 dark:text-sky-400 flex items-center justify-center">
                 <Brain className="w-6 h-6" />
               </div>
               <div>
-                <span className="text-xs font-semibold text-sky-700 uppercase tracking-wider">
+                <span className="text-xs font-semibold text-sky-700 dark:text-sky-400 uppercase tracking-wider">
                   Saúde Mental & Bem-Estar
                 </span>
-                <h3 className="text-xl font-bold text-slate-900 mt-0.5">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mt-0.5">
                   Terapia Emocional, Comportamental & Psicológica
                 </h3>
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 Para quem busca superar ansiedade, depressão, estresse, autossabotagem ou aprofundar seu autoconhecimento com metodologias científicas e terapêuticas consagradas.
               </p>
 
-              <div className="space-y-2.5 pt-2 border-t border-slate-100 text-xs">
-                <div className="flex items-start gap-2.5 text-slate-700">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+              <div className="space-y-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+                <div className="flex items-start gap-2.5 text-slate-700 dark:text-slate-300">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <div>
-                    <strong>Psicólogos(as) (CRP):</strong> TCC, Gestalt, Fenomenologia e terapia humanista com verificação no Conselho de Psicologia.
+                    <strong className="text-slate-900 dark:text-white">Psicólogos(as) (CRP):</strong> TCC, Gestalt, Fenomenologia e terapia humanista com verificação no Conselho de Psicologia.
                   </div>
                 </div>
-                <div className="flex items-start gap-2.5 text-slate-700">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2.5 text-slate-700 dark:text-slate-300">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <div>
-                    <strong>Terapeutas:</strong> Regulação emocional, inteligência emocional, mindfulness e práticas integrativas.
+                    <strong className="text-slate-900 dark:text-white">Terapeutas:</strong> Regulação emocional, inteligência emocional, mindfulness e práticas integrativas.
                   </div>
                 </div>
-                <div className="flex items-start gap-2.5 text-slate-700">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2.5 text-slate-700 dark:text-slate-300">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                   <div>
-                    <strong>Psicanalistas:</strong> Investigação profunda do inconsciente, análise freudiana/lacaniana e elaboração de traumas.
+                    <strong className="text-slate-900 dark:text-white">Psicanalistas:</strong> Investigação profunda do inconsciente, análise freudiana/lacaniana e elaboração de traumas.
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="pt-6 mt-6 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <button
                 onClick={onFindPsychologist}
-                className="flex items-center justify-center gap-2 py-3 px-5 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 rounded-xl transition-colors shadow-xs"
+                className="flex items-center justify-center gap-2 py-3 px-5 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-500 rounded-xl transition-colors shadow-xs"
               >
                 <span>Ver Psicólogos & Terapeutas</span>
                 <ArrowRight className="w-3.5 h-3.5" />
@@ -229,49 +229,49 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
           </div>
 
           {/* Card 2: Aconselhamento Bíblico */}
-          <div className="bg-white p-7 sm:p-8 rounded-3xl border border-slate-200 shadow-xs flex flex-col justify-between hover:border-amber-300 hover:shadow-md transition-all">
+          <div className="bg-white dark:bg-slate-900 p-7 sm:p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xs flex flex-col justify-between hover:border-amber-300 dark:hover:border-amber-700 hover:shadow-md transition-all">
             <div className="space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-400 flex items-center justify-center">
                 <BookOpen className="w-6 h-6" />
               </div>
               <div>
-                <span className="text-xs font-semibold text-amber-700 uppercase tracking-wider">
+                <span className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wider">
                   Fé & Direcionamento Espiritual
                 </span>
-                <h3 className="text-xl font-bold text-slate-900 mt-0.5">
+                <h3 className="text-xl font-bold text-slate-900 dark:text-white mt-0.5">
                   Aconselhamento Bíblico & Pastoral
                 </h3>
               </div>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
                 Habilitado especificamente para pessoas, casais e famílias em busca de acolhimento pastoral, restauração de relacionamentos, paz interior e sabedoria fundamentada nas Sagradas Escrituras.
               </p>
 
-              <div className="space-y-2.5 pt-2 border-t border-slate-100 text-xs">
-                <div className="flex items-start gap-2.5 text-slate-700">
-                  <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <div className="space-y-2.5 pt-2 border-t border-slate-100 dark:border-slate-800 text-xs">
+                <div className="flex items-start gap-2.5 text-slate-700 dark:text-slate-300">
+                  <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                   <div>
-                    <strong>Pastores Ordenados & Conselheiros:</strong> Ministros experientes com formação teológica e registro pastoral.
+                    <strong className="text-slate-900 dark:text-white">Pastores Ordenados & Conselheiros:</strong> Ministros experientes com formação teológica e registro pastoral.
                   </div>
                 </div>
-                <div className="flex items-start gap-2.5 text-slate-700">
-                  <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2.5 text-slate-700 dark:text-slate-300">
+                  <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                   <div>
-                    <strong>Aconselhamento Familiar & Matrimonial:</strong> Princípios bíblicos para fortalecer o casamento e guiar filhos.
+                    <strong className="text-slate-900 dark:text-white">Aconselhamento Familiar & Matrimonial:</strong> Princípios bíblicos para fortalecer o casamento e guiar filhos.
                   </div>
                 </div>
-                <div className="flex items-start gap-2.5 text-slate-700">
-                  <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div className="flex items-start gap-2.5 text-slate-700 dark:text-slate-300">
+                  <CheckCircle2 className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
                   <div>
-                    <strong>Conforto Espiritual & Oração:</strong> Suporte nas perdas, luto e momentos de crise existencial à luz da fé.
+                    <strong className="text-slate-900 dark:text-white">Conforto Espiritual & Oração:</strong> Suporte nas perdas, luto e momentos de crise existencial à luz da fé.
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="pt-6 mt-6 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className="pt-6 mt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
               <button
                 onClick={onFindPsychologist}
-                className="flex items-center justify-center gap-2 py-3 px-5 text-xs font-semibold text-white bg-amber-700 hover:bg-amber-800 rounded-xl transition-colors shadow-xs"
+                className="flex items-center justify-center gap-2 py-3 px-5 text-xs font-semibold text-white bg-amber-700 hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-500 rounded-xl transition-colors shadow-xs"
               >
                 <span>Ver Pastores & Conselheiros</span>
                 <ArrowRight className="w-3.5 h-3.5" />

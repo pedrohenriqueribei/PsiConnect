@@ -3,6 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { isProfessionalRole, ProfessionalType } from '../types';
 import { clinicalFormStorage } from '../services/clinicalFormStorage';
 import { BrandLogo } from './BrandLogo';
+import { ThemeToggle } from './ThemeToggle';
 import { 
   Activity, 
   User as UserIcon, 
@@ -22,7 +23,8 @@ import {
   BookOpen,
   Brain,
   Leaf,
-  Compass
+  Compass,
+  Smile
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -89,7 +91,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200">
+    <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 transition-colors duration-200">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4 px-4 sm:px-6 py-3.5">
         {/* Zone 1: Brand Wordmark */}
         <div 
@@ -110,14 +112,14 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Zone 2: Navigation Links (Desktop) */}
-        <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium text-slate-600">
+        <nav className="hidden md:flex items-center gap-6 lg:gap-8 text-sm font-medium text-slate-600 dark:text-slate-300">
           {user ? (
             isProf ? (
               <>
                 <button
                   onClick={() => setActiveTab('agenda')}
-                  className={`flex items-center gap-2 hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
-                    activeTab === 'agenda' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                    activeTab === 'agenda' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
                   <Calendar className="w-4 h-4" />
@@ -125,17 +127,17 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
                 <button
                   onClick={() => setActiveTab('matching')}
-                  className={`flex items-center gap-1.5 hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
-                    activeTab === 'matching' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                  className={`flex items-center gap-1.5 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                    activeTab === 'matching' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
-                  <Sparkles className="w-4 h-4 text-sky-700" />
+                  <Sparkles className="w-4 h-4 text-sky-700 dark:text-sky-400" />
                   Pacientes Sugeridos
                 </button>
                 <button
                   onClick={() => setActiveTab('availability')}
-                  className={`flex items-center gap-2 hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
-                    activeTab === 'availability' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                    activeTab === 'availability' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
                   <Clock className="w-4 h-4" />
@@ -143,8 +145,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
                 <button
                   onClick={() => setActiveTab('records')}
-                  className={`flex items-center gap-2 hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
-                    activeTab === 'records' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                    activeTab === 'records' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
                   <FileText className="w-4 h-4" />
@@ -152,11 +154,11 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
                 <button
                   onClick={() => setActiveTab('forms')}
-                  className={`flex items-center gap-1.5 hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
-                    activeTab === 'forms' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                  className={`flex items-center gap-1.5 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                    activeTab === 'forms' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
-                  <FileText className="w-4 h-4 text-sky-700" />
+                  <FileText className="w-4 h-4 text-sky-700 dark:text-sky-400" />
                   <span>Formulários</span>
                   {unreadFormsCount > 0 && (
                     <span className="px-1.5 py-0.2 bg-amber-400 text-slate-900 rounded-full text-[10px] font-black">
@@ -166,8 +168,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
                 <button
                   onClick={() => setActiveTab('profile')}
-                  className={`flex items-center gap-2 hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
-                    activeTab === 'profile' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                    activeTab === 'profile' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
                   <UserIcon className="w-4 h-4" />
@@ -178,8 +180,8 @@ export const Navbar: React.FC<NavbarProps> = ({
               <>
                 <button
                   onClick={() => setActiveTab('catalog')}
-                  className={`flex items-center gap-2 hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
-                    activeTab === 'catalog' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                    activeTab === 'catalog' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
                   <Search className="w-4 h-4" />
@@ -187,8 +189,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
                 <button
                   onClick={() => setActiveTab('appointments')}
-                  className={`flex items-center gap-2 hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
-                    activeTab === 'appointments' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                    activeTab === 'appointments' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
                   <Calendar className="w-4 h-4" />
@@ -196,8 +198,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
                 <button
                   onClick={() => setActiveTab('patient_forms')}
-                  className={`flex items-center gap-2 hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
-                    activeTab === 'patient_forms' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                    activeTab === 'patient_forms' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
                   <FileText className="w-4 h-4" />
@@ -205,12 +207,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
                 <button
                   onClick={() => setActiveTab('patient_records')}
-                  className={`flex items-center gap-2 hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
-                    activeTab === 'patient_records' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                    activeTab === 'patient_records' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                   }`}
                 >
                   <Shield className="w-4 h-4" />
                   Orientações de Cuidado
+                </button>
+                <button
+                  onClick={() => setActiveTab('mood_tracker')}
+                  className={`flex items-center gap-2 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                    activeTab === 'mood_tracker' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
+                  }`}
+                >
+                  <Smile className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                  Diário de Humor
                 </button>
               </>
             )
@@ -219,32 +230,32 @@ export const Navbar: React.FC<NavbarProps> = ({
             <>
               <button
                 onClick={() => setActiveTab('home')}
-                className={`hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
-                  activeTab === 'home' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                className={`hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                  activeTab === 'home' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                 }`}
               >
                 Início
               </button>
               <button
                 onClick={() => setActiveTab('catalog')}
-                className={`hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
-                  activeTab === 'catalog' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                className={`hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                  activeTab === 'catalog' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                 }`}
               >
                 Especialistas Disponíveis
               </button>
               <button
                 onClick={() => setActiveTab('ethics')}
-                className={`hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
-                  activeTab === 'ethics' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                className={`hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                  activeTab === 'ethics' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                 }`}
               >
                 Ética, Sigilo & Princípios
               </button>
               <button
                 onClick={() => setActiveTab('contact')}
-                className={`hover:text-sky-700 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
-                  activeTab === 'contact' ? 'border-sky-700 text-sky-800 font-semibold' : 'border-transparent'
+                className={`hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                  activeTab === 'contact' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
                 }`}
               >
                 Fale Conosco
@@ -255,46 +266,49 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Zone 3: Primary Action / User Profile */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          {/* Theme Toggle Button */}
+          <ThemeToggle />
+
           {user ? (
             <div className="relative" ref={userDropdownRef}>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center gap-2.5 py-1.5 px-3 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-colors text-left"
+                className="flex items-center gap-2.5 py-1.5 px-3 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
               >
                 {user.avatar ? (
                   <img
                     src={user.avatar}
                     alt={user.name}
                     referrerPolicy="no-referrer"
-                    className="w-8 h-8 rounded-full object-cover border border-slate-200"
+                    className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-slate-700"
                   />
                 ) : (
-                  <div className="w-8 h-8 rounded-full bg-sky-100 text-sky-800 font-semibold flex items-center justify-center text-xs">
+                  <div className="w-8 h-8 rounded-full bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 font-semibold flex items-center justify-center text-xs">
                     {user.name.charAt(0)}
                   </div>
                 )}
                 <div className="hidden sm:block text-left">
-                  <div className="text-xs font-semibold text-slate-800 leading-tight">
+                  <div className="text-xs font-semibold text-slate-800 dark:text-slate-100 leading-tight">
                     {user.name.split(' ')[0]} {user.name.split(' ')[1] || ''}
                   </div>
-                  <div className="text-[10px] text-slate-500 font-medium">
+                  <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">
                     {isProf ? getProfessionalDisplayRole() : 'Paciente'}
                   </div>
                 </div>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
               </button>
 
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
-                  <div className="px-4 py-2 border-b border-slate-100">
-                    <p className="text-xs font-semibold text-slate-900">{user.name}</p>
-                    <p className="text-[11px] text-slate-500 truncate">{user.email}</p>
+                <div className="absolute right-0 mt-2 w-72 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                  <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
+                    <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">{user.name}</p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
                     <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-sky-800">
+                      <span className="text-[10px] uppercase font-bold tracking-wider text-sky-800 dark:text-sky-400">
                         {isProf ? getProfessionalDisplayRole() : 'Paciente'}
                       </span>
                       {firebaseUser && (
-                        <span className="px-1.5 py-0.2 text-[9px] font-semibold text-emerald-700 bg-emerald-50 rounded">
+                        <span className="px-1.5 py-0.2 text-[9px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/50 rounded">
                           🔥 Firebase Auth
                         </span>
                       )}
@@ -302,9 +316,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </div>
 
                   {/* Switch rápido de contas demonstrativas com todos os tipos */}
-                  <div className="px-4 py-2 border-b border-slate-100">
+                  <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
                     <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
-                      <Sparkles className="w-3 h-3 text-sky-600" />
+                      <Sparkles className="w-3 h-3 text-sky-600 dark:text-sky-400" />
                       Trocar Conta de Teste:
                     </p>
                     <div className="space-y-1">
@@ -315,10 +329,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                           setDropdownOpen(false);
                         }}
                         className={`w-full text-left text-xs px-2 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${
-                          user.id === 'psy_clara' ? 'bg-sky-50 text-sky-800 font-semibold' : 'text-slate-600 hover:bg-slate-50'
+                          user.id === 'psy_clara' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                         }`}
                       >
-                        <Brain className="w-3.5 h-3.5 text-sky-600" />
+                        <Brain className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />
                         <span>Dra. Clara (Psicóloga - TCC)</span>
                       </button>
 
@@ -329,10 +343,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                           setDropdownOpen(false);
                         }}
                         className={`w-full text-left text-xs px-2 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${
-                          user.id === 'ther_camila' ? 'bg-emerald-50 text-emerald-800 font-semibold' : 'text-slate-600 hover:bg-slate-50'
+                          user.id === 'ther_camila' ? 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 font-semibold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                         }`}
                       >
-                        <Leaf className="w-3.5 h-3.5 text-emerald-600" />
+                        <Leaf className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                         <span>Camila Rezende (Terapeuta)</span>
                       </button>
 
@@ -343,10 +357,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                           setDropdownOpen(false);
                         }}
                         className={`w-full text-left text-xs px-2 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${
-                          user.id === 'psy_renata' ? 'bg-purple-50 text-purple-800 font-semibold' : 'text-slate-600 hover:bg-slate-50'
+                          user.id === 'psy_renata' ? 'bg-purple-50 dark:bg-purple-950/60 text-purple-800 dark:text-purple-300 font-semibold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                         }`}
                       >
-                        <Compass className="w-3.5 h-3.5 text-purple-600" />
+                        <Compass className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
                         <span>Dra. Renata (Psicanalista)</span>
                       </button>
 
@@ -357,10 +371,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                           setDropdownOpen(false);
                         }}
                         className={`w-full text-left text-xs px-2 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${
-                          user.id === 'pas_david' ? 'bg-amber-50 text-amber-900 font-semibold' : 'text-slate-600 hover:bg-slate-50'
+                          user.id === 'pas_david' ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 font-semibold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                         }`}
                       >
-                        <BookOpen className="w-3.5 h-3.5 text-amber-600" />
+                        <BookOpen className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                         <span>Pr. David (Pastor Bíblico)</span>
                       </button>
 
@@ -371,10 +385,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                           setDropdownOpen(false);
                         }}
                         className={`w-full text-left text-xs px-2 py-1.5 rounded-lg transition-colors flex items-center gap-2 ${
-                          user.id === 'pat_lucas' ? 'bg-slate-100 text-slate-900 font-semibold' : 'text-slate-600 hover:bg-slate-50'
+                          user.id === 'pat_lucas' ? 'bg-slate-100 dark:bg-slate-800 text-slate-900 dark:text-white font-semibold' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
                         }`}
                       >
-                        <Heart className="w-3.5 h-3.5 text-rose-500" />
+                        <Heart className="w-3.5 h-3.5 text-rose-500 dark:text-rose-400" />
                         <span>Lucas (Paciente)</span>
                       </button>
                     </div>
@@ -386,7 +400,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       setActiveTab('home');
                       setDropdownOpen(false);
                     }}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-xs text-red-600 hover:bg-red-50 transition-colors"
+                    className="w-full flex items-center gap-2 px-4 py-2 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors"
                   >
                     <LogOut className="w-3.5 h-3.5" />
                     Encerrar Sessão
@@ -399,10 +413,10 @@ export const Navbar: React.FC<NavbarProps> = ({
               {/* Botão: Fazer login (acessar) */}
               <button
                 onClick={onOpenLogin}
-                className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 hover:border-slate-400 rounded-xl shadow-2xs transition-colors whitespace-nowrap"
+                className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-800 hover:bg-slate-50 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-xl shadow-2xs transition-colors whitespace-nowrap"
                 title="Acessar com sua conta existente"
               >
-                <LogIn className="w-3.5 h-3.5 text-sky-700" />
+                <LogIn className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />
                 <span className="hidden xs:inline">Fazer Login</span>
                 <span className="xs:hidden">Entrar</span>
               </button>
@@ -411,7 +425,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <div className="relative" ref={registerDropdownRef}>
                 <button
                   onClick={() => setRegisterMenuOpen(!registerMenuOpen)}
-                  className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 rounded-xl shadow-xs transition-colors whitespace-nowrap"
+                  className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-500 rounded-xl shadow-xs transition-colors whitespace-nowrap"
                   aria-expanded={registerMenuOpen}
                   aria-haspopup="true"
                 >
@@ -421,9 +435,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </button>
 
                 {registerMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
-                    <div className="px-4 py-1.5 border-b border-slate-100">
-                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <div className="absolute right-0 mt-2 w-72 sm:w-80 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-200 dark:border-slate-800 py-2 z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+                    <div className="px-4 py-1.5 border-b border-slate-100 dark:border-slate-800">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
                         Como você deseja se cadastrar?
                       </p>
                     </div>
@@ -433,21 +447,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                         setRegisterMenuOpen(false);
                         onOpenRegister('patient');
                       }}
-                      className="w-full text-left px-4 py-3 hover:bg-sky-50 transition-colors flex items-start gap-3 group"
+                      className="w-full text-left px-4 py-3 hover:bg-sky-50 dark:hover:bg-slate-800 transition-colors flex items-start gap-3 group"
                     >
-                      <div className="w-9 h-9 rounded-xl bg-sky-100 text-sky-800 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-sky-700 group-hover:text-white transition-colors">
+                      <div className="w-9 h-9 rounded-xl bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-sky-700 group-hover:text-white transition-colors">
                         <Heart className="w-4 h-4" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-900 group-hover:text-sky-800">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-sky-800 dark:group-hover:text-sky-400">
                             Como Paciente
                           </span>
-                          <span className="text-[9px] font-semibold text-sky-700 bg-sky-50 border border-sky-200 px-1.5 py-0.2 rounded-full">
+                          <span className="text-[9px] font-semibold text-sky-700 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 px-1.5 py-0.2 rounded-full">
                             Acolhimento
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
                           Buscar terapia emocional, comportamental ou aconselhamento bíblico.
                         </p>
                       </div>
@@ -458,21 +472,21 @@ export const Navbar: React.FC<NavbarProps> = ({
                         setRegisterMenuOpen(false);
                         onOpenRegister('psychologist');
                       }}
-                      className="w-full text-left px-4 py-3 hover:bg-emerald-50 transition-colors flex items-start gap-3 group border-t border-slate-100"
+                      className="w-full text-left px-4 py-3 hover:bg-emerald-50 dark:hover:bg-slate-800 transition-colors flex items-start gap-3 group border-t border-slate-100 dark:border-slate-800"
                     >
-                      <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-emerald-700 group-hover:text-white transition-colors">
+                      <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 flex items-center justify-center shrink-0 mt-0.5 group-hover:bg-emerald-700 group-hover:text-white transition-colors">
                         <Shield className="w-4 h-4" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-bold text-slate-900 group-hover:text-emerald-800">
+                          <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-emerald-800 dark:group-hover:text-emerald-400">
                             Como Profissional
                           </span>
-                          <span className="text-[9px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded-full">
+                          <span className="text-[9px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 px-1.5 py-0.2 rounded-full">
                             4 Especialidades
                           </span>
                         </div>
-                        <p className="text-[11px] text-slate-500 mt-0.5 leading-snug">
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-snug">
                           Psicólogos (CRP), Terapeutas, Psicanalistas e Pastores / Conselheiros Bíblicos.
                         </p>
                       </div>
@@ -486,7 +500,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Mobile Menu Toggle Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors ml-1"
+            className="md:hidden p-2 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors ml-1"
             aria-label="Abrir menu de navegação"
           >
             {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -496,57 +510,193 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Menu Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 bg-white px-4 py-4 space-y-3">
+        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-4 space-y-3">
+          {/* Quick theme switcher row in mobile menu */}
+          <div className="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-slate-800/60 rounded-xl border border-slate-200/80 dark:border-slate-700/80 mb-2">
+            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+              Aparência da Plataforma
+            </span>
+            <ThemeToggle showLabel={true} />
+          </div>
+
           <div className="space-y-1">
-            <button
-              onClick={() => {
-                setActiveTab('home');
-                setMobileMenuOpen(false);
-              }}
-              className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
-                activeTab === 'home' ? 'bg-sky-50 text-sky-800 font-semibold' : 'text-slate-700 hover:bg-slate-50'
-              }`}
-            >
-              Início
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab('catalog');
-                setMobileMenuOpen(false);
-              }}
-              className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
-                activeTab === 'catalog' ? 'bg-sky-50 text-sky-800 font-semibold' : 'text-slate-700 hover:bg-slate-50'
-              }`}
-            >
-              Especialistas Disponíveis
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab('ethics');
-                setMobileMenuOpen(false);
-              }}
-              className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
-                activeTab === 'ethics' ? 'bg-sky-50 text-sky-800 font-semibold' : 'text-slate-700 hover:bg-slate-50'
-              }`}
-            >
-              Ética, Sigilo & Princípios
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab('contact');
-                setMobileMenuOpen(false);
-              }}
-              className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
-                activeTab === 'contact' ? 'bg-sky-50 text-sky-800 font-semibold' : 'text-slate-700 hover:bg-slate-50'
-              }`}
-            >
-              Fale Conosco
-            </button>
+            {user ? (
+              isProf ? (
+                <>
+                  <button
+                    onClick={() => {
+                      setActiveTab('agenda');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
+                      activeTab === 'agenda' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    Minha Agenda
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab('matching');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
+                      activeTab === 'matching' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    Pacientes Sugeridos
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab('availability');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
+                      activeTab === 'availability' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    Disponibilidade
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab('records');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
+                      activeTab === 'records' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    Prontuários & Registros
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab('forms');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors flex items-center justify-between ${
+                      activeTab === 'forms' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <span>Formulários Clínicos</span>
+                    {unreadFormsCount > 0 && (
+                      <span className="px-1.5 py-0.2 bg-amber-400 text-slate-900 rounded-full text-[10px] font-black">
+                        {unreadFormsCount}
+                      </span>
+                    )}
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      setActiveTab('catalog');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
+                      activeTab === 'catalog' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    Encontrar Especialistas
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab('appointments');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
+                      activeTab === 'appointments' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    Minhas Consultas
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab('mood_tracker');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                      activeTab === 'mood_tracker' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <Smile className="w-4 h-4 text-sky-600 dark:text-sky-400" />
+                    <span>Diário de Humor</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab('patient_forms');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
+                      activeTab === 'patient_forms' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    Meus Questionários
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab('patient_records');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
+                      activeTab === 'patient_records' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    Orientações de Cuidado
+                  </button>
+                </>
+              )
+            ) : (
+              <>
+                <button
+                  onClick={() => {
+                    setActiveTab('home');
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
+                    activeTab === 'home' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  Início
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('catalog');
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
+                    activeTab === 'catalog' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  Especialistas Disponíveis
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('ethics');
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
+                    activeTab === 'ethics' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  Ética, Sigilo & Princípios
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('contact');
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors ${
+                    activeTab === 'contact' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                  }`}
+                >
+                  Fale Conosco
+                </button>
+              </>
+            )}
           </div>
 
           {!user && (
-            <div className="pt-3 border-t border-slate-100 space-y-2">
-              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 px-3">
+            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 space-y-2">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 px-3">
                 Acesso & Cadastro
               </p>
               <button
@@ -554,9 +704,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setMobileMenuOpen(false);
                   onOpenLogin();
                 }}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-semibold text-slate-700 dark:text-slate-200 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-colors"
               >
-                <LogIn className="w-4 h-4 text-sky-700" />
+                <LogIn className="w-4 h-4 text-sky-700 dark:text-sky-400" />
                 <span>Fazer Login</span>
               </button>
               <button
@@ -574,9 +724,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                   setMobileMenuOpen(false);
                   onOpenRegister('psychologist');
                 }}
-                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition-colors"
+                className="w-full flex items-center justify-center gap-2 py-2.5 px-4 text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 border border-emerald-200 dark:border-emerald-800 rounded-xl transition-colors"
               >
-                <Shield className="w-4 h-4 text-emerald-700" />
+                <Shield className="w-4 h-4 text-emerald-700 dark:text-emerald-400" />
                 <span>Cadastrar como Profissional</span>
               </button>
             </div>

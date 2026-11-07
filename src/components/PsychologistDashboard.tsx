@@ -62,6 +62,7 @@ import {
   X,
   Plus,
   Activity,
+  LayoutGrid,
 } from 'lucide-react';
 
 interface PsychologistDashboardProps {
@@ -77,6 +78,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
   const [currentTab, setCurrentTab] = useState<
     'agenda' | 'availability' | 'records' | 'matching' | 'profile' | 'journey' | 'forms'
   >((activeSubTab as any) || 'agenda');
+  const [mobileNavLayout, setMobileNavLayout] = useState<'pills' | 'grid'>('pills');
   const [selectedProntuarioPatientId, setSelectedProntuarioPatientId] = useState<string | undefined>(undefined);
   const [selectedJourneyPatientId, setSelectedJourneyPatientId] = useState<string | undefined>(undefined);
 
@@ -400,120 +402,287 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
       {/* Welcome Banner */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-        <div className="flex items-center gap-4">
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-5 sm:p-6 md:p-8 shadow-xs flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6 transition-colors duration-200 min-w-0 max-w-full overflow-hidden">
+        <div className="flex items-center gap-4 min-w-0">
           {user?.avatar ? (
             <img
               src={user.avatar}
               alt={user.name}
               referrerPolicy="no-referrer"
-              className="w-16 h-16 rounded-2xl object-cover border border-slate-200 shadow-xs"
+              className="w-16 h-16 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shadow-xs shrink-0"
             />
           ) : (
-            <div className="w-16 h-16 rounded-2xl bg-sky-100 text-sky-800 font-bold flex items-center justify-center text-xl">
+            <div className="w-16 h-16 rounded-2xl bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 font-bold flex items-center justify-center text-xl shrink-0">
               {user?.name.charAt(0)}
             </div>
           )}
-          <div>
+          <div className="min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
+              <h1 className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
                 {user?.name}
               </h1>
-              <span className="text-[11px] font-semibold text-sky-800 bg-sky-50 border border-sky-200 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1">
+              <span className="text-[11px] font-semibold text-sky-800 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 px-2.5 py-0.5 rounded-full inline-flex items-center gap-1 shrink-0">
                 {getBadgeIcon()}
                 <span>{currentProfConfig.label}</span>
               </span>
               {user?.ministryOrChurch && (
-                <span className="text-[11px] font-medium text-amber-800 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-full flex items-center gap-1">
-                  <Building2 className="w-3 h-3 text-amber-600" />
+                <span className="text-[11px] font-medium text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800 px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0">
+                  <Building2 className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                   {user.ministryOrChurch}
                 </span>
               )}
             </div>
-            <p className="text-xs text-slate-500 mt-1 max-w-xl">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
               {getPortalTitle()} · Atendimento seguro por teleconferência, gestão de grade e registros confidenciais.
             </p>
           </div>
         </div>
 
-        {/* Quick Nav Pills */}
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 rounded-xl text-xs font-semibold self-stretch md:self-auto overflow-x-auto">
-          <button
-            onClick={() => setCurrentTab('agenda')}
-            className={`px-3.5 py-2 rounded-lg transition-all whitespace-nowrap ${
-              currentTab === 'agenda' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Agenda ({todayApts.length} hoje)
-          </button>
-          <button
-            onClick={() => setCurrentTab('matching')}
-            className={`px-3.5 py-2 rounded-lg transition-all whitespace-nowrap flex items-center gap-1.5 ${
-              currentTab === 'matching' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-sky-700" />
-            <span>Pacientes Sugeridos</span>
-            {highMatchCount > 0 && (
-              <span className="px-1.5 py-0.5 bg-sky-100 text-sky-800 rounded-full text-[10px] font-bold">
-                {highMatchCount}
+        {/* Mobile-First Quick Nav Hub */}
+        <div className="w-full xl:w-auto min-w-0 max-w-full self-stretch xl:self-auto space-y-2.5">
+          {/* Mobile view selector and toggle (hidden on desktop md:) */}
+          <div className="flex md:hidden items-center justify-between gap-2 px-1">
+            <div className="flex items-center gap-1.5">
+              <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                Opções Rápidas
               </span>
-            )}
-          </button>
-          <button
-            onClick={() => setCurrentTab('availability')}
-            className={`px-3.5 py-2 rounded-lg transition-all whitespace-nowrap ${
-              currentTab === 'availability' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
-            }`}
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span>
+            </div>
+
+            {/* Mobile layout switcher: Barra (swipe) vs Grade (grid) */}
+            <div className="inline-flex items-center p-0.5 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700/80 text-[11px]">
+              <button
+                type="button"
+                onClick={() => setMobileNavLayout('pills')}
+                className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+                  mobileNavLayout === 'pills'
+                    ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-300 shadow-xs'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                Barra
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileNavLayout('grid')}
+                className={`px-2.5 py-1 rounded-lg font-bold transition-all flex items-center gap-1 ${
+                  mobileNavLayout === 'grid'
+                    ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-300 shadow-xs'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                <LayoutGrid className="w-3 h-3" />
+                <span>Grade</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Option A: Mobile-First 2-Column Touch Grid (Active when user taps Grade on mobile) */}
+          {mobileNavLayout === 'grid' && (
+            <div className="w-full min-w-0 max-w-full grid md:hidden grid-cols-2 gap-2 animate-in fade-in zoom-in-95 duration-150">
+              {[
+                {
+                  id: 'agenda' as const,
+                  label: 'Agenda',
+                  badge: todayApts.length > 0 ? `${todayApts.length} hoje` : undefined,
+                  badgeColor: 'bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300 border-sky-200 dark:border-sky-800',
+                  icon: Calendar,
+                  desc: todayApts.length > 0 ? `${todayApts.length} marcada(s) hoje` : 'Nenhuma consulta hoje',
+                },
+                {
+                  id: 'matching' as const,
+                  label: 'Pacientes Sugeridos',
+                  badge: highMatchCount > 0 ? `${highMatchCount}` : undefined,
+                  badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+                  icon: Sparkles,
+                  desc: `${highMatchCount} compatíveis`,
+                },
+                {
+                  id: 'availability' as const,
+                  label: 'Disponibilidade',
+                  badge: `${activeSlots}`,
+                  badgeColor: 'bg-slate-200 text-slate-800 dark:bg-slate-700 dark:text-slate-200 border-slate-300 dark:border-slate-600',
+                  icon: Clock,
+                  desc: `${activeSlots} horários ativos`,
+                },
+                {
+                  id: 'records' as const,
+                  label: pType === 'pastor' ? 'Fichas Pastorais' : 'Prontuários (PEP)',
+                  badge: undefined,
+                  badgeColor: '',
+                  icon: ShieldCheck,
+                  desc: 'Evoluções e sigilo',
+                },
+                {
+                  id: 'forms' as const,
+                  label: 'Formulários Clínicos',
+                  badge: unreadFormsCount > 0 ? `${unreadFormsCount}` : undefined,
+                  badgeColor: 'bg-amber-400 text-slate-900 border-amber-500 font-black animate-pulse',
+                  icon: FileText,
+                  desc: unreadFormsCount > 0 ? `${unreadFormsCount} não lida(s)` : 'Questionários e escalas',
+                },
+                {
+                  id: 'journey' as const,
+                  label: 'Jornada (D3)',
+                  badge: 'D3',
+                  badgeColor: 'bg-teal-100 text-teal-800 dark:bg-teal-950 dark:text-teal-300 border-teal-200 dark:border-teal-800',
+                  icon: Activity,
+                  desc: 'Linha temporal visual',
+                },
+                {
+                  id: 'profile' as const,
+                  label: 'Meu Perfil',
+                  badge: undefined,
+                  badgeColor: '',
+                  icon: UserIcon,
+                  desc: 'Dados e abordagens',
+                },
+              ].map(item => {
+                const isSelected = currentTab === item.id;
+                const IconComp = item.icon;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => {
+                      if (item.id === 'records') setSelectedProntuarioPatientId(undefined);
+                      setCurrentTab(item.id);
+                    }}
+                    className={`p-3 rounded-2xl border text-left transition-all active:scale-95 flex flex-col justify-between min-h-[82px] cursor-pointer ${
+                      isSelected
+                        ? 'bg-sky-700 text-white border-sky-800 shadow-md ring-2 ring-sky-500/40'
+                        : 'bg-white dark:bg-slate-800/90 hover:bg-slate-50 dark:hover:bg-slate-700/80 border-slate-200/80 dark:border-slate-700 text-slate-800 dark:text-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between w-full mb-1.5">
+                      <div
+                        className={`w-7 h-7 rounded-xl flex items-center justify-center ${
+                          isSelected
+                            ? 'bg-white/20 text-white'
+                            : 'bg-sky-50 dark:bg-slate-700 text-sky-700 dark:text-sky-400'
+                        }`}
+                      >
+                        <IconComp className="w-3.5 h-3.5" />
+                      </div>
+                      {item.badge && (
+                        <span
+                          className={`text-[9px] font-bold px-1.5 py-0.2 rounded-full border ${
+                            isSelected
+                              ? 'bg-white text-sky-900 border-white/50'
+                              : `${item.badgeColor}`
+                          }`}
+                        >
+                          {item.badge}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-xs font-bold leading-tight block truncate w-full">
+                      {item.label}
+                    </span>
+                    <span
+                      className={`text-[10px] block truncate w-full mt-0.5 ${
+                        isSelected ? 'text-sky-100' : 'text-slate-400 dark:text-slate-500'
+                      }`}
+                    >
+                      {item.desc}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Option B: Touch-Optimized Responsive Carousel (Always on desktop md:, or on mobile in 'pills' mode) */}
+          <div
+            className={`${
+              mobileNavLayout === 'grid' ? 'hidden md:flex' : 'flex'
+            } w-full min-w-0 max-w-full items-center gap-1.5 p-1.5 bg-slate-100/90 dark:bg-slate-800/90 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 text-xs font-semibold overflow-x-auto overscroll-x-contain scroll-smooth snap-x [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden`}
           >
-            Disponibilidade ({activeSlots})
-          </button>
-          <button
-            onClick={() => {
-              setSelectedProntuarioPatientId(undefined);
-              setCurrentTab('records');
-            }}
-            className={`px-3.5 py-2 rounded-lg transition-all whitespace-nowrap ${
-              currentTab === 'records' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            {pType === 'pastor' ? 'Fichas Pastorais' : 'Prontuários (PEP)'}
-          </button>
-          <button
-            onClick={() => setCurrentTab('journey')}
-            className={`px-3.5 py-2 rounded-lg transition-all whitespace-nowrap flex items-center gap-1.5 ${
-              currentTab === 'journey'
-                ? 'bg-white text-emerald-950 shadow-xs font-bold ring-1 ring-emerald-300'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Activity className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Jornada do Paciente (D3)</span>
-          </button>
-          <button
-            onClick={() => setCurrentTab('forms')}
-            className={`px-3.5 py-2 rounded-lg transition-all whitespace-nowrap flex items-center gap-1.5 ${
-              currentTab === 'forms'
-                ? 'bg-sky-700 text-white shadow-xs font-bold'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <FileText className="w-3.5 h-3.5 text-sky-400" />
-            <span>Formulários Clínicos</span>
-            {unreadFormsCount > 0 && (
-              <span className="px-1.5 py-0.2 bg-amber-400 text-slate-900 rounded-full text-[10px] font-black">
-                {unreadFormsCount}
-              </span>
-            )}
-          </button>
-          <button
-            onClick={() => setCurrentTab('profile')}
-            className={`px-3.5 py-2 rounded-lg transition-all whitespace-nowrap ${
-              currentTab === 'profile' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            Editar Perfil & Tags
-          </button>
+            {[
+              {
+                id: 'agenda' as const,
+                label: `Agenda (${todayApts.length} hoje)`,
+                badge: undefined,
+                badgeColor: '',
+                icon: Calendar,
+              },
+              {
+                id: 'matching' as const,
+                label: 'Pacientes Sugeridos',
+                badge: highMatchCount > 0 ? `${highMatchCount}` : undefined,
+                badgeColor: 'bg-sky-100 dark:bg-sky-950 text-sky-800 dark:text-sky-300 border-sky-200 dark:border-sky-800',
+                icon: Sparkles,
+              },
+              {
+                id: 'availability' as const,
+                label: `Disponibilidade (${activeSlots})`,
+                badge: undefined,
+                badgeColor: '',
+                icon: Clock,
+              },
+              {
+                id: 'records' as const,
+                label: pType === 'pastor' ? 'Fichas Pastorais' : 'Prontuários (PEP)',
+                badge: undefined,
+                badgeColor: '',
+                icon: ShieldCheck,
+              },
+              {
+                id: 'forms' as const,
+                label: 'Formulários Clínicos',
+                badge: unreadFormsCount > 0 ? `${unreadFormsCount}` : undefined,
+                badgeColor: 'bg-amber-400 text-slate-900 border-amber-500 font-black animate-pulse',
+                icon: FileText,
+              },
+              {
+                id: 'journey' as const,
+                label: 'Jornada (D3)',
+                badge: 'D3',
+                badgeColor: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800',
+                icon: Activity,
+              },
+              {
+                id: 'profile' as const,
+                label: 'Editar Perfil & Tags',
+                badge: undefined,
+                badgeColor: '',
+                icon: UserIcon,
+              },
+            ].map(tab => {
+              const isSelected = currentTab === tab.id;
+              const IconComp = tab.icon;
+
+              return (
+                <button
+                  key={tab.id}
+                  type="button"
+                  onClick={() => {
+                    if (tab.id === 'records') setSelectedProntuarioPatientId(undefined);
+                    setCurrentTab(tab.id);
+                  }}
+                  className={`snap-start px-3.5 py-2.5 sm:py-2 rounded-xl transition-all whitespace-nowrap flex items-center gap-1.5 shrink-0 min-h-[42px] sm:min-h-0 cursor-pointer ${
+                    isSelected
+                      ? 'bg-sky-700 dark:bg-sky-600 text-white shadow-xs font-bold'
+                      : 'bg-white/80 dark:bg-slate-700/80 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-white dark:hover:bg-slate-700 border border-slate-200/50 dark:border-slate-600/50'
+                  }`}
+                >
+                  <IconComp className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-white' : 'text-sky-700 dark:text-sky-400'}`} />
+                  <span>{tab.label}</span>
+                  {tab.badge && (
+                    <span
+                      className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold border ${
+                        isSelected
+                          ? 'bg-white/20 text-white border-white/40'
+                          : `${tab.badgeColor}`
+                      }`}
+                    >
+                      {tab.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
 

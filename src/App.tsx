@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider } from './context/ThemeContext';
 import { Navbar } from './components/Navbar';
 import { AuthModal } from './components/AuthModal';
 import { PsychologistDashboard } from './components/PsychologistDashboard';
@@ -89,7 +90,7 @@ const MainApp: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 text-slate-900">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
       {/* Top Navigation */}
       <Navbar
         activeTab={activeTab}
@@ -112,8 +113,8 @@ const MainApp: React.FC = () => {
             <div className="space-y-6">
               {/* Logged in welcome helper banner */}
               <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
-                <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 text-sky-900">
+                <div className="bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 text-sky-900 dark:text-sky-200">
                     <div className="w-9 h-9 rounded-full bg-sky-700 text-white flex items-center justify-center font-bold text-xs shrink-0">
                       {user.name.charAt(0)}
                     </div>
@@ -121,7 +122,7 @@ const MainApp: React.FC = () => {
                       <p className="text-xs font-semibold">
                         Olá, {user.name} ({getUserRoleLabel()})
                       </p>
-                      <p className="text-[11px] text-sky-700">
+                      <p className="text-[11px] text-sky-700 dark:text-sky-300">
                         Você está autenticado no PsiConnect. Deseja acessar seu painel principal?
                       </p>
                     </div>
@@ -174,28 +175,28 @@ const MainApp: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-slate-200 mt-16 py-10 text-xs text-slate-500">
+      <footer className="bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 mt-16 py-10 text-xs text-slate-500 dark:text-slate-400 transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
           <div className="space-y-3 md:col-span-2">
             <BrandLogo size="md" subtitle="Tecnologia & Conexão em Saúde Mental e Aconselhamento" animated={true} />
-            <p className="max-w-md text-slate-500 leading-relaxed">
+            <p className="max-w-md text-slate-500 dark:text-slate-400 leading-relaxed">
               Plataforma de intermediação e telepsicologia que aproxima especialistas e pacientes com segurança técnica e conformidade rigorosa com as resoluções do Conselho Federal de Psicologia (CFP nº 011/2018).
             </p>
-            <div className="flex items-center gap-2 text-emerald-700 font-semibold pt-1">
+            <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 font-semibold pt-1">
               <CheckCircle2 className="w-4 h-4" />
               <span>Ambiente seguro com criptografia e prontuário sigiloso</span>
             </div>
           </div>
 
           <div>
-            <span className="font-bold text-slate-800 uppercase tracking-wider block mb-2">
+            <span className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block mb-2">
               Atendimento & Ética
             </span>
-            <ul className="space-y-1.5 text-slate-500">
+            <ul className="space-y-1.5 text-slate-500 dark:text-slate-400">
               <li>
                 <button 
                   onClick={() => setActiveTab('contact')}
-                  className="hover:text-sky-700 font-semibold text-slate-700 transition-colors text-left"
+                  className="hover:text-sky-700 dark:hover:text-sky-400 font-semibold text-slate-700 dark:text-slate-300 transition-colors text-left"
                 >
                   Fale Conosco (Suporte & Contato)
                 </button>
@@ -208,25 +209,25 @@ const MainApp: React.FC = () => {
           </div>
 
           <div>
-            <span className="font-bold text-slate-800 uppercase tracking-wider block mb-2">
+            <span className="font-bold text-slate-800 dark:text-slate-200 uppercase tracking-wider block mb-2">
               Apoio Emergencial
             </span>
-            <p className="text-slate-500 mb-2">
+            <p className="text-slate-500 dark:text-slate-400 mb-2">
               Em caso de crise grave ou pensamentos suicidas, procure apoio imediato:
             </p>
-            <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 text-amber-900 font-medium flex items-center justify-between">
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-lg border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200 font-medium flex items-center justify-between">
               <span>CVV - Apoio à Vida</span>
               <span className="font-bold">Ligue 188 (Gratuito)</span>
             </div>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-6 pt-6 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p>© {new Date().getFullYear()} PsiConnect. Todos os direitos reservados.</p>
-          <div className="flex items-center gap-4 text-slate-400">
+          <div className="flex items-center gap-4 text-slate-400 dark:text-slate-500">
             <button 
               onClick={() => setActiveTab('contact')}
-              className="hover:text-sky-700 text-slate-600 transition-colors"
+              className="hover:text-sky-700 dark:hover:text-sky-400 text-slate-600 dark:text-slate-300 transition-colors"
             >
               Fale Conosco
             </button>
@@ -283,8 +284,10 @@ const MainApp: React.FC = () => {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <MainApp />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <MainApp />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

@@ -309,25 +309,25 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs p-3 sm:p-4 md:p-6 flex items-start sm:items-center justify-center">
-      <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-auto max-h-[calc(100dvh-2rem)] flex flex-col">
+      <div className="relative w-full max-w-lg bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-auto max-h-[calc(100dvh-2rem)] flex flex-col transition-colors duration-200">
         {/* Modal Header (Fixed at the top) */}
-        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/90 backdrop-blur-xs z-10">
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-100 dark:border-slate-800 bg-slate-50/90 dark:bg-slate-900/90 backdrop-blur-xs z-10">
           <div className="flex items-center gap-3">
             <BrandLogo size="sm" showText={false} animated={true} />
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-base font-bold text-slate-900 dark:text-white">
                   {mode === 'login'
                     ? 'Fazer Login no PsiConnect'
                     : accountCategory === 'professional'
                     ? `Cadastro de ${currentProfConfig.label}`
                     : 'Cadastro de Paciente'}
                 </h3>
-                <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-semibold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-full">
+                <span className="hidden sm:inline-block px-2 py-0.5 text-[10px] font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 rounded-full">
                   Firebase Firestore Ativo
                 </span>
               </div>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                 {mode === 'login'
                   ? 'Acesse com sua conta para gerenciar consultas e atendimentos'
                   : accountCategory === 'professional'
@@ -340,7 +340,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors shrink-0"
+            className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors shrink-0"
             title="Fechar"
             aria-label="Fechar modal"
           >
@@ -352,7 +352,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div ref={scrollContainerRef} className="overflow-y-auto flex-1 overscroll-contain">
           {/* Mode Switcher Tabs */}
           <div className="p-6 pb-2">
-            <div className="grid grid-cols-2 p-1 bg-slate-100 rounded-lg text-xs font-medium">
+            <div className="grid grid-cols-2 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-medium">
               <button
                 type="button"
                 onClick={() => {
@@ -360,7 +360,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   setErrorMessage('');
                 }}
                 className={`py-1.5 rounded-md transition-all ${
-                  mode === 'login' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-slate-900'
+                  mode === 'login' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 Entrar (Já Tenho Conta)
@@ -372,7 +372,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                   setErrorMessage('');
                 }}
                 className={`py-1.5 rounded-md transition-all ${
-                  mode === 'register' ? 'bg-white text-slate-900 shadow-xs font-semibold' : 'text-slate-600 hover:text-slate-900'
+                  mode === 'register' ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-xs font-semibold' : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
                 }`}
               >
                 Criar Nova Conta
