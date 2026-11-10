@@ -270,6 +270,8 @@ export interface User {
   externalMeetingUrl?: string;
   patientProfile?: PatientMatchingProfile;
   professionalProfile?: ProfessionalMatchingProfile;
+  clinicUnitId?: string;
+  clinicUnit?: import('./clinicUnit').ClinicUnit;
   joinedAt: string;
 }
 
@@ -341,3 +343,4 @@ export interface ChatMessage {
 
 export * from './psychologicalRecord';
 export * from './clinicalForm';
+export * from './clinicUnit';

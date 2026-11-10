@@ -21,9 +21,10 @@ import { PatientInviteModal } from './PatientInviteModal';
 import { PsychologicalRecordModule } from './psychologicalRecord/PsychologicalRecordModule';
 import { PatientJourneyD3Chart } from './psychologicalRecord/PatientJourneyD3Chart';
 import { ClinicalFormsModule } from './clinicalForms/ClinicalFormsModule';
+import { PsychologicalRecord } from '../types/psychologicalRecord';
 import { psychologicalRecordStorage } from '../services/psychologicalRecordStorage';
 import { clinicalFormStorage } from '../services/clinicalFormStorage';
-import { PsychologicalRecord } from '../types/psychologicalRecord';
+import { maskPhone } from '../utils/maskUtils';
 import {
   getRecommendedPatientsForProfessional,
   PROFESSIONAL_AFFINITY_TAGS,
@@ -261,7 +262,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
   const [registrationNumber, setRegistrationNumber] = useState(user?.registrationNumber || user?.crp || '');
   const [ministryOrChurch, setMinistryOrChurch] = useState(user?.ministryOrChurch || '');
   const [hourlyRate, setHourlyRate] = useState(user?.hourlyRate || currentProfConfig.defaultRate);
-  const [phone, setPhone] = useState(user?.phone || '');
+  const [phone, setPhone] = useState(user?.phone ? maskPhone(user.phone) : '');
   const [selectedType, setSelectedType] = useState<ProfessionalType>(pType);
   const [approachesText, setApproachesText] = useState(
     user?.approaches?.join(', ') || currentProfConfig.defaultApproaches.join(', ')
@@ -813,7 +814,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                           {apt.patientPhone && (
                             <>
                               <span className="text-xs text-slate-400 dark:text-slate-500">·</span>
-                              <span className="text-xs text-slate-500 dark:text-slate-400">{apt.patientPhone}</span>
+                              <span className="text-xs text-slate-500 dark:text-slate-400">{maskPhone(apt.patientPhone)}</span>
                             </>
                           )}
                           <span
@@ -1788,14 +1789,17 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
               )}
 
               <div>
-                <label className="block text-xs font-medium text-slate-700 mb-1">
+                <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Telefone / WhatsApp Profissional
                 </label>
                 <input
-                  type="text"
+                  type="tel"
+                  inputMode="numeric"
                   value={phone}
-                  onChange={e => setPhone(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
+                  onChange={e => setPhone(maskPhone(e.target.value))}
+                  placeholder="(11) 98765-4321"
+                  maxLength={15}
+                  className="w-full px-3 py-2 text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
                 />
               </div>
 

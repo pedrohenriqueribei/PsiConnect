@@ -185,6 +185,34 @@
         "readAt": { "type": "string" }
       },
       "required": ["id", "formId", "professionalId", "patientId", "submittedAt", "isReadByProfessional"]
+    },
+    "ClinicUnit": {
+      "title": "ClinicUnit",
+      "description": "Physical clinical healthcare unit with regulatory credentials (CNPJ, CNES, RT CRP), contacts, media photos, address, accessibility, and service modalities",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128 },
+        "cnpj": { "type": "string", "maxLength": 30 },
+        "tradeName": { "type": "string", "minLength": 1, "maxLength": 150 },
+        "legalName": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "cnesNumber": { "type": "string", "maxLength": 20 },
+        "technicalLeadName": { "type": "string", "minLength": 1, "maxLength": 150 },
+        "technicalLeadCrp": { "type": "string", "minLength": 1, "maxLength": 50 },
+        "landlinePhone": { "type": "string", "maxLength": 30 },
+        "receptionWhatsapp": { "type": "string", "maxLength": 30 },
+        "institutionalEmail": { "type": "string", "format": "email", "maxLength": 120 },
+        "zipCode": { "type": "string", "maxLength": 20 },
+        "street": { "type": "string", "maxLength": 150 },
+        "number": { "type": "string", "maxLength": 20 },
+        "complement": { "type": "string", "maxLength": 100 },
+        "neighborhood": { "type": "string", "maxLength": 100 },
+        "city": { "type": "string", "maxLength": 100 },
+        "state": { "type": "string", "maxLength": 10 },
+        "operatingHours": { "type": "string", "maxLength": 200 },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "cnpj", "tradeName", "legalName", "technicalLeadName", "technicalLeadCrp", "zipCode", "street", "number", "city", "state", "createdAt"]
     }
   },
   "firestore": {
@@ -223,6 +251,10 @@
     "/messages/{messageId}": {
       "schema": "ChatMessage",
       "description": "Real-time consultation chat messages"
+    },
+    "/clinicUnits/{unitId}": {
+      "schema": "ClinicUnit",
+      "description": "Registered clinic units and physical consultation facilities"
     }
   }
 }

@@ -12,6 +12,7 @@ import { recordSecurity } from '../../services/recordSecurity';
 import { RecordDetailView } from './RecordDetailView';
 import { NewRecordModal } from './NewRecordModal';
 import { SessionModalForm } from './SessionModalForm';
+import { maskPhone, maskCPF } from '../../utils/maskUtils';
 import {
   Search,
   Filter,
@@ -391,13 +392,13 @@ export const PsychologicalRecordModule: React.FC<PsychologicalRecordModuleProps>
 
                         {/* Patient Meta Strip */}
                         <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 flex-wrap">
-                          <span>CPF: {record.identification.cpf}</span>
+                          <span className="font-mono">CPF: {maskCPF(record.identification.cpf)}</span>
                           <span aria-hidden="true">·</span>
                           <span>
                             {patientAge} anos ({record.identification.birthDate})
                           </span>
                           <span aria-hidden="true">·</span>
-                          <span>{record.identification.phone}</span>
+                          <span className="font-mono">{maskPhone(record.identification.phone)}</span>
                           <span aria-hidden="true">·</span>
                           <span>{record.identification.city || 'São Paulo'} - {record.identification.state || 'SP'}</span>
                         </div>

@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { CONTACT_SUBJECT_OPTIONS, ContactFormData, ContactFormErrors, ContactSubject } from '../types/contact';
 import { contactService } from '../services/contactService';
+import { maskPhone } from '../utils/maskUtils';
 
 interface ContactUsProps {
   id?: string;
@@ -51,18 +52,8 @@ export const ContactUs: React.FC<ContactUsProps> = ({
   // Quick feedback for copying email to clipboard
   const [copiedEmail, setCopiedEmail] = useState(false);
 
-  // Phone masking function (Brazilian standard: (11) 98765-4321 or (11) 3456-7890)
-  const formatPhoneNumber = (value: string): string => {
-    const numbers = value.replace(/\D/g, '').slice(0, 11);
-    if (numbers.length === 0) return '';
-    if (numbers.length <= 2) return `(${numbers}`;
-    if (numbers.length <= 6) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
-    if (numbers.length <= 10) return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 6)}-${numbers.slice(6)}`;
-    return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
-  };
-
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
+    const formatted = maskPhone(e.target.value);
     setFormData(prev => ({ ...prev, phone: formatted }));
     if (errors.phone) {
       setErrors(prev => ({ ...prev, phone: undefined }));

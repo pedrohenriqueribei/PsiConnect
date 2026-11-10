@@ -16,6 +16,7 @@ import { ClinicalForm, FormDispatch } from './types/clinicalForm';
 import { FormFillModal } from './components/clinicalForms/FormFillModal';
 import { ContactUs } from './components/ContactUs';
 import { BrandLogo } from './components/BrandLogo';
+import { UserProfileView } from './components/UserProfileView';
 
 const MainApp: React.FC = () => {
   const { user, role } = useAuth();
@@ -106,6 +107,13 @@ const MainApp: React.FC = () => {
             <ContactUs
               isStandalonePage={true}
               onNavigateHome={() => setActiveTab(user ? (isProf ? 'agenda' : 'catalog') : 'home')}
+            />
+          </div>
+        ) : (activeTab === 'profile' || activeTab === 'clinic-unit') && user ? (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-12">
+            <UserProfileView
+              initialTab={activeTab === 'clinic-unit' ? 'clinicUnit' : undefined}
+              onBack={() => setActiveTab(isProf ? 'agenda' : 'catalog')}
             />
           </div>
         ) : user ? (

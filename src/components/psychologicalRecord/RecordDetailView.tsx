@@ -14,6 +14,7 @@ import { ReportPdfExporter } from './ReportPdfExporter';
 import { EncryptionInspectorModal } from './EncryptionInspectorModal';
 import { psychologicalRecordStorage } from '../../services/psychologicalRecordStorage';
 import { recordSecurity } from '../../services/recordSecurity';
+import { maskPhone, maskCPF, maskCEP } from '../../utils/maskUtils';
 import {
   ArrowLeft,
   Calendar,
@@ -631,11 +632,11 @@ export const RecordDetailView: React.FC<RecordDetailViewProps> = ({
               </div>
               <div>
                 <span className="text-slate-400 block text-[11px]">CPF</span>
-                <span className="font-semibold font-mono">{record.identification.cpf}</span>
+                <span className="font-semibold font-mono">{maskCPF(record.identification.cpf)}</span>
               </div>
               <div>
                 <span className="text-slate-400 block text-[11px]">Telefone</span>
-                <span className="font-semibold">{record.identification.phone}</span>
+                <span className="font-semibold font-mono">{maskPhone(record.identification.phone)}</span>
               </div>
               <div>
                 <span className="text-slate-400 block text-[11px]">E-mail</span>
@@ -658,7 +659,7 @@ export const RecordDetailView: React.FC<RecordDetailViewProps> = ({
                 <span className="font-semibold">
                   {record.identification.street}, {record.identification.number}
                   {record.identification.complement ? ` - ${record.identification.complement}` : ''} -{' '}
-                  {record.identification.neighborhood}, {record.identification.city} - {record.identification.state} (CEP: {record.identification.zipCode})
+                  {record.identification.neighborhood}, {record.identification.city} - {record.identification.state} (CEP: {maskCEP(record.identification.zipCode)})
                 </span>
               </div>
             </div>
@@ -689,7 +690,7 @@ export const RecordDetailView: React.FC<RecordDetailViewProps> = ({
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[11px]">CPF do Responsável</span>
-                  <span className="font-semibold font-mono">{record.legalGuardian.cpf}</span>
+                  <span className="font-semibold font-mono">{maskCPF(record.legalGuardian.cpf)}</span>
                 </div>
                 <div className="sm:col-span-3">
                   <span className="text-slate-400 block text-[11px]">Contato do Responsável</span>
@@ -717,7 +718,7 @@ export const RecordDetailView: React.FC<RecordDetailViewProps> = ({
               </div>
               <div>
                 <span className="text-slate-400 block text-[11px]">Telefone</span>
-                <span className="font-semibold">{record.emergencyContact.phonePrimary}</span>
+                <span className="font-semibold font-mono">{maskPhone(record.emergencyContact.phonePrimary)}</span>
               </div>
             </div>
           </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { storage } from '../services/storage';
 import { Appointment, MedicalRecord } from '../types';
+import { maskPhone } from '../utils/maskUtils';
 import { X, Shield, Save, FileText, Clock, User as UserIcon, CheckCircle2, Printer, BookOpen } from 'lucide-react';
 
 interface MedicalRecordModalProps {
@@ -125,7 +126,7 @@ export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
             {appointment.patientPhone && (
               <>
                 <span className="text-slate-400">·</span>
-                <span className="text-slate-600">{appointment.patientPhone}</span>
+                <span className="text-slate-600 font-mono">{maskPhone(appointment.patientPhone)}</span>
               </>
             )}
           </div>

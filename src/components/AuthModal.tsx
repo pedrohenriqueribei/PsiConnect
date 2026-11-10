@@ -8,6 +8,7 @@ import {
   SUGGESTED_FORMATIONS_BY_TYPE,
   SUGGESTED_SPECIALIZATIONS_BY_TYPE,
 } from '../types';
+import { maskPhone } from '../utils/maskUtils';
 import { BrandLogo } from './BrandLogo';
 import {
   X,
@@ -642,17 +643,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           {/* Phone */}
           {mode === 'register' && (
             <div>
-              <label className="block text-xs font-medium text-slate-700 mb-1">
+              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
                 Telefone / WhatsApp
               </label>
               <div className="relative">
                 <Phone className="absolute left-3 top-2.5 w-4 h-4 text-slate-400" />
                 <input
                   type="tel"
+                  inputMode="numeric"
                   value={phone}
-                  onChange={e => setPhone(e.target.value)}
+                  onChange={e => setPhone(maskPhone(e.target.value))}
                   placeholder="(11) 98765-4321"
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
+                  maxLength={15}
+                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600 font-mono"
                 />
               </div>
             </div>

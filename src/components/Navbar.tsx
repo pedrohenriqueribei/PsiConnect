@@ -24,7 +24,8 @@ import {
   Brain,
   Leaf,
   Compass,
-  Smile
+  Smile,
+  Building2
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -223,6 +224,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                   <Smile className="w-4 h-4 text-sky-600 dark:text-sky-400 shrink-0" />
                   <span>Diário de Humor</span>
                 </button>
+                <button
+                  onClick={() => setActiveTab('profile')}
+                  className={`flex items-center gap-1.5 hover:text-sky-700 dark:hover:text-sky-400 transition-colors whitespace-nowrap shrink-0 py-1 border-b-2 ${
+                    activeTab === 'profile' ? 'border-sky-700 dark:border-sky-400 text-sky-800 dark:text-sky-300 font-semibold' : 'border-transparent'
+                  }`}
+                >
+                  <UserIcon className="w-4 h-4 shrink-0" />
+                  <span>Meu Perfil</span>
+                </button>
               </>
             )
 
@@ -315,7 +325,67 @@ export const Navbar: React.FC<NavbarProps> = ({
                     </div>
                   </div>
 
-                  {/* Switch rápido de contas demonstrativas com todos os tipos */}
+                  {/* Link direto para Meu Perfil */}
+                  <div className="p-2 border-b border-slate-100 dark:border-slate-800">
+                    <button
+                      onClick={() => {
+                        setActiveTab('profile');
+                        setDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 text-xs font-bold rounded-xl transition-all ${
+                        activeTab === 'profile'
+                          ? 'bg-sky-700 text-white shadow-xs'
+                          : 'text-slate-800 dark:text-slate-100 bg-sky-50/80 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 border border-sky-200/80 dark:border-sky-800/80'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+                          activeTab === 'profile' ? 'bg-white/20 text-white' : 'bg-sky-600 text-white shadow-2xs'
+                        }`}>
+                          <UserIcon className="w-4 h-4" />
+                        </div>
+                        <div className="text-left">
+                          <span className="block leading-tight">Meu Perfil</span>
+                          <span className={`text-[10px] font-normal block ${
+                            activeTab === 'profile' ? 'text-sky-100' : 'text-slate-500 dark:text-slate-400'
+                          }`}>
+                            Ver e editar dados
+                          </span>
+                        </div>
+                      </div>
+                      <span className={`text-[11px] font-semibold ${
+                        activeTab === 'profile' ? 'text-white' : 'text-sky-700 dark:text-sky-400'
+                      }`}>
+                        Acessar →
+                      </span>
+                    </button>
+
+                    {isProf && (
+                      <button
+                        onClick={() => {
+                          setActiveTab('clinic-unit');
+                          setDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-xl transition-all mt-1 ${
+                          activeTab === 'clinic-unit'
+                            ? 'bg-sky-700 text-white shadow-xs'
+                            : 'text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                            activeTab === 'clinic-unit' ? 'bg-white/20 text-white' : 'bg-sky-100 dark:bg-sky-900/60 text-sky-800 dark:text-sky-300'
+                          }`}>
+                            <Building2 className="w-3.5 h-3.5" />
+                          </div>
+                          <span>Unidade Clínica</span>
+                        </div>
+                        {user.clinicUnitId && (
+                          <span className="w-2 h-2 rounded-full bg-emerald-500" title="Unidade vinculada" />
+                        )}
+                      </button>
+                    )}
+                  </div>
                   <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800">
                     <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1.5 flex items-center gap-1">
                       <Sparkles className="w-3 h-3 text-sky-600 dark:text-sky-400" />
@@ -583,6 +653,30 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </span>
                     )}
                   </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab('profile');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                      activeTab === 'profile' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <UserIcon className="w-4 h-4 text-sky-700 dark:text-sky-400" />
+                    <span>Meu Perfil</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab('clinic-unit');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                      activeTab === 'clinic-unit' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <Building2 className="w-4 h-4 text-sky-700 dark:text-sky-400" />
+                    <span>Unidade Clínica</span>
+                  </button>
                 </>
               ) : (
                 <>
@@ -641,6 +735,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                     }`}
                   >
                     Orientações de Cuidado
+                  </button>
+                  <button
+                    onClick={() => {
+                      setActiveTab('profile');
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm rounded-lg font-medium transition-colors flex items-center gap-2 ${
+                      activeTab === 'profile' ? 'bg-sky-50 dark:bg-sky-950/60 text-sky-800 dark:text-sky-300 font-semibold' : 'text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800'
+                    }`}
+                  >
+                    <UserIcon className="w-4 h-4 text-sky-700 dark:text-sky-400" />
+                    <span>Meu Perfil</span>
                   </button>
                 </>
               )

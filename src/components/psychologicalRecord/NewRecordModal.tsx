@@ -7,6 +7,7 @@ import {
 import { recordSecurity } from '../../services/recordSecurity';
 import { storage } from '../../services/storage';
 import { User } from '../../types';
+import { maskPhone, maskCPF } from '../../utils/maskUtils';
 import {
   X,
   Shield,
@@ -113,7 +114,7 @@ export const NewRecordModal: React.FC<NewRecordModalProps> = ({
 
     setFullName(patient.name);
     setEmail(patient.email);
-    setPhone(patient.phone || '');
+    setPhone(patient.phone ? maskPhone(patient.phone) : '');
     if (patient.patientProfile) {
       if (patient.patientProfile.approximateAge) {
         const estYear = new Date().getFullYear() - patient.patientProfile.approximateAge;
@@ -353,23 +354,27 @@ export const NewRecordModal: React.FC<NewRecordModalProps> = ({
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">CPF *</label>
                 <input
                   type="text"
+                  inputMode="numeric"
                   required
                   value={cpf}
-                  onChange={e => setCpf(e.target.value)}
+                  onChange={e => setCpf(maskCPF(e.target.value))}
                   placeholder="000.000.000-00"
-                  className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-600"
+                  maxLength={14}
+                  className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-600 font-mono"
                 />
               </div>
 
               <div>
                 <label className="block text-[11px] font-bold text-slate-700 mb-1">Telefone Principal *</label>
                 <input
-                  type="text"
+                  type="tel"
+                  inputMode="numeric"
                   required
                   value={phone}
-                  onChange={e => setPhone(e.target.value)}
+                  onChange={e => setPhone(maskPhone(e.target.value))}
                   placeholder="(11) 90000-0000"
-                  className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-600"
+                  maxLength={15}
+                  className="w-full px-3 py-1.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-sky-600 font-mono"
                 />
               </div>
 
@@ -495,11 +500,13 @@ export const NewRecordModal: React.FC<NewRecordModalProps> = ({
                 </label>
                 <input
                   type="text"
+                  inputMode="numeric"
                   required={isMinor}
                   value={guardianCpf}
-                  onChange={e => setGuardianCpf(e.target.value)}
+                  onChange={e => setGuardianCpf(maskCPF(e.target.value))}
                   placeholder="000.000.000-00"
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg"
+                  maxLength={14}
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg font-mono"
                 />
               </div>
 
@@ -546,11 +553,13 @@ export const NewRecordModal: React.FC<NewRecordModalProps> = ({
               <div>
                 <label className="block text-[11px] font-semibold text-slate-700 mb-1">Telefone de Emergência</label>
                 <input
-                  type="text"
+                  type="tel"
+                  inputMode="numeric"
                   value={emergencyPhonePrimary}
-                  onChange={e => setEmergencyPhonePrimary(e.target.value)}
+                  onChange={e => setEmergencyPhonePrimary(maskPhone(e.target.value))}
                   placeholder="(11) 90000-0000"
-                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg"
+                  maxLength={15}
+                  className="w-full px-3 py-1.5 bg-white border border-slate-300 rounded-lg font-mono"
                 />
               </div>
             </div>
