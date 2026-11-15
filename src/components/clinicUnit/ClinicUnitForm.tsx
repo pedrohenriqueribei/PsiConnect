@@ -14,9 +14,10 @@ import {
   fetchAddressByCEP,
   BRAZILIAN_STATES,
 } from '../../utils/maskUtils';
-import { processImageFile } from '../../utils/imageUtils';
+import { processImageFile, processClinicPhotoFile } from '../../utils/imageUtils';
 import { CameraCaptureModal } from '../CameraCaptureModal';
 import { SAMPLE_CLINIC_PHOTOS } from '../../services/clinicUnitStorage';
+import { resolveCoordinatesFromCep } from '../../services/clinicMapService';
 import {
   Building2,
   FileText,
@@ -37,7 +38,8 @@ import {
   Check,
   HelpCircle,
   X,
-  UserCheck
+  UserCheck,
+  Star,
 } from 'lucide-react';
 
 interface ClinicUnitFormProps {
@@ -186,12 +188,13 @@ export const ClinicUnitForm: React.FC<ClinicUnitFormProps> = ({
       const newPhotos: ClinicUnitPhoto[] = [];
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
-        const dataUrl = await processImageFile(file, 900, 0.85);
+        const dataUrl = await processClinicPhotoFile(file, 1200, 0.85);
         newPhotos.push({
           id: `photo_${Date.now()}_${i}`,
           url: dataUrl,
           category: photoCategory,
           label: getCategoryLabel(photoCategory),
+          isCover: photos.length === 0 && i === 0,
         });
       }
       setPhotos(prev => [...prev, ...newPhotos]);
@@ -205,12 +208,22 @@ export const ClinicUnitForm: React.FC<ClinicUnitFormProps> = ({
     }
   };
 
+  const handleToggleCoverInForm = (photoId: string) => {
+    setPhotos(prev =>
+      prev.map(p => ({
+        ...p,
+        isCover: p.id === photoId,
+      }))
+    );
+  };
+
   const handleCameraCapture = (dataUrl: string) => {
     const newPhoto: ClinicUnitPhoto = {
       id: `photo_cam_${Date.now()}`,
       url: dataUrl,
       category: photoCategory,
       label: getCategoryLabel(photoCategory),
+      isCover: photos.length === 0,
     };
     setPhotos(prev => [...prev, newPhoto]);
     setPhotoFeedback(`Foto capturada com sucesso para ${getCategoryLabel(photoCategory)}!`);
@@ -218,7 +231,13 @@ export const ClinicUnitForm: React.FC<ClinicUnitFormProps> = ({
   };
 
   const handleRemovePhoto = (photoId: string) => {
-    setPhotos(prev => prev.filter(p => p.id !== photoId));
+    setPhotos(prev => {
+      const filtered = prev.filter(p => p.id !== photoId);
+      if (filtered.length > 0 && !filtered.some(p => p.isCover)) {
+        filtered[0] = { ...filtered[0], isCover: true };
+      }
+      return filtered;
+    });
   };
 
   const handleAddSamplePhoto = (sample: ClinicUnitPhoto) => {
@@ -330,6 +349,12 @@ export const ClinicUnitForm: React.FC<ClinicUnitFormProps> = ({
 
     setIsSubmitting(true);
     try {
+      const resolvedCoords = await resolveCoordinatesFromCep(zipCode.trim(), {
+        street: street.trim(),
+        city: city.trim(),
+        state: state.trim(),
+      });
+
       const unitData: ClinicUnit = {
         id: initialUnit?.id || `unit_${Date.now()}`,
         cnpj: cnpj.trim(),
@@ -349,6 +374,7 @@ export const ClinicUnitForm: React.FC<ClinicUnitFormProps> = ({
         neighborhood: neighborhood.trim(),
         city: city.trim(),
         state: state.trim().toUpperCase(),
+        coordinates: resolvedCoords,
         operatingHours: operatingHours.trim(),
         accessibilityItems,
         serviceTypes,
@@ -774,22 +800,42 @@ export const ClinicUnitForm: React.FC<ClinicUnitFormProps> = ({
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
 
-                    {/* Category badge */}
-                    <div className="absolute top-2 left-2">
+                    {/* Category & Cover badges */}
+                    <div className="absolute top-2 left-2 flex items-center gap-1">
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-slate-900/80 backdrop-blur-xs text-white capitalize">
                         {photo.category}
                       </span>
+                      {photo.isCover && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide bg-amber-500 text-white flex items-center gap-1 shadow-xs">
+                          <Star className="w-2.5 h-2.5 fill-current" />
+                          Capa
+                        </span>
+                      )}
                     </div>
 
-                    {/* Remove button */}
-                    <button
-                      type="button"
-                      onClick={() => handleRemovePhoto(photo.id)}
-                      className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-600/90 text-white opacity-0 group-hover:opacity-100 hover:bg-red-700 transition-all shadow-sm"
-                      title="Remover foto"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
+                    {/* Action buttons (Cover toggle & Remove) */}
+                    <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+                      <button
+                        type="button"
+                        onClick={() => handleToggleCoverInForm(photo.id)}
+                        className={`p-1.5 rounded-lg shadow-sm transition-colors ${
+                          photo.isCover
+                            ? 'bg-amber-500 text-white'
+                            : 'bg-black/60 text-white hover:bg-black/80'
+                        }`}
+                        title={photo.isCover ? 'Foto principal' : 'Definir como foto de capa'}
+                      >
+                        <Star className={`w-3.5 h-3.5 ${photo.isCover ? 'fill-current' : ''}`} />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemovePhoto(photo.id)}
+                        className="p-1.5 rounded-lg bg-red-600/90 text-white hover:bg-red-700 shadow-sm"
+                        title="Remover foto"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
 
                     {photo.label && (
                       <div className="absolute bottom-0 inset-x-0 p-1.5 bg-gradient-to-t from-black/80 via-black/40 to-transparent">

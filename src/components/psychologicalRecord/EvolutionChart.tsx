@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { EvolutionSession, EVOLUTION_SCALE_MAP } from '../../types/psychologicalRecord';
 import { TrendingUp, AlertTriangle, CheckCircle2, BarChart3, Activity } from 'lucide-react';
+import { formatDateBR } from '../../utils/dateUtils';
 
 interface EvolutionChartProps {
   sessions: EvolutionSession[];
@@ -219,7 +220,7 @@ export const EvolutionChart: React.FC<EvolutionChartProps> = ({ sessions }) => {
                 Sessão nº {hoveredSession.sessionNumber}
               </span>
               <span className="text-slate-400">·</span>
-              <span className="text-slate-600 font-medium">Data: {hoveredSession.date}</span>
+              <span className="text-slate-600 font-medium">Data: {formatDateBR(hoveredSession.date)}</span>
               <span className="text-slate-400">·</span>
               <span className="text-slate-600">
                 {hoveredSession.startTime} às {hoveredSession.endTime} ({hoveredSession.modality})

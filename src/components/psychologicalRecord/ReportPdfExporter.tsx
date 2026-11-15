@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Printer, Download, Shield, FileText, CheckCircle2, Copy } from 'lucide-react';
 import { PsychologicalRecord } from '../../types/psychologicalRecord';
 import { psychologicalRecordStorage } from '../../services/psychologicalRecordStorage';
+import { formatDateBR } from '../../utils/dateUtils';
 
 interface ReportPdfExporterProps {
   isOpen: boolean;
@@ -69,7 +70,7 @@ Resolução CFP nº 06/2019
 
 1. IDENTIFICAÇÃO
 Paciente: ${record.identification.fullName}
-Data de Nascimento: ${record.identification.birthDate}
+Data de Nascimento: ${formatDateBR(record.identification.birthDate)}
 CPF: ${record.identification.cpf}
 Profissional Responsável: ${record.professional.name} - ${record.professional.registration}
 Finalidade: ${destinationPurpose}
@@ -79,7 +80,7 @@ ${record.initialDemand.chiefComplaint}
 Motivo da busca: ${record.initialDemand.reasonForCare}
 
 3. PROCEDIMENTO
-Foram realizadas ${totalSessions} sessões de psicoterapia clínica entre ${firstSession?.date || record.createdAt.split('T')[0]} e ${lastSession?.date || todayStr}.
+Foram realizadas ${totalSessions} sessões de psicoterapia clínica entre ${formatDateBR(firstSession?.date || record.createdAt)} e ${formatDateBR(lastSession?.date || todayStr)}.
 Abordagem: ${record.initialAssessment.theoreticalApproach}.
 Técnicas: ${record.therapeuticPlan.strategiesAndTechniques.join(', ')}.
 
@@ -208,7 +209,7 @@ ${record.professional.registration}
                 <strong>CPF:</strong> {record.identification.cpf}
               </div>
               <div>
-                <strong>Data de Nascimento:</strong> {record.identification.birthDate} (
+                <strong>Data de Nascimento:</strong> {formatDateBR(record.identification.birthDate)} (
                 {new Date().getFullYear() - parseInt(record.identification.birthDate.split('-')[0], 10)} anos)
               </div>
               <div>
@@ -236,7 +237,7 @@ ${record.professional.registration}
               2. Descrição da Demanda
             </h2>
             <p className="text-xs leading-relaxed text-slate-800 text-justify">
-              O paciente buscou atendimento psicoterapêutico clínico em {record.initialDemand.treatmentStartDate || record.createdAt.split('T')[0]}, apresentando como queixa e demanda principal: &ldquo;{record.initialDemand.chiefComplaint}&rdquo;. {record.initialDemand.reasonForCare}
+              O paciente buscou atendimento psicoterapêutico clínico em {formatDateBR(record.initialDemand.treatmentStartDate || record.createdAt)}, apresentando como queixa e demanda principal: &ldquo;{record.initialDemand.chiefComplaint}&rdquo;. {record.initialDemand.reasonForCare}
             </p>
             {record.history.previousMentalHealth && (
               <p className="text-xs leading-relaxed text-slate-700 text-justify">
@@ -251,7 +252,7 @@ ${record.professional.registration}
               3. Procedimento
             </h2>
             <p className="text-xs leading-relaxed text-slate-800 text-justify">
-              Foram realizadas <strong>{totalSessions} sessões de atendimento psicoterapêutico</strong> no período compreendido entre {firstSession?.date || record.createdAt.split('T')[0]} e {lastSession?.date || todayStr}, com frequência {record.therapeuticPlan.sessionFrequency === 'weekly' ? 'semanal' : 'programada'} e duração média de 50 minutos por atendimento.
+              Foram realizadas <strong>{totalSessions} sessões de atendimento psicoterapêutico</strong> no período compreendido entre {formatDateBR(firstSession?.date || record.createdAt)} e {formatDateBR(lastSession?.date || todayStr)}, com frequência {record.therapeuticPlan.sessionFrequency === 'weekly' ? 'semanal' : 'programada'} e duração média de 50 minutos por atendimento.
             </p>
             <p className="text-xs leading-relaxed text-slate-800 text-justify">
               O processo clínico foi orientado pelos preceitos científicos da <strong>{record.initialAssessment.theoreticalApproach}</strong>. Utilizaram-se como recursos técnicos e instrumentos privativos: entrevistas clínicas semiestruturadas, psicoeducação, {record.therapeuticPlan.strategiesAndTechniques.join(', ')} e monitoramento sistemático de indicadores emocionais.
@@ -272,7 +273,7 @@ ${record.professional.registration}
               </p>
               {lastSession && (
                 <p>
-                  Na sessão mais recente ({lastSession.date}), o paciente apresentou estado emocional {lastSession.emotionalState.toLowerCase()}, demonstrando maior repertório de enfrentamento, regulação afetiva e capacidade reflexiva sobre as variáveis desencadeadoras de suas queixas.
+                  Na sessão mais recente ({formatDateBR(lastSession.date)}), o paciente apresentou estado emocional {lastSession.emotionalState.toLowerCase()}, demonstrando maior repertório de enfrentamento, regulação afetiva e capacidade reflexiva sobre as variáveis desencadeadoras de suas queixas.
                 </p>
               )}
             </div>

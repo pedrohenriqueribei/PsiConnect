@@ -74,6 +74,19 @@ export const ClinicUnitModule: React.FC<ClinicUnitModuleProps> = ({
     setTimeout(() => setStatusFeedback(null), 4000);
   };
 
+  // Handle updating unit details (e.g. photos, gallery, etc.)
+  const handleUpdateUnit = async (updatedUnit: ClinicUnit) => {
+    const saved = await clinicUnitStorage.saveClinicUnit(updatedUnit);
+    setAvailableUnits(clinicUnitStorage.getClinicUnits());
+    setCurrentUnit(saved);
+    onUpdateUser({
+      clinicUnitId: saved.id,
+      clinicUnit: saved,
+    });
+    setStatusFeedback('Unidade clínica e galeria de fotos atualizadas com sucesso!');
+    setTimeout(() => setStatusFeedback(null), 3000);
+  };
+
   // Handle linking to an existing clinic unit
   const handleSelectUnit = async (unit: ClinicUnit) => {
     setCurrentUnit(unit);
@@ -123,6 +136,7 @@ export const ClinicUnitModule: React.FC<ClinicUnitModuleProps> = ({
           }}
           onUnlink={handleUnlink}
           onChangeUnit={() => setIsLinkModalOpen(true)}
+          onUpdateUnit={handleUpdateUnit}
         />
       )}
 

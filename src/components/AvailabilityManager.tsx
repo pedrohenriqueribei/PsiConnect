@@ -18,6 +18,7 @@ import {
   AlertCircle,
   Timer
 } from 'lucide-react';
+import { formatDateBR } from '../utils/dateUtils';
 
 interface DurationShortcut {
   label: string;
@@ -385,7 +386,7 @@ export const AvailabilityManager: React.FC = () => {
     const socialNote = periodIsSocial ? ' com atendimento social ativado' : '';
     showFeedback(
       'success',
-      `Sucesso! ${newSlotsToCreate.length} vaga(s) lançada(s) em lote (${activeSessions.length} sessões/dia) para o período de ${periodStartDate.split('-').reverse().join('/')} até ${periodEndDate.split('-').reverse().join('/')}${socialNote}.${
+      `Sucesso! ${newSlotsToCreate.length} vaga(s) lançada(s) em lote (${activeSessions.length} sessões/dia) para o período de ${formatDateBR(periodStartDate)} até ${formatDateBR(periodEndDate)}${socialNote}.${
         duplicateCount > 0 ? ` (${duplicateCount} já existentes foram ignoradas)` : ''
       }`
     );
@@ -1589,8 +1590,8 @@ export const AvailabilityManager: React.FC = () => {
                             <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-sky-800 dark:text-sky-300 bg-sky-50 dark:bg-sky-950/60 px-2 py-0.5 rounded border border-sky-100 dark:border-sky-800">
                               <Calendar className="w-2.5 h-2.5" />
                               <span>
-                                {slot.startDate.split('-').slice(1).reverse().join('/')} até{' '}
-                                {slot.endDate.split('-').slice(1).reverse().join('/')}
+                                {formatDateBR(slot.startDate)} até{' '}
+                                {formatDateBR(slot.endDate)}
                               </span>
                             </span>
                           ) : (

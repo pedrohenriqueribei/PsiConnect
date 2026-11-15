@@ -12,7 +12,7 @@ import { recordSecurity } from '../../services/recordSecurity';
 import { RecordDetailView } from './RecordDetailView';
 import { NewRecordModal } from './NewRecordModal';
 import { SessionModalForm } from './SessionModalForm';
-import { maskPhone, maskCPF } from '../../utils/maskUtils';
+import { maskPhone, maskCPF, formatDateBR } from '../../utils/maskUtils';
 import {
   Search,
   Filter,
@@ -395,7 +395,7 @@ export const PsychologicalRecordModule: React.FC<PsychologicalRecordModuleProps>
                           <span className="font-mono">CPF: {maskCPF(record.identification.cpf)}</span>
                           <span aria-hidden="true">·</span>
                           <span>
-                            {patientAge} anos ({record.identification.birthDate})
+                            {patientAge} anos ({formatDateBR(record.identification.birthDate)})
                           </span>
                           <span aria-hidden="true">·</span>
                           <span className="font-mono">{maskPhone(record.identification.phone)}</span>
@@ -410,7 +410,7 @@ export const PsychologicalRecordModule: React.FC<PsychologicalRecordModuleProps>
                       <div className="flex items-center justify-between text-[11px] font-bold text-slate-900 dark:text-white uppercase tracking-wider">
                         <span>Queixa Principal & Demanda Inicial:</span>
                         <span className="text-sky-700 dark:text-sky-400 font-medium lowercase">
-                          iniciado em {record.initialDemand.treatmentStartDate || record.createdAt.split('T')[0]}
+                          iniciado em {formatDateBR(record.initialDemand.treatmentStartDate || record.createdAt)}
                         </span>
                       </div>
                       <p className="line-clamp-2 leading-relaxed text-slate-600 dark:text-slate-300">
@@ -432,7 +432,7 @@ export const PsychologicalRecordModule: React.FC<PsychologicalRecordModuleProps>
                         <div className="flex items-center gap-1.5">
                           <span className="text-slate-400">·</span>
                           <span>
-                            Última sessão em <strong>{lastSession.date}</strong>:
+                            Última sessão em <strong>{formatDateBR(lastSession.date)}</strong>:
                           </span>
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-bold ${

@@ -9,7 +9,9 @@ import { PatientFormList } from './clinicalForms/PatientFormList';
 import { clinicalFormStorage } from '../services/clinicalFormStorage';
 import { PatientMoodTrackerView } from './moodTracker/PatientMoodTrackerView';
 import { DailyMoodQuickCheck } from './moodTracker/DailyMoodQuickCheck';
+import { formatDateBR } from '../utils/dateUtils';
 import {
+
   Search,
   Calendar,
   Clock,
@@ -115,7 +117,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
 
   const handleBookingSuccess = (newApt: Appointment) => {
     refreshAppointments();
-    setBookingSuccessMsg(`Consulta com ${newApt.psychologistName} agendada para ${newApt.date} às ${newApt.time}!`);
+    setBookingSuccessMsg(`Consulta com ${newApt.psychologistName} agendada para ${formatDateBR(newApt.date)} às ${newApt.time}!`);
     setCurrentTab('appointments');
     setTimeout(() => setBookingSuccessMsg(''), 6000);
   };
@@ -791,7 +793,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                           <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300 mt-1 tabular-nums">
                             <span className="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
                               <Calendar className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />
-                              {apt.date}
+                              {formatDateBR(apt.date)}
                             </span>
                             <span className="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
                               <Clock className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />

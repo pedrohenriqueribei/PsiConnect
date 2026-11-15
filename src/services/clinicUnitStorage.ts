@@ -14,36 +14,71 @@ const STORAGE_KEY = 'psiconnect_clinic_units_v1';
 const FIRESTORE_COLLECTION = 'clinicUnits';
 
 // Curated high-resolution clinic photos for demo and quick selection
+// Curated high-resolution clinic photos for demo and quick selection
 export const SAMPLE_CLINIC_PHOTOS: ClinicUnitPhoto[] = [
   {
     id: 'sample_fachada_1',
     category: 'fachada',
     url: 'https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1000&q=80',
     label: 'Fachada Principal & Entrada Acessível',
+    highlightTag: 'Acesso Nível da Rua',
+    isCover: true,
+  },
+  {
+    id: 'sample_fachada_2',
+    category: 'fachada',
+    url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&q=80',
+    label: 'Edifício Corporativo & Portaria com Catraca',
+    highlightTag: 'Segurança & Estacionamento',
   },
   {
     id: 'sample_recepcao_1',
     category: 'recepcao',
     url: 'https://images.unsplash.com/photo-1629909613654-28e377c37b09?auto=format&fit=crop&w=1000&q=80',
-    label: 'Recepção Humanizada & Sala de Espera',
+    label: 'Recepção Humanizada & Sala de Espera Climatizada',
+    highlightTag: 'Poltronas & Café Cortesia',
+  },
+  {
+    id: 'sample_recepcao_2',
+    category: 'recepcao',
+    url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1000&q=80',
+    label: 'Balcão de Check-in e Atendimento Acolhedor',
+    highlightTag: 'Wi-Fi 5G & Água',
   },
   {
     id: 'sample_consultorio_1',
     category: 'consultorio',
     url: 'https://images.unsplash.com/photo-1527613426441-4da17471b66d?auto=format&fit=crop&w=1000&q=80',
-    label: 'Consultório de Psicoterapia Individual',
+    label: 'Consultório 01 - Psicoterapia Individual e Adultos',
+    highlightTag: 'Isolamento Acústico',
   },
   {
     id: 'sample_consultorio_ludo',
     category: 'consultorio',
     url: 'https://images.unsplash.com/photo-1588072432836-e10032774350?auto=format&fit=crop&w=1000&q=80',
-    label: 'Sala de Ludoterapia & Atendimento Infantil',
+    label: 'Consultório 02 - Ludoterapia & Atendimento Infantil',
+    highlightTag: 'Brinquedos Sensoriais & TEA',
   },
   {
     id: 'sample_teleconsulta',
     category: 'consultorio',
     url: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=1000&q=80',
-    label: 'Sala Acústica com Equipamento de Teleconsulta',
+    label: 'Sala Acústica Integrada para Teleconsulta',
+    highlightTag: 'Fibra Óptica & Câmera HD',
+  },
+  {
+    id: 'sample_consultorio_casal',
+    category: 'consultorio',
+    url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80',
+    label: 'Consultório 03 - Terapia de Casal e Família',
+    highlightTag: 'Ambiente Amplo & Sofás',
+  },
+  {
+    id: 'sample_acessibilidade',
+    category: 'outro',
+    url: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1000&q=80',
+    label: 'Sanitário Acessível PCD & Corredor Podotátil',
+    highlightTag: 'Norma ABNT NBR 9050',
   },
 ];
 
@@ -72,6 +107,10 @@ const INITIAL_CLINIC_UNITS: ClinicUnit[] = [
     neighborhood: 'Cerqueira César',
     city: 'São Paulo',
     state: 'SP',
+    coordinates: {
+      lat: -23.55775,
+      lng: -46.66134,
+    },
     operatingHours: 'Segunda a Sexta das 08h às 21h | Sábados das 08h às 14h',
     accessibilityItems: [
       'rampa',
@@ -115,6 +154,10 @@ const INITIAL_CLINIC_UNITS: ClinicUnit[] = [
     neighborhood: 'Alphaville Centro Industrial',
     city: 'Barueri',
     state: 'SP',
+    coordinates: {
+      lat: -23.49840,
+      lng: -46.85290,
+    },
     operatingHours: 'Segunda a Sexta das 07h30 às 20h30',
     accessibilityItems: [
       'rampa',

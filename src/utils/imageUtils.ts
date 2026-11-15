@@ -51,3 +51,64 @@ export async function processImageFile(
     reader.readAsDataURL(file);
   });
 }
+
+/**
+ * Utility to process and resize clinic environment photos (fachada, recepção, consultório)
+ * preserving natural aspect ratio (landscape/portrait) without forced cropping.
+ */
+export async function processClinicPhotoFile(
+  file: File,
+  maxDimension = 1200,
+  quality = 0.85
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    if (!file.type.startsWith('image/')) {
+      reject(new Error('O arquivo selecionado não é uma imagem válida.'));
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        try {
+          let { width, height } = img;
+
+          if (width > maxDimension || height > maxDimension) {
+            if (width > height) {
+              height = Math.round((height * maxDimension) / width);
+              width = maxDimension;
+            } else {
+              width = Math.round((width * maxDimension) / height);
+              height = maxDimension;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Não foi possível inicializar o processador de imagem.'));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', quality);
+          resolve(dataUrl);
+        } catch (err) {
+          reject(err);
+        }
+      };
+
+      img.onerror = () => reject(new Error('Erro ao decodificar a foto da clínica.'));
+      img.src = e.target?.result as string;
+    };
+
+    reader.onerror = () => reject(new Error('Erro ao ler o arquivo selecionado.'));
+    reader.readAsDataURL(file);
+  });
+}
+

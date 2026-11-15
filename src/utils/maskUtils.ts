@@ -8,6 +8,8 @@
  * - Algoritmos oficiais de validação de CPF e CNPJ
  * - Integração nativa com ViaCEP para busca de endereço
  */
+export { formatDateBR, formatDateTimeBR } from './dateUtils';
+
 
 /**
  * Remove qualquer caractere que não seja dígito numérico (0-9).

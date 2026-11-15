@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { storage } from '../services/storage';
 import { Appointment, MedicalRecord } from '../types';
-import { maskPhone } from '../utils/maskUtils';
+import { maskPhone, formatDateBR } from '../utils/maskUtils';
 import { X, Shield, Save, FileText, Clock, User as UserIcon, CheckCircle2, Printer, BookOpen } from 'lucide-react';
 
 interface MedicalRecordModalProps {
@@ -133,7 +133,7 @@ export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-slate-600 tabular-nums">
               <Clock className="w-3.5 h-3.5 text-slate-400" />
-              <span>Sessão: {appointment.date} às {appointment.time}</span>
+              <span>Sessão: {formatDateBR(appointment.date)} às {appointment.time}</span>
             </div>
             {onOpenFullRecord && (
               <button
@@ -227,9 +227,9 @@ export const MedicalRecordModal: React.FC<MedicalRecordModalProps> = ({
                 {pastRecords.map(pr => (
                   <div key={pr.id} className="p-3 rounded-lg border border-slate-200 bg-slate-50 text-xs">
                     <div className="flex items-center justify-between font-semibold text-slate-700 mb-1">
-                      <span>Sessão em {pr.sessionDate}</span>
+                      <span>Sessão em {formatDateBR(pr.sessionDate)}</span>
                       <span className="text-[10px] text-slate-400">
-                        Atualizado em {new Date(pr.updatedAt).toLocaleDateString()}
+                        Atualizado em {formatDateBR(pr.updatedAt)}
                       </span>
                     </div>
                     <p className="text-slate-600 line-clamp-2">{pr.clinicalEvolution}</p>

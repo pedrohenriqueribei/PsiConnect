@@ -3,6 +3,10 @@ export interface ClinicUnitPhoto {
   url: string;
   category: 'fachada' | 'recepcao' | 'consultorio' | 'outro';
   label?: string;
+  isCover?: boolean;
+  order?: number;
+  highlightTag?: string;
+  createdAt?: string;
 }
 
 export type AccessibilityId =
@@ -78,6 +82,10 @@ export interface ClinicUnit {
   neighborhood: string; // Bairro
   city: string; // Cidade
   state: string; // UF
+  coordinates?: {
+    lat: number;
+    lng: number;
+  };
 
   // 4. Estrutura e Operação
   operatingHours: string; // Horário de Funcionamento (ex: Seg a Sex das 08h às 20h)

@@ -24,7 +24,7 @@ import { ClinicalFormsModule } from './clinicalForms/ClinicalFormsModule';
 import { PsychologicalRecord } from '../types/psychologicalRecord';
 import { psychologicalRecordStorage } from '../services/psychologicalRecordStorage';
 import { clinicalFormStorage } from '../services/clinicalFormStorage';
-import { maskPhone } from '../utils/maskUtils';
+import { maskPhone, formatDateBR } from '../utils/maskUtils';
 import {
   getRecommendedPatientsForProfessional,
   PROFESSIONAL_AFFINITY_TAGS,
@@ -841,7 +841,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                         <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-slate-300 tabular-nums">
                           <span className="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
                             <Calendar className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />
-                            {apt.date}
+                            {formatDateBR(apt.date)}
                           </span>
                           <span className="flex items-center gap-1 font-semibold text-slate-800 dark:text-slate-200">
                             <Clock className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />
@@ -1460,7 +1460,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                             <div className="flex items-center justify-between text-slate-500 text-[11px]">
                               <span>Cadastrado em:</span>
                               <span className="tabular-nums text-slate-700">
-                                {patient.joinedAt.split('T')[0]}
+                                {formatDateBR(patient.joinedAt)}
                               </span>
                             </div>
                           </div>

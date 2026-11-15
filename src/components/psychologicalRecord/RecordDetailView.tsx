@@ -14,7 +14,7 @@ import { ReportPdfExporter } from './ReportPdfExporter';
 import { EncryptionInspectorModal } from './EncryptionInspectorModal';
 import { psychologicalRecordStorage } from '../../services/psychologicalRecordStorage';
 import { recordSecurity } from '../../services/recordSecurity';
-import { maskPhone, maskCPF, maskCEP } from '../../utils/maskUtils';
+import { maskPhone, maskCPF, maskCEP, formatDateBR } from '../../utils/maskUtils';
 import {
   ArrowLeft,
   Calendar,
@@ -248,7 +248,7 @@ export const RecordDetailView: React.FC<RecordDetailViewProps> = ({
               <span>CPF: {record.identification.cpf}</span>
               <span aria-hidden="true">·</span>
               <span>
-                {patientAge} anos ({record.identification.birthDate})
+                {patientAge} anos ({formatDateBR(record.identification.birthDate)})
               </span>
               <span aria-hidden="true">·</span>
               <span>{record.identification.city || 'São Paulo'} - {record.identification.state || 'SP'}</span>
@@ -298,13 +298,13 @@ export const RecordDetailView: React.FC<RecordDetailViewProps> = ({
           <Info className="w-4 h-4 text-slate-600 shrink-0 mt-0.5" />
           <div>
             <span className="font-bold block">
-              Tratamento Encerrado em {record.closureDate} ({statusConfig.label})
+              Tratamento Encerrado em {formatDateBR(record.closureDate)} ({statusConfig.label})
             </span>
             <p className="text-slate-600 mt-0.5">
               Motivo do encerramento: {record.closureReason || 'Alta clínica ou encerramento formal.'}
             </p>
             <span className="text-[11px] text-slate-500 block mt-1">
-              Prazo obrigatório de guarda do prontuário até <strong>{record.retentionUntil}</strong> (Resolução CFP nº 01/2009 art. 4º).
+              Prazo obrigatório de guarda do prontuário até <strong>{formatDateBR(record.retentionUntil)}</strong> (Resolução CFP nº 01/2009 art. 4º).
             </span>
           </div>
         </div>
@@ -401,7 +401,7 @@ export const RecordDetailView: React.FC<RecordDetailViewProps> = ({
                           <span className="text-slate-400">·</span>
                           <span className="text-xs font-semibold text-slate-800 flex items-center gap-1">
                             <Calendar className="w-3.5 h-3.5 text-sky-700" />
-                            {session.date}
+                            {formatDateBR(session.date)}
                           </span>
                           <span className="text-slate-400">·</span>
                           <span className="text-xs text-slate-600 flex items-center gap-1">
@@ -530,7 +530,7 @@ export const RecordDetailView: React.FC<RecordDetailViewProps> = ({
                         {session.nextSessionDate && (
                           <div className="text-slate-700 font-semibold flex items-center gap-1.5 shrink-0">
                             <Clock className="w-3.5 h-3.5 text-sky-700" />
-                            <span>Próxima Sessão: {session.nextSessionDate}</span>
+                            <span>Próxima Sessão: {formatDateBR(session.nextSessionDate)}</span>
                           </div>
                         )}
                       </div>
@@ -623,7 +623,7 @@ export const RecordDetailView: React.FC<RecordDetailViewProps> = ({
               <div>
                 <span className="text-slate-400 block text-[11px]">Data de Nascimento / Idade</span>
                 <span className="font-semibold">
-                  {record.identification.birthDate} ({patientAge} anos)
+                  {formatDateBR(record.identification.birthDate)} ({patientAge} anos)
                 </span>
               </div>
               <div>
@@ -763,7 +763,7 @@ export const RecordDetailView: React.FC<RecordDetailViewProps> = ({
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[11px]">Início do Tratamento:</span>
-                  <span className="font-semibold">{record.initialDemand.treatmentStartDate}</span>
+                  <span className="font-semibold">{formatDateBR(record.initialDemand.treatmentStartDate)}</span>
                 </div>
                 {record.initialDemand.referral && (
                   <div className="sm:col-span-2">
@@ -846,7 +846,7 @@ export const RecordDetailView: React.FC<RecordDetailViewProps> = ({
             <div>
               <span className="text-slate-400 block text-[11px]">Guarda Mínima Legal (CFP 01/2009)</span>
               <span className="font-bold text-sky-900 block mt-0.5">
-                Até {record.retentionUntil} (5 anos)
+                Até {formatDateBR(record.retentionUntil)} (5 anos)
               </span>
             </div>
           </div>
@@ -1005,7 +1005,7 @@ export const RecordDetailView: React.FC<RecordDetailViewProps> = ({
             <div>
               <span className="text-slate-400 font-bold uppercase text-[10px] block">Guarda Mínima Obrigatória</span>
               <span className="text-sm font-bold text-slate-900">5 Anos (Res. CFP 01/2009)</span>
-              <span className="text-[11px] text-slate-500 block">Válido até: {record.retentionUntil}</span>
+              <span className="text-[11px] text-slate-500 block">Válido até: {formatDateBR(record.retentionUntil)}</span>
             </div>
             <div>
               <span className="text-slate-400 font-bold uppercase text-[10px] block">Proteção Criptográfica</span>

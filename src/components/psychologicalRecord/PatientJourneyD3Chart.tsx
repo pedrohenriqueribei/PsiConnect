@@ -7,6 +7,7 @@ import {
   EVOLUTION_SCALE_MAP,
   RECORD_STATUS_LABELS,
 } from '../../types/psychologicalRecord';
+import { formatDateBR } from '../../utils/dateUtils';
 import {
   TrendingUp,
   Award,
@@ -549,7 +550,7 @@ export const PatientJourneyD3Chart: React.FC<PatientJourneyD3ChartProps> = ({
         .attr('text-anchor', 'middle')
         .attr('fill', '#64748b')
         .attr('font-size', '10px')
-        .text(session.date.split('-').slice(1).reverse().join('/'));
+        .text(formatDateBR(session.date));
     });
 
     // Y Axis Label
@@ -865,7 +866,7 @@ export const PatientJourneyD3Chart: React.FC<PatientJourneyD3ChartProps> = ({
                   Sessão #{hoveredPoint.session.sessionNumber}
                 </span>
                 <span className="text-[11px] text-slate-300 tabular-nums">
-                  {hoveredPoint.session.date}
+                  {formatDateBR(hoveredPoint.session.date)}
                 </span>
               </div>
 
@@ -935,7 +936,7 @@ export const PatientJourneyD3Chart: React.FC<PatientJourneyD3ChartProps> = ({
                   Detalhes Clínicos da Sessão #{selectedSession.sessionNumber}
                 </h4>
                 <p className="text-xs text-slate-500">
-                  Realizada em {selectedSession.date} ({selectedSession.startTime} às {selectedSession.endTime}) · Modalidade {selectedSession.modality}
+                  Realizada em {formatDateBR(selectedSession.date)} ({selectedSession.startTime} às {selectedSession.endTime}) · Modalidade {selectedSession.modality}
                 </p>
               </div>
             </div>
@@ -1067,7 +1068,7 @@ export const PatientJourneyD3Chart: React.FC<PatientJourneyD3ChartProps> = ({
                   <div className="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
                     <span className="flex items-center gap-1">
                       <Calendar className="w-3 h-3 text-slate-400" />
-                      {milestone.date}
+                      {formatDateBR(milestone.date)}
                     </span>
                     <span className="inline-flex items-center gap-1 text-emerald-700 font-semibold">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
@@ -1184,7 +1185,7 @@ export const PatientJourneyD3Chart: React.FC<PatientJourneyD3ChartProps> = ({
                   >
                     {chronologicalSessions.map(s => (
                       <option key={s.id} value={s.sessionNumber}>
-                        Sessão #{s.sessionNumber} ({s.date})
+                        Sessão #{s.sessionNumber} ({formatDateBR(s.date)})
                       </option>
                     ))}
                   </select>

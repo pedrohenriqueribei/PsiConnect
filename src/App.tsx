@@ -17,6 +17,9 @@ import { FormFillModal } from './components/clinicalForms/FormFillModal';
 import { ContactUs } from './components/ContactUs';
 import { BrandLogo } from './components/BrandLogo';
 import { UserProfileView } from './components/UserProfileView';
+import { clinicUnitStorage } from './services/clinicUnitStorage';
+import { ClinicUnit } from './types/clinicUnit';
+import { PublicClinicModal } from './components/clinicUnit/PublicClinicModal';
 
 const MainApp: React.FC = () => {
   const { user, role } = useAuth();
@@ -31,6 +34,12 @@ const MainApp: React.FC = () => {
     dispatch?: FormDispatch;
   } | null>(null);
 
+  // Direct QR code / check-in modal
+  const [publicClinicModal, setPublicClinicModal] = useState<{
+    unit: ClinicUnit;
+    mode: 'checkin' | 'profile';
+  } | null>(null);
+
   React.useEffect(() => {
     const handleHash = () => {
       const hash = window.location.hash;
@@ -42,6 +51,18 @@ const MainApp: React.FC = () => {
           if (form) {
             setSharedFormToFill({ form, dispatch: disp });
           }
+        }
+      } else if (hash.startsWith('#checkin-')) {
+        const unitId = hash.replace('#checkin-', '');
+        const unit = clinicUnitStorage.getClinicUnitById(unitId);
+        if (unit) {
+          setPublicClinicModal({ unit, mode: 'checkin' });
+        }
+      } else if (hash.startsWith('#clinica-')) {
+        const unitId = hash.replace('#clinica-', '');
+        const unit = clinicUnitStorage.getClinicUnitById(unitId);
+        if (unit) {
+          setPublicClinicModal({ unit, mode: 'profile' });
         }
       }
     };
@@ -283,6 +304,19 @@ const MainApp: React.FC = () => {
           patientId={user?.id || sharedFormToFill.dispatch?.patientId || 'anonimo'}
           patientName={user?.name || sharedFormToFill.dispatch?.patientName || 'Paciente'}
           patientEmail={user?.email || sharedFormToFill.dispatch?.patientEmail}
+        />
+      )}
+
+      {/* Public Clinic QR Code Check-in / Profile Modal */}
+      {publicClinicModal && (
+        <PublicClinicModal
+          isOpen={!!publicClinicModal}
+          onClose={() => {
+            setPublicClinicModal(null);
+            window.location.hash = '';
+          }}
+          unit={publicClinicModal.unit}
+          initialMode={publicClinicModal.mode}
         />
       )}
     </div>
