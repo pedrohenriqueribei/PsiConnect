@@ -58,7 +58,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     });
 
-    return () => unsubscribe();
+    // 3. Keep active user synced with real-time Firestore user updates
+    const unsubscribeStorage = storage.subscribe(() => {
+      const currentStored = storage.getCurrentUser();
+      if (!currentStored) return;
+      const latest = storage.getUsers().find(u => u.id === currentStored.id);
+      if (latest) {
+        setUser(prev => {
+          if (!prev || prev.id !== latest.id) return prev;
+          if (
+            prev.isAcceptingNewPatients === latest.isAcceptingNewPatients &&
+            prev.professionalProfile?.acceptsNewMatchedPatients === latest.professionalProfile?.acceptsNewMatchedPatients &&
+            prev.professionalProfile?.updatedAt === latest.professionalProfile?.updatedAt &&
+            prev.name === latest.name
+          ) {
+            return prev;
+          }
+          storage.setCurrentUser(latest);
+          return latest;
+        });
+      }
+    });
+
+    return () => {
+      unsubscribe();
+      unsubscribeStorage();
+    };
   }, []);
 
   const signInWithGoogle = async (preferredRole: UserRole = 'patient'): Promise<{ success: boolean; error?: string }> => {

@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { isProfessionalRole, ProfessionalType } from '../types';
+import { isProfessionalRole, ProfessionalType, User } from '../types';
 import { clinicalFormStorage } from '../services/clinicalFormStorage';
 import { BrandLogo } from './BrandLogo';
 import { ThemeToggle } from './ThemeToggle';
+import { GlobalSearchBar } from './GlobalSearchBar';
+import { KnowledgeArticle } from '../data/knowledgeArticles';
 import { 
   Activity, 
   User as UserIcon, 
@@ -33,13 +35,17 @@ interface NavbarProps {
   setActiveTab: (tab: string) => void;
   onOpenLogin: () => void;
   onOpenRegister: (role: 'patient' | 'psychologist') => void;
+  onSelectArticle: (article: KnowledgeArticle) => void;
+  onSelectProfessional: (professional: User) => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ 
   activeTab, 
   setActiveTab, 
   onOpenLogin, 
-  onOpenRegister 
+  onOpenRegister,
+  onSelectArticle,
+  onSelectProfessional,
 }) => {
   const { user, role, logout, switchDemoUser, firebaseUser } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -113,7 +119,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Zone 2: Navigation Links (Desktop) */}
-        <nav className="hidden xl:flex items-center gap-4 2xl:gap-6 text-sm font-medium text-slate-600 dark:text-slate-300 min-w-0 overflow-hidden">
+        <nav className="hidden xl:flex items-center gap-2.5 2xl:gap-5 text-xs 2xl:text-[13px] font-medium text-slate-600 dark:text-slate-300 min-w-0 overflow-hidden">
           {user ? (
             isProf ? (
               <>
@@ -273,6 +279,30 @@ export const Navbar: React.FC<NavbarProps> = ({
             </>
           )}
         </nav>
+
+        {/* Global Search Bar */}
+        <GlobalSearchBar
+          onNavigateTab={tab => {
+            setActiveTab(tab);
+            setMobileMenuOpen(false);
+          }}
+          onSelectArticle={article => {
+            onSelectArticle(article);
+            setMobileMenuOpen(false);
+          }}
+          onSelectProfessional={professional => {
+            onSelectProfessional(professional);
+            setMobileMenuOpen(false);
+          }}
+          onOpenLogin={() => {
+            onOpenLogin();
+            setMobileMenuOpen(false);
+          }}
+          onOpenRegister={r => {
+            onOpenRegister(r);
+            setMobileMenuOpen(false);
+          }}
+        />
 
         {/* Zone 3: Primary Action / User Profile */}
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">

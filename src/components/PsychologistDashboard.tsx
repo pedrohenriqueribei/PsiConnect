@@ -14,10 +14,12 @@ import {
   CLINICAL_EXPERIENCE_TAGS,
   SUGGESTED_FORMATIONS_BY_TYPE,
   SUGGESTED_SPECIALIZATIONS_BY_TYPE,
+  isProfessionalAcceptingPatients,
 } from '../types';
 import { AvailabilityManager } from './AvailabilityManager';
 import { MedicalRecordModal } from './MedicalRecordModal';
 import { PatientInviteModal } from './PatientInviteModal';
+import { ProfessionalPreviewModal } from './ProfessionalPreviewModal';
 import { PsychologicalRecordModule } from './psychologicalRecord/PsychologicalRecordModule';
 import { PatientJourneyD3Chart } from './psychologicalRecord/PatientJourneyD3Chart';
 import { ClinicalFormsModule } from './clinicalForms/ClinicalFormsModule';
@@ -64,24 +66,73 @@ import {
   Plus,
   Activity,
   LayoutGrid,
+  PauseCircle,
+  UserCheck,
+  Eye,
 } from 'lucide-react';
 
 interface PsychologistDashboardProps {
   onJoinRoom: (appointment: Appointment) => void;
   activeSubTab?: string;
+  navNonce?: number;
 }
 
 export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
   onJoinRoom,
   activeSubTab = 'agenda',
+  navNonce = 0,
 }) => {
   const { user, updateProfile } = useAuth();
   const [currentTab, setCurrentTab] = useState<
     'agenda' | 'availability' | 'records' | 'matching' | 'profile' | 'journey' | 'forms'
   >((activeSubTab as any) || 'agenda');
-  const [mobileNavLayout, setMobileNavLayout] = useState<'pills' | 'grid'>('pills');
+  const [mobileNavLayout, setMobileNavLayout] = useState<'pills' | 'grid'>('grid');
   const [selectedProntuarioPatientId, setSelectedProntuarioPatientId] = useState<string | undefined>(undefined);
   const [selectedJourneyPatientId, setSelectedJourneyPatientId] = useState<string | undefined>(undefined);
+  const tabSectionRef = React.useRef<HTMLDivElement>(null);
+  const shouldScrollToSectionRef = React.useRef(false);
+
+  const scrollToTabSection = React.useCallback(() => {
+    const el = tabSectionRef.current;
+    if (!el) return;
+    const header = document.querySelector('header');
+    const headerOffset = header ? header.getBoundingClientRect().height + 16 : 84;
+    const elementTop = el.getBoundingClientRect().top + window.scrollY;
+    const targetY = Math.max(0, elementTop - headerOffset);
+    window.scrollTo({
+      top: targetY,
+      behavior: 'smooth',
+    });
+  }, []);
+
+  React.useEffect(() => {
+    if (!shouldScrollToSectionRef.current) return;
+    shouldScrollToSectionRef.current = false;
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        scrollToTabSection();
+      });
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      if (raf2) cancelAnimationFrame(raf2);
+    };
+  }, [currentTab, scrollToTabSection]);
+
+  const handleQuickNavSelect = (
+    tabId: 'agenda' | 'availability' | 'records' | 'matching' | 'profile' | 'journey' | 'forms'
+  ) => {
+    if (tabId === 'records') setSelectedProntuarioPatientId(undefined);
+    if (tabId === currentTab) {
+      requestAnimationFrame(() => {
+        scrollToTabSection();
+      });
+      return;
+    }
+    shouldScrollToSectionRef.current = true;
+    setCurrentTab(tabId);
+  };
 
   // Unread forms count for real-time notification badge
   const [unreadFormsCount, setUnreadFormsCount] = useState<number>(() =>
@@ -113,10 +164,15 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
   }, [user?.id]);
 
   React.useEffect(() => {
-    if (activeSubTab) {
+    const validTabs = ['agenda', 'availability', 'records', 'matching', 'profile', 'journey', 'forms'];
+    if (activeSubTab && validTabs.includes(activeSubTab)) {
+      if (navNonce > 0) {
+        if (activeSubTab === 'records') setSelectedProntuarioPatientId(undefined);
+        shouldScrollToSectionRef.current = true;
+      }
       setCurrentTab(activeSubTab as any);
     }
-  }, [activeSubTab]);
+  }, [activeSubTab, navNonce]);
 
   const pType: ProfessionalType = (user?.professionalType ||
     (user?.role === 'pastor'
@@ -268,6 +324,123 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
     user?.approaches?.join(', ') || currentProfConfig.defaultApproaches.join(', ')
   );
   const [profileSuccess, setProfileSuccess] = useState(false);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [availabilityFeedback, setAvailabilityFeedback] = useState<string | null>(null);
+  const [isFeedbackVisible, setIsFeedbackVisible] = useState<boolean>(false);
+  const [justToggled, setJustToggled] = useState<boolean>(false);
+  const feedbackTimerRef = React.useRef<number | null>(null);
+  const hideFeedbackTimerRef = React.useRef<number | null>(null);
+  const togglePulseTimerRef = React.useRef<number | null>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (feedbackTimerRef.current) window.clearTimeout(feedbackTimerRef.current);
+      if (hideFeedbackTimerRef.current) window.clearTimeout(hideFeedbackTimerRef.current);
+      if (togglePulseTimerRef.current) window.clearTimeout(togglePulseTimerRef.current);
+    };
+  }, []);
+
+  const isAcceptingPatients = isProfessionalAcceptingPatients(user);
+
+  const previewApproaches = React.useMemo(
+    () => approachesText.split(',').map(s => s.trim()).filter(Boolean),
+    [approachesText]
+  );
+
+  const hasUnsavedProfileChanges = React.useMemo(() => {
+    if (!user || currentTab !== 'profile') return false;
+    const savedApproaches = (user.approaches || []).join(',');
+    const savedClinicalTags = (user.clinicalTags || []).join(',');
+    return (
+      bio !== (user.bio || '') ||
+      registrationNumber !== (user.registrationNumber || user.crp || '') ||
+      (selectedType === 'pastor' && ministryOrChurch !== (user.ministryOrChurch || '')) ||
+      Number(hourlyRate) !== Number(user.hourlyRate || currentProfConfig.defaultRate) ||
+      selectedType !== pType ||
+      previewApproaches.join(',') !== savedApproaches ||
+      profClinicalTags.join(',') !== savedClinicalTags
+    );
+  }, [
+    user,
+    currentTab,
+    bio,
+    registrationNumber,
+    ministryOrChurch,
+    hourlyRate,
+    currentProfConfig.defaultRate,
+    selectedType,
+    pType,
+    previewApproaches,
+    profClinicalTags,
+  ]);
+
+  const previewProfessional: User | null = React.useMemo(() => {
+    if (!user) return null;
+    if (currentTab !== 'profile') return user;
+    return {
+      ...user,
+      bio,
+      crp: registrationNumber,
+      registrationNumber,
+      ministryOrChurch: selectedType === 'pastor' ? ministryOrChurch : undefined,
+      professionalType: selectedType,
+      role: selectedType,
+      hourlyRate: Number(hourlyRate),
+      approaches: previewApproaches,
+      clinicalTags: profClinicalTags,
+      isAcceptingNewPatients: isAcceptingPatients,
+    };
+  }, [
+    user,
+    currentTab,
+    bio,
+    registrationNumber,
+    selectedType,
+    ministryOrChurch,
+    hourlyRate,
+    previewApproaches,
+    profClinicalTags,
+    isAcceptingPatients,
+  ]);
+
+  const handleToggleAcceptingPatients = () => {
+    if (!user) return;
+    const nextValue = !isAcceptingPatients;
+    const updatedUser = storage.updateProfessionalAvailabilityStatus(user.id, nextValue);
+    updateProfile({
+      isAcceptingNewPatients: nextValue,
+      professionalProfile: updatedUser?.professionalProfile || {
+        ageGroup: profAgeGroup,
+        affinityTags: selectedAffinityTags,
+        ...user.professionalProfile,
+        acceptsNewMatchedPatients: nextValue,
+        updatedAt: new Date().toISOString(),
+      },
+    });
+
+    if (feedbackTimerRef.current) window.clearTimeout(feedbackTimerRef.current);
+    if (hideFeedbackTimerRef.current) window.clearTimeout(hideFeedbackTimerRef.current);
+    if (togglePulseTimerRef.current) window.clearTimeout(togglePulseTimerRef.current);
+
+    setJustToggled(true);
+    togglePulseTimerRef.current = window.setTimeout(() => {
+      setJustToggled(false);
+    }, 700);
+
+    setAvailabilityFeedback(
+      nextValue
+        ? 'Status alterado para: Aceitando novos pacientes'
+        : 'Status alterado para: Indisponível para novos pacientes'
+    );
+    setIsFeedbackVisible(true);
+
+    feedbackTimerRef.current = window.setTimeout(() => {
+      setIsFeedbackVisible(false);
+      hideFeedbackTimerRef.current = window.setTimeout(() => {
+        setAvailabilityFeedback(null);
+      }, 300);
+    }, 3200);
+  };
 
   // Refresh lists
   const refreshAppointments = () => {
@@ -299,7 +472,9 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
       new Set([...selectedAffinityTags, ...profClinicalTags])
     );
 
+    const currentAccepting = isProfessionalAcceptingPatients(user);
     const updatedProfProfile: ProfessionalMatchingProfile = {
+      ...existingProfProfile,
       ageGroup: profAgeGroup,
       approximateAge: profApproximateAge ? parseInt(profApproximateAge, 10) : undefined,
       maritalStatus: profMaritalStatus,
@@ -308,6 +483,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
       affinityTags: mergedAffinityTags,
       formations: profFormations,
       specializations: profSpecializations,
+      acceptsNewMatchedPatients: currentAccepting,
       welcomeIntro: welcomeIntro.trim(),
       updatedAt: new Date().toISOString(),
     };
@@ -328,6 +504,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
       clinicalTags: profClinicalTags,
       formations: profFormations,
       specializations: profSpecializations,
+      isAcceptingNewPatients: currentAccepting,
       professionalProfile: updatedProfProfile,
     });
 
@@ -436,6 +613,118 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 max-w-xl">
               {getPortalTitle()} · Atendimento seguro por teleconferência, gestão de grade e registros confidenciais.
             </p>
+
+            {/* Quick-Access Availability Status Toggle */}
+            <div className="mt-3.5 flex flex-wrap items-center gap-2.5">
+              <div
+                className={`inline-flex items-center gap-3 px-3.5 py-2 rounded-xl border transition-all duration-300 ease-out ${
+                  isAcceptingPatients
+                    ? 'bg-emerald-50/90 dark:bg-emerald-950/50 border-emerald-200 dark:border-emerald-800/80'
+                    : 'bg-amber-50/90 dark:bg-amber-950/40 border-amber-200 dark:border-amber-800/80'
+                } ${
+                  justToggled
+                    ? isAcceptingPatients
+                      ? 'ring-2 ring-emerald-400/60 dark:ring-emerald-500/40 scale-[1.01] shadow-xs'
+                      : 'ring-2 ring-amber-400/60 dark:ring-amber-500/40 scale-[1.01] shadow-xs'
+                    : 'ring-0 scale-100'
+                }`}
+              >
+                <div className="flex items-center gap-2.5">
+                  <span className="relative flex h-2.5 w-2.5 shrink-0">
+                    {justToggled && (
+                      <span
+                        className={`absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping ${
+                          isAcceptingPatients ? 'bg-emerald-400' : 'bg-amber-400'
+                        }`}
+                      />
+                    )}
+                    <span
+                      className={`relative inline-flex rounded-full h-2.5 w-2.5 transition-colors duration-300 ${
+                        isAcceptingPatients
+                          ? 'bg-emerald-500 ring-4 ring-emerald-500/20 animate-pulse'
+                          : 'bg-amber-500 ring-4 ring-amber-500/20'
+                      }`}
+                    />
+                  </span>
+                  <div className="text-left">
+                    <span
+                      className={`text-xs font-bold block leading-tight transition-colors duration-300 ${
+                        isAcceptingPatients
+                          ? 'text-emerald-950 dark:text-emerald-200'
+                          : 'text-amber-950 dark:text-amber-200'
+                      }`}
+                    >
+                      {isAcceptingPatients ? 'Aceitando novos pacientes' : 'Indisponível para novos pacientes'}
+                    </span>
+                    <span
+                      className={`text-[10px] block leading-tight mt-0.5 transition-colors duration-300 ${
+                        isAcceptingPatients
+                          ? 'text-emerald-700 dark:text-emerald-400'
+                          : 'text-amber-700 dark:text-amber-400'
+                      }`}
+                    >
+                      {isAcceptingPatients
+                        ? 'Visível como disponível na busca e matching de pacientes'
+                        : 'Exibido como indisponível para novos agendamentos na busca'}
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={isAcceptingPatients}
+                  aria-label="Alternar disponibilidade para novos pacientes"
+                  onClick={handleToggleAcceptingPatients}
+                  data-testid="availability-status-toggle"
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors duration-300 ease-out focus:outline-hidden focus:ring-2 focus:ring-offset-2 ${
+                    isAcceptingPatients
+                      ? 'bg-emerald-600 focus:ring-emerald-500'
+                      : 'bg-slate-400 dark:bg-slate-600 focus:ring-amber-500'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition-transform duration-300 ease-out ${
+                      isAcceptingPatients ? 'translate-x-5' : 'translate-x-0'
+                    } ${justToggled ? 'scale-105' : 'scale-100'}`}
+                  />
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsPreviewModalOpen(true)}
+                data-testid="preview-profile-button"
+                title="Visualizar Perfil como aparece para pacientes na busca"
+                className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 hover:bg-sky-50 dark:bg-slate-800/90 dark:hover:bg-sky-950/60 text-slate-700 hover:text-sky-900 dark:text-slate-200 dark:hover:text-sky-200 hover:border-sky-200 dark:hover:border-sky-800 text-xs font-bold shadow-2xs transition-all cursor-pointer"
+              >
+                <Eye className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400 shrink-0" />
+                <span>Visualizar Perfil</span>
+              </button>
+
+              {availabilityFeedback && (
+                <span
+                  className={`inline-flex items-center gap-1.5 text-[11px] font-semibold px-2.5 py-1 rounded-lg border transition-all duration-300 ease-out ${
+                    isAcceptingPatients
+                      ? 'text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800'
+                      : 'text-amber-800 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800'
+                  } ${
+                    isFeedbackVisible
+                      ? 'opacity-100 translate-y-0'
+                      : 'opacity-0 -translate-y-1 pointer-events-none'
+                  }`}
+                >
+                  <CheckCircle2
+                    className={`w-3.5 h-3.5 shrink-0 transition-colors duration-300 ${
+                      isAcceptingPatients
+                        ? 'text-emerald-600 dark:text-emerald-400'
+                        : 'text-amber-600 dark:text-amber-400'
+                    }`}
+                  />
+                  <span>{availabilityFeedback}</span>
+                </span>
+              )}
+            </div>
           </div>
         </div>
 
@@ -450,19 +739,8 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
               <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-pulse"></span>
             </div>
 
-            {/* Mobile layout switcher: Barra (swipe) vs Grade (grid) */}
+            {/* Mobile layout switcher: Grade (grid) vs Barra (swipe) */}
             <div className="inline-flex items-center p-0.5 bg-slate-100 dark:bg-slate-800 rounded-xl border border-slate-200/80 dark:border-slate-700/80 text-[11px]">
-              <button
-                type="button"
-                onClick={() => setMobileNavLayout('pills')}
-                className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-                  mobileNavLayout === 'pills'
-                    ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-300 shadow-xs'
-                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
-                }`}
-              >
-                Barra
-              </button>
               <button
                 type="button"
                 onClick={() => setMobileNavLayout('grid')}
@@ -474,6 +752,17 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
               >
                 <LayoutGrid className="w-3 h-3" />
                 <span>Grade</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMobileNavLayout('pills')}
+                className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
+                  mobileNavLayout === 'pills'
+                    ? 'bg-white dark:bg-slate-700 text-sky-700 dark:text-sky-300 shadow-xs'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+                }`}
+              >
+                Barra
               </button>
             </div>
           </div>
@@ -545,10 +834,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                   <button
                     key={item.id}
                     type="button"
-                    onClick={() => {
-                      if (item.id === 'records') setSelectedProntuarioPatientId(undefined);
-                      setCurrentTab(item.id);
-                    }}
+                    onClick={() => handleQuickNavSelect(item.id)}
                     className={`p-3 rounded-2xl border text-left transition-all active:scale-95 flex flex-col justify-between min-h-[82px] cursor-pointer ${
                       isSelected
                         ? 'bg-sky-700 text-white border-sky-800 shadow-md ring-2 ring-sky-500/40'
@@ -657,10 +943,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                 <button
                   key={tab.id}
                   type="button"
-                  onClick={() => {
-                    if (tab.id === 'records') setSelectedProntuarioPatientId(undefined);
-                    setCurrentTab(tab.id);
-                  }}
+                  onClick={() => handleQuickNavSelect(tab.id)}
                   className={`snap-start px-3.5 py-2.5 sm:py-2 rounded-xl transition-all whitespace-nowrap flex items-center gap-1.5 shrink-0 min-h-[42px] sm:min-h-0 cursor-pointer ${
                     isSelected
                       ? 'bg-sky-700 dark:bg-sky-600 text-white shadow-xs font-bold'
@@ -739,6 +1022,12 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
         </div>
       </div>
 
+      {/* Active Tab Content Target */}
+      <div
+        ref={tabSectionRef}
+        id={`dashboard-section-${currentTab}`}
+        className="scroll-mt-24"
+      >
       {/* Tab 1: Agenda de Consultas */}
       {currentTab === 'agenda' && (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-xs space-y-6">
@@ -1040,6 +1329,28 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                 <span>Configurar Minhas Tags ({selectedAffinityTags.length})</span>
               </button>
             </div>
+
+            {!isAcceptingPatients && (
+              <div className="mt-5 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-start gap-2.5 text-xs text-amber-900 dark:text-amber-200">
+                  <PauseCircle className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    <span className="font-bold block">Status atual: Indisponível para novos pacientes</span>
+                    <span className="text-amber-800/90 dark:text-amber-300/90">
+                      Seu perfil aparece marcado como indisponível nos resultados de busca e matching de pacientes.
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleToggleAcceptingPatients}
+                  className="px-3.5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition-colors whitespace-nowrap flex items-center gap-1.5 self-start sm:self-auto"
+                >
+                  <UserCheck className="w-3.5 h-3.5" />
+                  <span>Aceitar Novos Pacientes</span>
+                </button>
+              </div>
+            )}
 
             {/* Active Professional Matching Profile Context Bar */}
             <div className="mt-5 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-700 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
@@ -1487,13 +1798,23 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
       {/* Tab Profile: Editar Perfil e Configurar Tags de Matching */}
       {currentTab === 'profile' && (
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 md:p-8 shadow-xs max-w-4xl space-y-6 transition-colors duration-200">
-          <div className="pb-4 border-b border-slate-100 dark:border-slate-800">
-            <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
-              Perfil Profissional, Vivência Pessoal e Tags de Identificação
-            </h2>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Configure seus dados profissionais e as tags de afinidade com as quais mais se identifica para potencializar o motor de matching inteligente com pacientes.
-            </p>
+          <div className="pb-4 border-b border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white tracking-tight">
+                Perfil Profissional, Vivência Pessoal e Tags de Identificação
+              </h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                Configure seus dados profissionais e as tags de afinidade com as quais mais se identifica para potencializar o motor de matching inteligente com pacientes.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsPreviewModalOpen(true)}
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl border border-sky-200 dark:border-sky-800 bg-sky-50/80 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 text-sky-900 dark:text-sky-200 text-xs font-bold transition-colors shrink-0 cursor-pointer"
+            >
+              <Eye className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />
+              <span>Visualizar Perfil</span>
+            </button>
           </div>
 
           {profileSuccess && (
@@ -2036,7 +2357,15 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
               />
             </div>
 
-            <div className="pt-2 flex justify-end">
+            <div className="pt-2 flex flex-wrap items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setIsPreviewModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold text-sky-800 dark:text-sky-200 bg-sky-50 hover:bg-sky-100 dark:bg-sky-950/60 dark:hover:bg-sky-900/60 border border-sky-200 dark:border-sky-800 rounded-lg transition-colors cursor-pointer"
+              >
+                <Eye className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />
+                <span>Visualizar Perfil</span>
+              </button>
               <button
                 type="submit"
                 className="px-5 py-2.5 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 rounded-lg shadow-xs transition-colors"
@@ -2047,6 +2376,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
           </form>
         </div>
       )}
+      </div>
 
       {/* Modal de Prontuário Médico / Pastoral */}
       {recordAppointment && (
@@ -2071,6 +2401,18 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
           isOpen={!!selectedInviteMatch}
           onClose={() => setSelectedInviteMatch(null)}
           matchResult={selectedInviteMatch}
+        />
+      )}
+
+      {/* Modal de Pré-visualização do Perfil na Busca */}
+      {previewProfessional && (
+        <ProfessionalPreviewModal
+          isOpen={isPreviewModalOpen}
+          onClose={() => setIsPreviewModalOpen(false)}
+          professional={previewProfessional}
+          hasUnsavedChanges={hasUnsavedProfileChanges}
+          onToggleAvailability={handleToggleAcceptingPatients}
+          onEditProfile={currentTab !== 'profile' ? () => setCurrentTab('profile') : undefined}
         />
       )}
     </div>

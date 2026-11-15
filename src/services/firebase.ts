@@ -77,5 +77,31 @@ export async function testConnection(): Promise<boolean> {
 // Execute connection test
 testConnection();
 
+/**
+ * Recursively strips `undefined` properties and array entries from plain objects
+ * so Firestore setDoc/updateDoc/addDoc calls never fail with "Unsupported field value: undefined".
+ */
+export function stripUndefinedDeep<T>(value: T): T {
+  if (Array.isArray(value)) {
+    return value
+      .filter(item => item !== undefined)
+      .map(item => stripUndefinedDeep(item)) as unknown as T;
+  }
+  if (value !== null && typeof value === 'object') {
+    const proto = Object.getPrototypeOf(value);
+    if (proto !== Object.prototype && proto !== null) {
+      return value;
+    }
+    const result: Record<string, unknown> = {};
+    Object.entries(value as Record<string, unknown>).forEach(([k, v]) => {
+      if (v !== undefined) {
+        result[k] = stripUndefinedDeep(v);
+      }
+    });
+    return result as T;
+  }
+  return value;
+}
+
 export { fbSignOut, onAuthStateChanged, signInWithPopup };
 export type { FirebaseUser };

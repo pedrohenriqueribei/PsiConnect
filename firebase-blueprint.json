@@ -24,6 +24,7 @@
         "defaultMeetingType": { "type": "string", "enum": ["native", "external"] },
         "externalMeetingUrl": { "type": "string", "maxLength": 500 },
         "clinicalTags": { "type": "array", "description": "Clinical experience tags selected by the professional for matching" },
+        "isAcceptingNewPatients": { "type": "boolean", "description": "Whether the professional is currently accepting new patients in matching and search results" },
         "joinedAt": { "type": "string", "format": "date-time" }
       },
       "required": ["id", "name", "email", "role", "joinedAt"]

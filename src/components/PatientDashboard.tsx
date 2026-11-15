@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { storage } from '../services/storage';
-import { User, Appointment, CareCategory, ProfessionalType, PROFESSIONAL_TYPES_CONFIG } from '../types';
+import { User, Appointment, CareCategory, ProfessionalType, PROFESSIONAL_TYPES_CONFIG, isProfessionalAcceptingPatients } from '../types';
 import { calculateMatchScore } from '../services/matchingEngine';
 import { BookingModal } from './BookingModal';
+import { ProfessionalSearchCard } from './ProfessionalSearchCard';
 import { PatientMatchingModal } from './PatientMatchingModal';
 import { PatientFormList } from './clinicalForms/PatientFormList';
 import { clinicalFormStorage } from '../services/clinicalFormStorage';
@@ -24,11 +25,7 @@ import {
   UserCheck,
   BookOpen,
   Brain,
-  Leaf,
-  Compass,
-  Building2,
   Heart,
-  SlidersHorizontal,
   HeartHandshake,
   Sparkles,
   Edit3,
@@ -39,17 +36,22 @@ interface PatientDashboardProps {
   onJoinRoom: (appointment: Appointment) => void;
   onOpenAuth: () => void;
   activeSubTab?: string;
+  navNonce?: number;
+  externalSearch?: { query: string; nonce: number } | null;
 }
 
 export const PatientDashboard: React.FC<PatientDashboardProps> = ({
   onJoinRoom,
   onOpenAuth,
   activeSubTab = 'catalog',
+  navNonce = 0,
+  externalSearch = null,
 }) => {
   const { user } = useAuth();
   const [currentTab, setCurrentTab] = useState<
     'catalog' | 'appointments' | 'patient_forms' | 'patient_records' | 'mood_tracker'
   >((activeSubTab as any) || 'catalog');
+  const catalogListRef = React.useRef<HTMLDivElement>(null);
 
   const [pendingFormsCount, setPendingFormsCount] = useState<number>(() =>
     user
@@ -58,10 +60,11 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
   );
 
   React.useEffect(() => {
-    if (activeSubTab) {
+    const validTabs = ['catalog', 'appointments', 'patient_forms', 'patient_records', 'mood_tracker'];
+    if (activeSubTab && validTabs.includes(activeSubTab)) {
       setCurrentTab(activeSubTab as any);
     }
-  }, [activeSubTab]);
+  }, [activeSubTab, navNonce]);
 
   React.useEffect(() => {
     if (!user) return;
@@ -99,8 +102,36 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
   // Search & Price
   const [searchTerm, setSearchTerm] = useState('');
   const [maxPrice, setMaxPrice] = useState<number>(300);
-  // Social care filter
+  // Social care & availability filters
   const [onlySocialFilter, setOnlySocialFilter] = useState<boolean>(false);
+  const [onlyAcceptingFilter, setOnlyAcceptingFilter] = useState<boolean>(false);
+
+  React.useEffect(() => {
+    if (!externalSearch || !externalSearch.query) return;
+    setCurrentTab('catalog');
+    setCategoryFilter('all');
+    setProfTypeFilter('all');
+    setMaxPrice(350);
+    setOnlySocialFilter(false);
+    setOnlyAcceptingFilter(false);
+    setSearchTerm(externalSearch.query);
+
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        const el = catalogListRef.current;
+        if (!el) return;
+        const header = document.querySelector('header');
+        const headerOffset = header ? header.getBoundingClientRect().height + 16 : 84;
+        const targetY = Math.max(0, el.getBoundingClientRect().top + window.scrollY - headerOffset);
+        window.scrollTo({ top: targetY, behavior: 'smooth' });
+      });
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      if (raf2) cancelAnimationFrame(raf2);
+    };
+  }, [externalSearch]);
 
   // Booking Modal
   const [selectedProfessionalForBooking, setSelectedProfessionalForBooking] = useState<User | null>(null);
@@ -146,6 +177,11 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
       if (!hasSocialSlot) return false;
     }
 
+    // Availability status filter
+    if (onlyAcceptingFilter && !isProfessionalAcceptingPatients(p)) {
+      return false;
+    }
+
     // Price
     if (p.hourlyRate && p.hourlyRate > maxPrice) {
       return false;
@@ -166,48 +202,21 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
     }
 
     return true;
+  }).sort((a, b) => {
+    const aAccepting = isProfessionalAcceptingPatients(a);
+    const bAccepting = isProfessionalAcceptingPatients(b);
+    if (aAccepting !== bAccepting) {
+      return aAccepting ? -1 : 1;
+    }
+    if (user && user.patientProfile) {
+      return calculateMatchScore(b, user).score - calculateMatchScore(a, user).score;
+    }
+    return 0;
   });
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const acceptingProfessionalsCount = filteredProfessionals.filter(p => isProfessionalAcceptingPatients(p)).length;
 
-  const getBadgeInfo = (p: User) => {
-    const pType: ProfessionalType = (p.professionalType || (p.role === 'pastor' ? 'pastor' : p.role === 'therapist' ? 'therapist' : p.role === 'psychoanalyst' ? 'psychoanalyst' : 'psychologist')) as ProfessionalType;
-    switch (pType) {
-      case 'pastor':
-        return {
-          label: 'Pastor · Aconselhamento Bíblico',
-          bg: 'bg-amber-50 dark:bg-amber-950/60',
-          text: 'text-amber-900 dark:text-amber-300',
-          border: 'border-amber-200 dark:border-amber-800',
-          icon: <BookOpen className="w-3.5 h-3.5 text-amber-700 dark:text-amber-400" />,
-        };
-      case 'therapist':
-        return {
-          label: 'Terapeuta · Emocional & Integrativa',
-          bg: 'bg-emerald-50 dark:bg-emerald-950/60',
-          text: 'text-emerald-900 dark:text-emerald-300',
-          border: 'border-emerald-200 dark:border-emerald-800',
-          icon: <Leaf className="w-3.5 h-3.5 text-emerald-700 dark:text-emerald-400" />,
-        };
-      case 'psychoanalyst':
-        return {
-          label: 'Psicanalista · Análise Clínica',
-          bg: 'bg-purple-50 dark:bg-purple-950/60',
-          text: 'text-purple-900 dark:text-purple-300',
-          border: 'border-purple-200 dark:border-purple-800',
-          icon: <Compass className="w-3.5 h-3.5 text-purple-700 dark:text-purple-400" />,
-        };
-      case 'psychologist':
-      default:
-        return {
-          label: 'Psicólogo(a) · Saúde Mental & CRP',
-          bg: 'bg-sky-50 dark:bg-sky-950/60',
-          text: 'text-sky-900 dark:text-sky-300',
-          border: 'border-sky-200 dark:border-sky-800',
-          icon: <Brain className="w-3.5 h-3.5 text-sky-700 dark:text-sky-400" />,
-        };
-    }
-  };
+  const todayStr = new Date().toISOString().split('T')[0];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
@@ -465,21 +474,37 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
               </div>
             </div>
 
-            {/* Social Care Filter Toggle Pill */}
+            {/* Social Care & Accepting New Patients Filter Toggles */}
             <div className="pt-2 flex items-center justify-between flex-wrap gap-2">
-              <button
-                type="button"
-                onClick={() => setOnlySocialFilter(!onlySocialFilter)}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
-                  onlySocialFilter
-                    ? 'bg-emerald-600 text-white border-emerald-700 shadow-2xs'
-                    : 'bg-emerald-50/70 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
-                }`}
-              >
-                <HeartHandshake className="w-3.5 h-3.5" />
-                <span>Filtrar vagas de Atendimento Social</span>
-                {onlySocialFilter && <CheckCircle2 className="w-3.5 h-3.5 ml-1" />}
-              </button>
+              <div className="flex items-center flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => setOnlyAcceptingFilter(!onlyAcceptingFilter)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                    onlyAcceptingFilter
+                      ? 'bg-sky-700 text-white border-sky-800 shadow-2xs'
+                      : 'bg-sky-50/70 dark:bg-sky-950/60 text-sky-900 dark:text-sky-300 border-sky-200 dark:border-sky-800 hover:bg-sky-100 dark:hover:bg-sky-900/60'
+                  }`}
+                >
+                  <UserCheck className="w-3.5 h-3.5" />
+                  <span>Somente aceitando novos pacientes</span>
+                  {onlyAcceptingFilter && <CheckCircle2 className="w-3.5 h-3.5 ml-1" />}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setOnlySocialFilter(!onlySocialFilter)}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${
+                    onlySocialFilter
+                      ? 'bg-emerald-600 text-white border-emerald-700 shadow-2xs'
+                      : 'bg-emerald-50/70 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60'
+                  }`}
+                >
+                  <HeartHandshake className="w-3.5 h-3.5" />
+                  <span>Filtrar vagas de Atendimento Social</span>
+                  {onlySocialFilter && <CheckCircle2 className="w-3.5 h-3.5 ml-1" />}
+                </button>
+              </div>
 
               <span className="text-[11px] text-slate-400 dark:text-slate-500">
                 Atendimento social voltado ao acolhimento acessível de pessoas em vulnerabilidade.
@@ -488,12 +513,13 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           </div>
 
           {/* Active filter count banner */}
-          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1">
+          <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 px-1 flex-wrap gap-2">
             <span>
-              Exibindo <strong>{filteredProfessionals.length}</strong> {filteredProfessionals.length === 1 ? 'profissional' : 'profissionais'} disponíveis
-              {onlySocialFilter && ' com vagas sociais ativas'}
+              Exibindo <strong>{filteredProfessionals.length}</strong> {filteredProfessionals.length === 1 ? 'profissional' : 'profissionais'}
+              {' '}({acceptingProfessionalsCount} aceitando novos pacientes)
+              {onlySocialFilter && ' · com vagas sociais ativas'}
             </span>
-            {(categoryFilter !== 'all' || profTypeFilter !== 'all' || searchTerm || maxPrice < 300 || onlySocialFilter) && (
+            {(categoryFilter !== 'all' || profTypeFilter !== 'all' || searchTerm || maxPrice < 300 || onlySocialFilter || onlyAcceptingFilter) && (
               <button
                 onClick={() => {
                   setCategoryFilter('all');
@@ -501,6 +527,7 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                   setSearchTerm('');
                   setMaxPrice(300);
                   setOnlySocialFilter(false);
+                  setOnlyAcceptingFilter(false);
                 }}
                 className="text-sky-700 dark:text-sky-400 hover:underline font-semibold"
               >
@@ -510,167 +537,21 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
           </div>
 
           {/* List of Professional Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProfessionals.map(prof => {
-              const badge = getBadgeInfo(prof);
-              const pType: ProfessionalType = (prof.professionalType || (prof.role === 'pastor' ? 'pastor' : prof.role === 'therapist' ? 'therapist' : prof.role === 'psychoanalyst' ? 'psychoanalyst' : 'psychologist')) as ProfessionalType;
-
-              return (
-                <div
-                  key={prof.id}
-                  className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-xs hover:border-slate-300 dark:hover:border-slate-700 hover:shadow-md transition-all flex flex-col justify-between"
-                >
-                  <div className="p-6 space-y-4">
-                    {/* Header with avatar & name */}
-                    <div className="flex items-start gap-4">
-                      {prof.avatar ? (
-                        <img
-                          src={prof.avatar}
-                          alt={prof.name}
-                          referrerPolicy="no-referrer"
-                          className="w-16 h-16 rounded-2xl object-cover border border-slate-200 dark:border-slate-700 shrink-0"
-                        />
-                      ) : (
-                        <div className="w-16 h-16 rounded-2xl bg-sky-100 dark:bg-sky-950/80 text-sky-800 dark:text-sky-300 font-bold flex items-center justify-center text-xl shrink-0">
-                          {prof.name.charAt(0)}
-                        </div>
-                      )}
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <h3 className="text-base font-bold text-slate-900 dark:text-white leading-tight">
-                            {prof.name}
-                          </h3>
-                        </div>
-
-                        {/* Professional Type Badge & Matching Score */}
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold border ${badge.bg} ${badge.text} ${badge.border}`}>
-                            {badge.icon}
-                            <span>{badge.label}</span>
-                          </div>
-
-                          {user && user.patientProfile && (() => {
-                            const match = calculateMatchScore(prof, user);
-                            return (
-                              <div
-                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold border ${
-                                  match.score >= 85
-                                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800'
-                                    : 'bg-sky-50 text-sky-800 border-sky-200 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800'
-                                }`}
-                                title={match.highlights.join(' · ')}
-                              >
-                                <Sparkles className="w-3 h-3 text-sky-600 dark:text-sky-400" />
-                                <span>{match.score}% Compatível</span>
-                              </div>
-                            );
-                          })()}
-
-                          {storage.getAvailabilitySlots(prof.id).some(s => s.isSocial && s.isActive) && (
-                            <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-50 text-emerald-900 border border-emerald-200 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 shadow-2xs">
-                              <HeartHandshake className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
-                              <span>Atendimento Social</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Credential or Church: CRP only for psychologists */}
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
-                          {pType === 'psychologist' && (prof.crp || prof.registrationNumber) && (
-                            <span className="text-sky-900 dark:text-sky-300 font-semibold">
-                              {prof.crp || prof.registrationNumber}
-                            </span>
-                          )}
-                          {pType === 'pastor' && prof.ministryOrChurch && (
-                            <span className="flex items-center gap-1 text-amber-900 dark:text-amber-300">
-                              <Building2 className="w-3 h-3 text-amber-700 dark:text-amber-400" />
-                              {prof.ministryOrChurch}
-                            </span>
-                          )}
-                        </div>
-
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500 block">
-                          {prof.city ? `${prof.city}, ${prof.state}` : 'Atendimento Online no Brasil'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Bio */}
-                    <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-3 leading-relaxed">
-                      {prof.bio || 'Profissional dedicado ao acolhimento e desenvolvimento humano.'}
-                    </p>
-
-                    {/* Tags de Experiência Clínica (ex: Ansiedade, Luto, Relacionamentos) */}
-                    {prof.clinicalTags && prof.clinicalTags.length > 0 && (
-                      <div className="space-y-1 pt-1">
-                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider block">
-                          Foco Clínico & Temas:
-                        </span>
-                        <div className="flex flex-wrap gap-1">
-                          {prof.clinicalTags.map((tag, idx) => (
-                            <span
-                              key={idx}
-                              className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-sky-50 dark:bg-sky-950/60 text-sky-900 dark:text-sky-300 border border-sky-200/80 dark:border-sky-800/80"
-                            >
-                              {tag}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Approaches / Abordagens */}
-                    {prof.approaches && prof.approaches.length > 0 && (
-                      <div className="flex flex-wrap gap-1 pt-1">
-                        {prof.approaches
-                          .filter(a => !prof.clinicalTags?.includes(a))
-                          .map((app, idx) => (
-                            <span
-                              key={idx}
-                              className={`text-[10px] font-medium px-2 py-0.5 rounded-md ${
-                                pType === 'pastor'
-                                  ? 'bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-300 border border-amber-100 dark:border-amber-900'
-                                  : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300'
-                              }`}
-                            >
-                              {app}
-                            </span>
-                          ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Card Footer: Price & Booking Action */}
-                  <div className="p-4 bg-slate-50/70 dark:bg-slate-800/60 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                    <div>
-                      <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase font-semibold block">
-                        Sessão de 50 min
-                      </span>
-                      <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
-                        R$ {prof.hourlyRate || 180},00
-                      </span>
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        if (!user) {
-                          onOpenAuth();
-                        } else {
-                          setSelectedProfessionalForBooking(prof);
-                        }
-                      }}
-                      className={`px-4 py-2 text-xs font-semibold text-white rounded-lg shadow-xs transition-colors ${
-                        pType === 'pastor'
-                          ? 'bg-amber-700 hover:bg-amber-800 dark:bg-amber-600 dark:hover:bg-amber-500'
-                          : 'bg-sky-700 hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-500'
-                      }`}
-                    >
-                      {pType === 'pastor' ? 'Agendar Aconselhamento' : 'Agendar Consulta'}
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
+          <div ref={catalogListRef} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProfessionals.map(prof => (
+              <ProfessionalSearchCard
+                key={prof.id}
+                professional={prof}
+                patientUser={user}
+                onBook={selectedProf => {
+                  if (!user) {
+                    onOpenAuth();
+                  } else {
+                    setSelectedProfessionalForBooking(selectedProf);
+                  }
+                }}
+              />
+            ))}
           </div>
 
           {filteredProfessionals.length === 0 && (
@@ -684,6 +565,8 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
                   setProfTypeFilter('all');
                   setSearchTerm('');
                   setMaxPrice(300);
+                  setOnlySocialFilter(false);
+                  setOnlyAcceptingFilter(false);
                 }}
                 className="mt-3 px-4 py-2 text-xs font-semibold text-sky-700 hover:underline"
               >

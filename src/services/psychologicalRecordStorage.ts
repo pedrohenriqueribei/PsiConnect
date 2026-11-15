@@ -8,7 +8,7 @@ import {
   ClinicalMilestone,
 } from '../types/psychologicalRecord';
 import { recordSecurity } from './recordSecurity';
-import { db, auth, OperationType, handleFirestoreError } from './firebase';
+import { db, auth, OperationType, handleFirestoreError, stripUndefinedDeep } from './firebase';
 import { doc, setDoc, collection, getDocs, onSnapshot } from 'firebase/firestore';
 
 const STORAGE_KEY = 'psiconnect_psychological_records_v1';
@@ -998,7 +998,7 @@ class PsychologicalRecordStorageService {
       if (snapshot.size === 0) {
         console.log('Seeding initial psychological records into Firestore...');
         for (const rec of INITIAL_PSYCHOLOGICAL_RECORDS) {
-          await setDoc(doc(db, 'psychologicalRecords', rec.id), rec);
+          await setDoc(doc(db, 'psychologicalRecords', rec.id), stripUndefinedDeep(rec));
         }
         this.recordsCache = [...INITIAL_PSYCHOLOGICAL_RECORDS];
         this.isInitialized = true;
@@ -1055,7 +1055,7 @@ class PsychologicalRecordStorageService {
   async syncRecordToFirestore(record: PsychologicalRecord): Promise<void> {
     const path = `psychologicalRecords/${record.id}`;
     try {
-      await setDoc(doc(db, 'psychologicalRecords', record.id), record);
+      await setDoc(doc(db, 'psychologicalRecords', record.id), stripUndefinedDeep(record));
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, path);
     }

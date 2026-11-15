@@ -1,5 +1,5 @@
 import { ClinicUnit, ClinicUnitPhoto } from '../types/clinicUnit';
-import { db, OperationType, handleFirestoreError } from './firebase';
+import { db, OperationType, handleFirestoreError, stripUndefinedDeep } from './firebase';
 import {
   collection,
   doc,
@@ -287,7 +287,7 @@ class ClinicUnitStorageService {
     // Save to Firestore
     try {
       const docRef = doc(db, FIRESTORE_COLLECTION, unitToSave.id);
-      await setDoc(docRef, unitToSave);
+      await setDoc(docRef, stripUndefinedDeep(unitToSave));
     } catch (err) {
       console.warn('Erro ao sincronizar unidade no Firestore (salvo localmente):', err);
     }

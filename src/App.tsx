@@ -8,9 +8,8 @@ import { PatientDashboard } from './components/PatientDashboard';
 import { LandingHero } from './components/LandingHero';
 import { VirtualRoom } from './components/VirtualRoom';
 import { PatientMatchingModal } from './components/PatientMatchingModal';
-import { Appointment } from './types';
+import { Appointment, isProfessionalRole, UserRole, User } from './types';
 import { Shield, Heart, PhoneCall, CheckCircle2 } from 'lucide-react';
-import { isProfessionalRole, UserRole } from './types';
 import { clinicalFormStorage } from './services/clinicalFormStorage';
 import { ClinicalForm, FormDispatch } from './types/clinicalForm';
 import { FormFillModal } from './components/clinicalForms/FormFillModal';
@@ -20,6 +19,9 @@ import { UserProfileView } from './components/UserProfileView';
 import { clinicUnitStorage } from './services/clinicUnitStorage';
 import { ClinicUnit } from './types/clinicUnit';
 import { PublicClinicModal } from './components/clinicUnit/PublicClinicModal';
+import { ArticleModal } from './components/ArticleModal';
+import { KNOWLEDGE_ARTICLES, KnowledgeArticle } from './data/knowledgeArticles';
+import { ProfessionalPreviewModal } from './components/ProfessionalPreviewModal';
 
 const MainApp: React.FC = () => {
   const { user, role } = useAuth();
@@ -27,6 +29,13 @@ const MainApp: React.FC = () => {
 
   // Tab state: defaults to 'home'
   const [activeTab, setActiveTab] = useState<string>('home');
+  const [navNonce, setNavNonce] = useState<number>(0);
+  const [selectedArticle, setSelectedArticle] = useState<KnowledgeArticle | null>(null);
+  const [previewProfessional, setPreviewProfessional] = useState<User | null>(null);
+  const [externalCatalogSearch, setExternalCatalogSearch] = useState<{
+    query: string;
+    nonce: number;
+  } | null>(null);
 
   // Direct share link form modal
   const [sharedFormToFill, setSharedFormToFill] = useState<{
@@ -92,6 +101,55 @@ const MainApp: React.FC = () => {
     setAuthModalOpen(true);
   };
 
+  const handleNavigateTab = (tab: string) => {
+    if (tab === 'ethics') {
+      const ethicsArticle =
+        KNOWLEDGE_ARTICLES.find(a => a.id === 'art-etica-cfp-lgpd') || KNOWLEDGE_ARTICLES[1];
+      setSelectedArticle(ethicsArticle);
+      return;
+    }
+    setActiveTab(tab);
+    setNavNonce(n => n + 1);
+  };
+
+  const handleSelectProfessionalFromSearch = (professional: User) => {
+    if (user && isProf) {
+      setPreviewProfessional(professional);
+      return;
+    }
+    setActiveTab('catalog');
+    setNavNonce(n => n + 1);
+    setExternalCatalogSearch({ query: professional.name, nonce: Date.now() });
+  };
+
+  const handleArticleAction = (targetTab: string) => {
+    if (targetTab === 'records') {
+      if (user && isProf) {
+        handleNavigateTab('records');
+      } else if (user) {
+        handleNavigateTab('patient_records');
+      } else {
+        handleNavigateTab('catalog');
+      }
+      return;
+    }
+    if (targetTab === 'mood_tracker' || targetTab === 'patient_records') {
+      if (user && !isProf) {
+        handleNavigateTab(targetTab);
+      } else if (!user) {
+        handleOpenLogin();
+      } else {
+        handleNavigateTab('agenda');
+      }
+      return;
+    }
+    if (targetTab === 'catalog' && user && isProf) {
+      handleNavigateTab('matching');
+      return;
+    }
+    handleNavigateTab(targetTab);
+  };
+
   // If in an active video consultation
   if (activeRoomAppointment) {
     return (
@@ -116,9 +174,11 @@ const MainApp: React.FC = () => {
       {/* Top Navigation */}
       <Navbar
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={handleNavigateTab}
         onOpenLogin={handleOpenLogin}
         onOpenRegister={handleOpenRegister}
+        onSelectArticle={article => setSelectedArticle(article)}
+        onSelectProfessional={handleSelectProfessionalFromSearch}
       />
 
       {/* Main View Router */}
@@ -175,12 +235,15 @@ const MainApp: React.FC = () => {
             <PsychologistDashboard
               onJoinRoom={apt => setActiveRoomAppointment(apt)}
               activeSubTab={activeTab}
+              navNonce={navNonce}
             />
           ) : (
             <PatientDashboard
               onJoinRoom={apt => setActiveRoomAppointment(apt)}
               onOpenAuth={handleOpenLogin}
               activeSubTab={activeTab}
+              navNonce={navNonce}
+              externalSearch={externalCatalogSearch}
             />
           )
         ) : (
@@ -190,6 +253,8 @@ const MainApp: React.FC = () => {
                 onJoinRoom={apt => setActiveRoomAppointment(apt)}
                 onOpenAuth={handleOpenLogin}
                 activeSubTab="catalog"
+                navNonce={navNonce}
+                externalSearch={externalCatalogSearch}
               />
             ) : (
               <LandingHero
@@ -317,6 +382,22 @@ const MainApp: React.FC = () => {
           }}
           unit={publicClinicModal.unit}
           initialMode={publicClinicModal.mode}
+        />
+      )}
+
+      {/* Article Reader Modal (from Global Search / Ethics) */}
+      <ArticleModal
+        article={selectedArticle}
+        onClose={() => setSelectedArticle(null)}
+        onNavigateAction={handleArticleAction}
+      />
+
+      {/* Professional Preview Modal (when a logged-in professional selects a colleague in Global Search) */}
+      {previewProfessional && (
+        <ProfessionalPreviewModal
+          isOpen={!!previewProfessional}
+          onClose={() => setPreviewProfessional(null)}
+          professional={previewProfessional}
         />
       )}
     </div>

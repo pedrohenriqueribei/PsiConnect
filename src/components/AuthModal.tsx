@@ -268,6 +268,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             acceptsNewMatchedPatients: true,
             updatedAt: new Date().toISOString(),
           },
+          isAcceptingNewPatients: true,
           hourlyRate: Number(hourlyRate),
           sessionDuration: 50,
           defaultMeetingType: 'native',

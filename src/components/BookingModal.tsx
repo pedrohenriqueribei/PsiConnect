@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { storage } from '../services/storage';
-import { User, AvailabilitySlot, Appointment, ProfessionalType, PROFESSIONAL_TYPES_CONFIG } from '../types';
+import { User, AvailabilitySlot, Appointment, ProfessionalType, PROFESSIONAL_TYPES_CONFIG, isProfessionalAcceptingPatients } from '../types';
 import {
   X,
   Calendar,
@@ -96,6 +96,11 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
     if (!user) {
       onOpenAuth();
+      return;
+    }
+
+    if (!isProfessionalAcceptingPatients(psychologist)) {
+      setErrorMsg('Este profissional está temporariamente indisponível para novos agendamentos.');
       return;
     }
 
@@ -246,6 +251,13 @@ export const BookingModal: React.FC<BookingModalProps> = ({
 
         {/* Form Body */}
         <form onSubmit={handleConfirm} className="p-6 space-y-5">
+          {!isProfessionalAcceptingPatients(psychologist) && (
+            <div className="flex items-start gap-2 p-3 text-xs text-amber-900 dark:text-amber-200 bg-amber-50 dark:bg-amber-950/50 border border-amber-200 dark:border-amber-800 rounded-lg">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+              <span>Este profissional está temporariamente indisponível para aceitar novos pacientes.</span>
+            </div>
+          )}
+
           {errorMsg && (
             <div className="flex items-start gap-2 p-3 text-xs text-red-700 bg-red-50 border border-red-200 rounded-lg">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
@@ -386,7 +398,7 @@ export const BookingModal: React.FC<BookingModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !selectedTime}
+              disabled={isSubmitting || !selectedTime || !isProfessionalAcceptingPatients(psychologist)}
               className="flex items-center gap-1.5 px-5 py-2.5 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-500 disabled:opacity-50 rounded-lg shadow-xs transition-colors"
             >
               <CheckCircle2 className="w-4 h-4" />

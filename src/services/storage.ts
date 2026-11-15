@@ -7,7 +7,7 @@ import {
   PatientMatchingProfile,
   ProfessionalMatchingProfile,
 } from '../types';
-import { db, auth, OperationType, handleFirestoreError } from './firebase';
+import { db, auth, OperationType, handleFirestoreError, stripUndefinedDeep } from './firebase';
 import {
   collection,
   doc,
@@ -608,11 +608,10 @@ class StorageService {
   async saveUserToFirestore(user: User): Promise<void> {
     const path = `users/${user.id}`;
     try {
-      const cleanData = Object.fromEntries(
-        Object.entries(user).filter(([_, v]) => v !== undefined)
-      );
+      const cleanData = stripUndefinedDeep(user);
       await setDoc(doc(db, 'users', user.id), cleanData);
-      this.usersCache = [user, ...this.usersCache.filter((u) => u.id !== user.id)];
+      const baseUsers = this.usersCache.length > 0 ? this.usersCache : INITIAL_USERS;
+      this.usersCache = [user, ...baseUsers.filter((u) => u.id !== user.id)];
       this.notifyListeners();
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, path);
@@ -632,7 +631,8 @@ class StorageService {
       joinedAt: new Date().toISOString(),
     };
 
-    this.usersCache = [createdUser, ...this.usersCache.filter(u => u.id !== createdUser.id)];
+    const baseUsers = this.usersCache.length > 0 ? this.usersCache : INITIAL_USERS;
+    this.usersCache = [createdUser, ...baseUsers.filter(u => u.id !== createdUser.id)];
     this.notifyListeners();
 
     // Persist directly to Firestore database
@@ -644,7 +644,11 @@ class StorageService {
   }
 
   updateUser(updated: User): void {
-    this.usersCache = this.usersCache.map(u => (u.id === updated.id ? updated : u));
+    const baseUsers = this.usersCache.length > 0 ? this.usersCache : INITIAL_USERS;
+    const existsInCache = baseUsers.some(u => u.id === updated.id);
+    this.usersCache = existsInCache
+      ? baseUsers.map(u => (u.id === updated.id ? updated : u))
+      : [updated, ...baseUsers];
     this.notifyListeners();
 
     const currentUser = this.getCurrentUser();
@@ -654,9 +658,7 @@ class StorageService {
 
     // Direct write to Firestore database
     const path = `users/${updated.id}`;
-    const cleanData = Object.fromEntries(
-      Object.entries(updated).filter(([_, v]) => v !== undefined)
-    );
+    const cleanData = stripUndefinedDeep(updated);
     setDoc(doc(db, 'users', updated.id), cleanData, { merge: true }).catch(error => {
       handleFirestoreError(error, OperationType.UPDATE, path);
     });
@@ -726,6 +728,29 @@ class StorageService {
     const updatedUser: User = {
       ...user,
       professionalProfile: profile,
+      isAcceptingNewPatients:
+        typeof profile.acceptsNewMatchedPatients === 'boolean'
+          ? profile.acceptsNewMatchedPatients
+          : user.isAcceptingNewPatients ?? true,
+    };
+    this.updateUser(updatedUser);
+    return updatedUser;
+  }
+
+  updateProfessionalAvailabilityStatus(profId: string, isAccepting: boolean): User | null {
+    const user = this.getUsers().find(u => u.id === profId);
+    if (!user) return null;
+    const updatedProfile: ProfessionalMatchingProfile = {
+      ageGroup: user.professionalProfile?.ageGroup || '36-50',
+      affinityTags: user.professionalProfile?.affinityTags || user.clinicalTags || [],
+      ...user.professionalProfile,
+      acceptsNewMatchedPatients: isAccepting,
+      updatedAt: new Date().toISOString(),
+    };
+    const updatedUser: User = {
+      ...user,
+      isAcceptingNewPatients: isAccepting,
+      professionalProfile: updatedProfile,
     };
     this.updateUser(updatedUser);
     return updatedUser;
@@ -944,7 +969,7 @@ class StorageService {
     this.notifyListeners();
 
     const path = `messages/${newMsg.id}`;
-    setDoc(doc(db, 'messages', newMsg.id), newMsg).catch(err => {
+    setDoc(doc(db, 'messages', newMsg.id), stripUndefinedDeep(newMsg)).catch(err => {
       handleFirestoreError(err, OperationType.CREATE, path);
     });
 

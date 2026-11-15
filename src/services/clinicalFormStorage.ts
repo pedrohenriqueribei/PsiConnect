@@ -6,7 +6,7 @@ import {
   FormStatus,
 } from '../types/clinicalForm';
 import { recordSecurity } from './recordSecurity';
-import { db, OperationType, handleFirestoreError } from './firebase';
+import { db, OperationType, handleFirestoreError, stripUndefinedDeep } from './firebase';
 import { doc, setDoc, deleteDoc, collection, getDocs, onSnapshot } from 'firebase/firestore';
 
 // Initial realistic seed forms created by Dra. Clara (psy_clara)
@@ -606,7 +606,7 @@ class ClinicalFormStorageService {
       const snap = await getDocs(collection(db, 'clinicalForms'));
       if (snap.size === 0) {
         for (const f of INITIAL_FORMS) {
-          await setDoc(doc(db, 'clinicalForms', f.id), f);
+          await setDoc(doc(db, 'clinicalForms', f.id), stripUndefinedDeep(f));
         }
       }
     } catch (e) {
@@ -619,7 +619,7 @@ class ClinicalFormStorageService {
       const snap = await getDocs(collection(db, 'formDispatches'));
       if (snap.size === 0) {
         for (const d of INITIAL_DISPATCHES) {
-          await setDoc(doc(db, 'formDispatches', d.id), d);
+          await setDoc(doc(db, 'formDispatches', d.id), stripUndefinedDeep(d));
         }
       }
     } catch (e) {
@@ -632,7 +632,7 @@ class ClinicalFormStorageService {
       const snap = await getDocs(collection(db, 'formSubmissions'));
       if (snap.size === 0) {
         for (const s of INITIAL_SUBMISSIONS) {
-          await setDoc(doc(db, 'formSubmissions', s.id), s);
+          await setDoc(doc(db, 'formSubmissions', s.id), stripUndefinedDeep(s));
         }
       }
     } catch (e) {
@@ -696,11 +696,11 @@ class ClinicalFormStorageService {
    */
   async saveForm(form: ClinicalForm): Promise<ClinicalForm> {
     const now = new Date().toISOString();
-    const updatedForm: ClinicalForm = {
+    const updatedForm: ClinicalForm = stripUndefinedDeep({
       ...form,
       updatedAt: now,
       createdAt: form.createdAt || now,
-    };
+    });
 
     // Update cache immediately
     const index = this.formsCache.findIndex(f => f.id === updatedForm.id);
@@ -796,7 +796,7 @@ class ClinicalFormStorageService {
     const sentAt = new Date().toISOString();
     const shareToken = 'tok_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 8);
 
-    const dispatch: FormDispatch = {
+    const dispatch: FormDispatch = stripUndefinedDeep({
       id: 'disp_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6),
       formId: form.id,
       formTitle: form.title,
@@ -809,7 +809,7 @@ class ClinicalFormStorageService {
       status: 'pending',
       submissionCount: 0,
       shareToken,
-    };
+    });
 
     this.dispatchesCache.unshift(dispatch);
     this.notify();
@@ -867,7 +867,7 @@ class ClinicalFormStorageService {
     const plainJson = JSON.stringify(params.answers);
     const encryptedPayload = recordSecurity.encryptClinicalText(plainJson);
 
-    const submission: FormSubmission = {
+    const submission: FormSubmission = stripUndefinedDeep({
       id: 'sub_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6),
       formId: form.id,
       formTitle: form.title,
@@ -880,7 +880,7 @@ class ClinicalFormStorageService {
       answers: params.answers,
       encryptedPayload,
       isReadByProfessional: false, // Triggers real-time notification in professional panel
-    };
+    });
 
     // Update dispatch if exists
     if (params.dispatchId) {
@@ -890,7 +890,7 @@ class ClinicalFormStorageService {
         dispatch.submissionCount = (dispatch.submissionCount || 0) + 1;
         dispatch.lastSubmittedAt = submittedAt;
         try {
-          await setDoc(doc(db, 'formDispatches', dispatch.id), dispatch);
+          await setDoc(doc(db, 'formDispatches', dispatch.id), stripUndefinedDeep(dispatch));
         } catch (e) {
           console.warn('Error updating dispatch status:', e);
         }
@@ -956,7 +956,7 @@ class ClinicalFormStorageService {
       sub.readAt = new Date().toISOString();
       this.notify();
       try {
-        await setDoc(doc(db, 'formSubmissions', sub.id), sub);
+        await setDoc(doc(db, 'formSubmissions', sub.id), stripUndefinedDeep(sub));
       } catch (e) {
         console.warn('Error marking submission as read in Firestore:', e);
       }

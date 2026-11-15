@@ -124,15 +124,13 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
       title: '',
       type,
       required: true,
-      options: type === 'radio' || type === 'checkbox' ? ['Opção 1', 'Opção 2'] : undefined,
-      scaleConfig:
-        type === 'likert_scale'
-          ? { min: 0, max: 10, minLabel: '0 - Mínimo', maxLabel: '10 - Máximo' }
-          : undefined,
-      justificationPrompt:
-        type === 'yes_no_justification'
-          ? 'Se sim, justifique brevemente:'
-          : undefined,
+      ...(type === 'radio' || type === 'checkbox' ? { options: ['Opção 1', 'Opção 2'] } : {}),
+      ...(type === 'likert_scale'
+        ? { scaleConfig: { min: 0, max: 10, minLabel: '0 - Mínimo', maxLabel: '10 - Máximo' } }
+        : {}),
+      ...(type === 'yes_no_justification'
+        ? { justificationPrompt: 'Se sim, justifique brevemente:' }
+        : {}),
     };
     setQuestions(prev => [...prev, newQ]);
   };
@@ -559,25 +557,37 @@ export const FormBuilderModal: React.FC<FormBuilderModalProps> = ({
                               value={q.type}
                               onChange={e => {
                                 const newType = e.target.value as QuestionType;
-                                handleUpdateQuestion(qIndex, {
-                                  type: newType,
-                                  options:
-                                    newType === 'radio' || newType === 'checkbox'
-                                      ? q.options || ['Opção 1', 'Opção 2']
-                                      : undefined,
-                                  scaleConfig:
-                                    newType === 'likert_scale'
-                                      ? q.scaleConfig || {
-                                          min: 0,
-                                          max: 10,
-                                          minLabel: '0 - Mínimo',
-                                          maxLabel: '10 - Máximo',
+                                setQuestions(prev => {
+                                  const copy = [...prev];
+                                  const current = copy[qIndex];
+                                  const next: FormQuestion = {
+                                    id: current.id,
+                                    title: current.title,
+                                    ...(current.description ? { description: current.description } : {}),
+                                    type: newType,
+                                    required: current.required,
+                                    ...(newType === 'radio' || newType === 'checkbox'
+                                      ? { options: current.options || ['Opção 1', 'Opção 2'] }
+                                      : {}),
+                                    ...(newType === 'likert_scale'
+                                      ? {
+                                          scaleConfig: current.scaleConfig || {
+                                            min: 0,
+                                            max: 10,
+                                            minLabel: '0 - Mínimo',
+                                            maxLabel: '10 - Máximo',
+                                          },
                                         }
-                                      : undefined,
-                                  justificationPrompt:
-                                    newType === 'yes_no_justification'
-                                      ? q.justificationPrompt || 'Se sim, justifique brevemente:'
-                                      : undefined,
+                                      : {}),
+                                    ...(newType === 'yes_no_justification'
+                                      ? {
+                                          justificationPrompt:
+                                            current.justificationPrompt || 'Se sim, justifique brevemente:',
+                                        }
+                                      : {}),
+                                  };
+                                  copy[qIndex] = next;
+                                  return copy;
                                 });
                               }}
                               className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl bg-white focus:outline-hidden focus:ring-2 focus:ring-sky-600"

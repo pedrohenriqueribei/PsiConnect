@@ -108,6 +108,17 @@ export const isProfessionalRole = (role?: string | null): boolean => {
   );
 };
 
+export const isProfessionalAcceptingPatients = (user?: User | null): boolean => {
+  if (!user) return true;
+  if (typeof user.isAcceptingNewPatients === 'boolean') {
+    return user.isAcceptingNewPatients;
+  }
+  if (typeof user.professionalProfile?.acceptsNewMatchedPatients === 'boolean') {
+    return user.professionalProfile.acceptsNewMatchedPatients;
+  }
+  return true;
+};
+
 export type AgeGroup = '18-25' | '26-35' | '36-50' | '51+';
 export type MaritalStatus = 'single' | 'married' | 'stable_union' | 'divorced' | 'widowed';
 
@@ -270,6 +281,7 @@ export interface User {
   externalMeetingUrl?: string;
   patientProfile?: PatientMatchingProfile;
   professionalProfile?: ProfessionalMatchingProfile;
+  isAcceptingNewPatients?: boolean;
   clinicUnitId?: string;
   clinicUnit?: import('./clinicUnit').ClinicUnit;
   joinedAt: string;

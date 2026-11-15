@@ -1,5 +1,5 @@
 import { ContactFormData, ContactInquiry, ContactSubmissionResult } from '../types/contact';
-import { db } from './firebase';
+import { db, stripUndefinedDeep } from './firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const STORAGE_KEY = 'psiconnect_contact_inquiries';
@@ -45,7 +45,7 @@ export const contactService = {
     try {
       if (db) {
         await addDoc(collection(db, 'contactInquiries'), {
-          ...newInquiry,
+          ...stripUndefinedDeep(newInquiry),
           firestoreTimestamp: serverTimestamp()
         });
       }

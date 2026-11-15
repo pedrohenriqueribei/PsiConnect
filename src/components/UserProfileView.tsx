@@ -10,7 +10,8 @@ import {
   SUGGESTED_FORMATIONS_BY_TYPE,
   SUGGESTED_SPECIALIZATIONS_BY_TYPE,
   CLINICAL_EXPERIENCE_TAGS,
-  isProfessionalRole
+  isProfessionalRole,
+  isProfessionalAcceptingPatients
 } from '../types';
 import {
   User as UserIcon,
@@ -339,7 +340,10 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onBack, initia
       updatedData.defaultMeetingType = defaultMeetingType;
       updatedData.externalMeetingUrl = externalMeetingUrl.trim();
 
+      const currentAccepting = isProfessionalAcceptingPatients(user);
+      updatedData.isAcceptingNewPatients = currentAccepting;
       updatedData.professionalProfile = {
+        ...user.professionalProfile,
         ageGroup: profAgeGroup,
         approximateAge: profApproximateAge ? Number(profApproximateAge) : undefined,
         maritalStatus: profMaritalStatus,
@@ -347,6 +351,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onBack, initia
         affinityTags: profAffinityTags,
         formations,
         specializations,
+        acceptsNewMatchedPatients: currentAccepting,
         welcomeIntro: welcomeIntro.trim(),
         updatedAt: new Date().toISOString(),
       };
