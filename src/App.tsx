@@ -23,12 +23,184 @@ import { ArticleModal } from './components/ArticleModal';
 import { KNOWLEDGE_ARTICLES, KnowledgeArticle } from './data/knowledgeArticles';
 import { ProfessionalPreviewModal } from './components/ProfessionalPreviewModal';
 
+const PROF_TABS = new Set([
+  'agenda',
+  'matching',
+  'availability',
+  'records',
+  'forms',
+  'journey',
+  'profile',
+  'clinic-unit',
+  'contact',
+]);
+
+const PATIENT_TABS = new Set([
+  'catalog',
+  'appointments',
+  'patient_forms',
+  'patient_records',
+  'mood_tracker',
+  'profile',
+  'contact',
+]);
+
+const PUBLIC_TABS = new Set(['home', 'catalog', 'contact']);
+
+const getDefaultDashboardTab = (isProf: boolean): string => (isProf ? 'agenda' : 'catalog');
+
+const resolveTabForAuthState = (tab: string, currentUser: User | null): string => {
+  if (currentUser) {
+    const prof = isProfessionalRole(currentUser.role);
+    if (tab === 'home') {
+      return getDefaultDashboardTab(prof);
+    }
+    if (prof && !PROF_TABS.has(tab)) {
+      return 'agenda';
+    }
+    if (!prof && !PATIENT_TABS.has(tab)) {
+      return 'catalog';
+    }
+    return tab;
+  }
+
+  return PUBLIC_TABS.has(tab) ? tab : 'home';
+};
+
+const resolveTabFromPathname = (pathname: string, currentUser: User | null): string => {
+  const clean = pathname.replace(/\/+$/, '').toLowerCase() || '/';
+  let mapped = 'home';
+
+  switch (clean) {
+    case '/':
+    case '/home':
+    case '/inicio':
+    case '/login':
+    case '/cadastro':
+    case '/register':
+      mapped = 'home';
+      break;
+    case '/painel':
+    case '/dashboard':
+      mapped = currentUser ? getDefaultDashboardTab(isProfessionalRole(currentUser.role)) : 'home';
+      break;
+    case '/especialistas':
+    case '/catalog':
+    case '/catalogo':
+      mapped = 'catalog';
+      break;
+    case '/agenda':
+      mapped = 'agenda';
+      break;
+    case '/pacientes-sugeridos':
+    case '/matching':
+      mapped = 'matching';
+      break;
+    case '/disponibilidade':
+    case '/availability':
+      mapped = 'availability';
+      break;
+    case '/prontuarios':
+    case '/records':
+      mapped = 'records';
+      break;
+    case '/formularios':
+    case '/forms':
+      mapped = 'forms';
+      break;
+    case '/jornada':
+    case '/journey':
+      mapped = 'journey';
+      break;
+    case '/consultas':
+    case '/appointments':
+      mapped = 'appointments';
+      break;
+    case '/questionarios':
+    case '/patient_forms':
+      mapped = 'patient_forms';
+      break;
+    case '/orientacoes':
+    case '/patient_records':
+      mapped = 'patient_records';
+      break;
+    case '/diario-de-humor':
+    case '/mood_tracker':
+      mapped = 'mood_tracker';
+      break;
+    case '/perfil':
+    case '/profile':
+      mapped = 'profile';
+      break;
+    case '/unidade-clinica':
+    case '/clinic-unit':
+      mapped = 'clinic-unit';
+      break;
+    case '/contato':
+    case '/contact':
+    case '/fale-conosco':
+      mapped = 'contact';
+      break;
+    default:
+      mapped = 'home';
+      break;
+  }
+
+  return resolveTabForAuthState(mapped, currentUser);
+};
+
+const getPathForTab = (tab: string, currentUser: User | null): string => {
+  if (currentUser) {
+    const prof = isProfessionalRole(currentUser.role);
+    if ((prof && tab === 'agenda') || (!prof && tab === 'catalog')) {
+      return '/painel';
+    }
+  }
+
+  switch (tab) {
+    case 'home':
+      return '/';
+    case 'catalog':
+      return '/especialistas';
+    case 'agenda':
+      return '/painel';
+    case 'matching':
+      return '/pacientes-sugeridos';
+    case 'availability':
+      return '/disponibilidade';
+    case 'records':
+      return '/prontuarios';
+    case 'forms':
+      return '/formularios';
+    case 'journey':
+      return '/jornada';
+    case 'appointments':
+      return '/consultas';
+    case 'patient_forms':
+      return '/questionarios';
+    case 'patient_records':
+      return '/orientacoes';
+    case 'mood_tracker':
+      return '/diario-de-humor';
+    case 'profile':
+      return '/perfil';
+    case 'clinic-unit':
+      return '/unidade-clinica';
+    case 'contact':
+      return '/contato';
+    default:
+      return currentUser ? '/painel' : '/';
+  }
+};
+
 const MainApp: React.FC = () => {
   const { user, role } = useAuth();
   const isProf = isProfessionalRole(role);
 
-  // Tab state: defaults to 'home'
-  const [activeTab, setActiveTab] = useState<string>('home');
+  // Tab state: redirects to dashboard panel when logged in, or 'home' when logged out
+  const [activeTab, setActiveTab] = useState<string>(() =>
+    resolveTabFromPathname(window.location.pathname, user)
+  );
   const [navNonce, setNavNonce] = useState<number>(0);
   const [selectedArticle, setSelectedArticle] = useState<KnowledgeArticle | null>(null);
   const [previewProfessional, setPreviewProfessional] = useState<User | null>(null);
@@ -101,14 +273,59 @@ const MainApp: React.FC = () => {
     setAuthModalOpen(true);
   };
 
-  const handleNavigateTab = (tab: string) => {
+  // Enforce route guards & redirect logged-in users from '/' or 'home' to their dashboard panel
+  React.useEffect(() => {
+    const resolvedTab = resolveTabForAuthState(activeTab, user);
+    if (resolvedTab !== activeTab) {
+      setActiveTab(resolvedTab);
+    }
+    const targetPath = getPathForTab(resolvedTab, user);
+    if (window.location.pathname !== targetPath) {
+      window.history.replaceState(
+        { tab: resolvedTab },
+        '',
+        `${targetPath}${window.location.search}${window.location.hash}`
+      );
+    }
+  }, [user, activeTab]);
+
+  // Sync browser Back/Forward navigation
+  React.useEffect(() => {
+    const handlePopState = () => {
+      const nextTab = resolveTabFromPathname(window.location.pathname, user);
+      setActiveTab(nextTab);
+      setNavNonce(n => n + 1);
+      const targetPath = getPathForTab(nextTab, user);
+      if (window.location.pathname !== targetPath) {
+        window.history.replaceState(
+          { tab: nextTab },
+          '',
+          `${targetPath}${window.location.search}${window.location.hash}`
+        );
+      }
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [user]);
+
+  const handleNavigateTab = (tab: string, overrideUser?: User | null) => {
     if (tab === 'ethics') {
       const ethicsArticle =
         KNOWLEDGE_ARTICLES.find(a => a.id === 'art-etica-cfp-lgpd') || KNOWLEDGE_ARTICLES[1];
       setSelectedArticle(ethicsArticle);
       return;
     }
-    setActiveTab(tab);
+    const effectiveUser = overrideUser !== undefined ? overrideUser : user;
+    const resolvedTab = resolveTabForAuthState(tab, effectiveUser);
+    const targetPath = getPathForTab(resolvedTab, effectiveUser);
+    if (window.location.pathname !== targetPath) {
+      window.history.pushState(
+        { tab: resolvedTab },
+        '',
+        `${targetPath}${window.location.search}${window.location.hash}`
+      );
+    }
+    setActiveTab(resolvedTab);
     setNavNonce(n => n + 1);
   };
 
@@ -117,8 +334,7 @@ const MainApp: React.FC = () => {
       setPreviewProfessional(professional);
       return;
     }
-    setActiveTab('catalog');
-    setNavNonce(n => n + 1);
+    handleNavigateTab('catalog');
     setExternalCatalogSearch({ query: professional.name, nonce: Date.now() });
   };
 
@@ -160,17 +376,8 @@ const MainApp: React.FC = () => {
     );
   }
 
-  const getUserRoleLabel = () => {
-    if (!user) return '';
-    if (user.role === 'pastor' || user.professionalType === 'pastor') return 'Pastor / Conselheiro Bíblico';
-    if (user.role === 'therapist' || user.professionalType === 'therapist') return 'Terapeuta';
-    if (user.role === 'psychoanalyst' || user.professionalType === 'psychoanalyst') return 'Psicanalista';
-    if (user.role === 'psychologist' || user.professionalType === 'psychologist') return 'Psicólogo(a)';
-    return 'Paciente';
-  };
-
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200 overflow-x-clip">
       {/* Top Navigation */}
       <Navbar
         activeTab={activeTab}
@@ -187,61 +394,28 @@ const MainApp: React.FC = () => {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-12">
             <ContactUs
               isStandalonePage={true}
-              onNavigateHome={() => setActiveTab(user ? (isProf ? 'agenda' : 'catalog') : 'home')}
+              onNavigateHome={() => handleNavigateTab(user ? getDefaultDashboardTab(isProf) : 'home')}
             />
           </div>
         ) : (activeTab === 'profile' || activeTab === 'clinic-unit') && user ? (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 pb-12">
             <UserProfileView
               initialTab={activeTab === 'clinic-unit' ? 'clinicUnit' : undefined}
-              onBack={() => setActiveTab(isProf ? 'agenda' : 'catalog')}
+              onBack={() => handleNavigateTab(getDefaultDashboardTab(isProf))}
             />
           </div>
         ) : user ? (
-          activeTab === 'home' ? (
-            <div className="space-y-6">
-              {/* Logged in welcome helper banner */}
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 pt-6">
-                <div className="bg-sky-50 dark:bg-sky-950/60 border border-sky-200 dark:border-sky-800 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 text-sky-900 dark:text-sky-200">
-                    <div className="w-9 h-9 rounded-full bg-sky-700 text-white flex items-center justify-center font-bold text-xs shrink-0">
-                      {user.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="text-xs font-semibold">
-                        Olá, {user.name} ({getUserRoleLabel()})
-                      </p>
-                      <p className="text-[11px] text-sky-700 dark:text-sky-300">
-                        Você está autenticado no PsiConnect. Deseja acessar seu painel principal?
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setActiveTab(isProf ? 'agenda' : 'catalog')}
-                    className="px-4 py-2 text-xs font-bold text-white bg-sky-700 hover:bg-sky-800 rounded-lg transition-colors whitespace-nowrap shadow-xs"
-                  >
-                    Ir para meu Painel
-                  </button>
-                </div>
-              </div>
-              <LandingHero
-                onFindPsychologist={() => setActiveTab('catalog')}
-                onRegisterPsychologist={() => handleOpenRegister('psychologist')}
-                onRegisterPatient={() => handleOpenRegister('patient')}
-                onOpenLogin={handleOpenLogin}
-              />
-            </div>
-          ) : isProf ? (
+          isProf ? (
             <PsychologistDashboard
               onJoinRoom={apt => setActiveRoomAppointment(apt)}
-              activeSubTab={activeTab}
+              activeSubTab={activeTab === 'home' ? 'agenda' : activeTab}
               navNonce={navNonce}
             />
           ) : (
             <PatientDashboard
               onJoinRoom={apt => setActiveRoomAppointment(apt)}
               onOpenAuth={handleOpenLogin}
-              activeSubTab={activeTab}
+              activeSubTab={activeTab === 'home' ? 'catalog' : activeTab}
               navNonce={navNonce}
               externalSearch={externalCatalogSearch}
             />
@@ -258,7 +432,7 @@ const MainApp: React.FC = () => {
               />
             ) : (
               <LandingHero
-                onFindPsychologist={() => setActiveTab('catalog')}
+                onFindPsychologist={() => handleNavigateTab('catalog')}
                 onRegisterPsychologist={() => handleOpenRegister('psychologist')}
                 onRegisterPatient={() => handleOpenRegister('patient')}
                 onOpenLogin={handleOpenLogin}
@@ -289,7 +463,7 @@ const MainApp: React.FC = () => {
             <ul className="space-y-1.5 text-slate-500 dark:text-slate-400">
               <li>
                 <button 
-                  onClick={() => setActiveTab('contact')}
+                  onClick={() => handleNavigateTab('contact')}
                   className="hover:text-sky-700 dark:hover:text-sky-400 font-semibold text-slate-700 dark:text-slate-300 transition-colors text-left"
                 >
                   Fale Conosco (Suporte & Contato)
@@ -320,7 +494,7 @@ const MainApp: React.FC = () => {
           <p>© {new Date().getFullYear()} PsiConnect. Todos os direitos reservados.</p>
           <div className="flex items-center gap-4 text-slate-400 dark:text-slate-500">
             <button 
-              onClick={() => setActiveTab('contact')}
+              onClick={() => handleNavigateTab('contact')}
               className="hover:text-sky-700 dark:hover:text-sky-400 text-slate-600 dark:text-slate-300 transition-colors"
             >
               Fale Conosco
@@ -344,8 +518,11 @@ const MainApp: React.FC = () => {
         onPatientRegistered={() => {
           setPatientMatchingModalOpen(true);
         }}
-        onAuthSuccess={() => {
-          setActiveTab(initialAuthRole === 'psychologist' ? 'agenda' : 'catalog');
+        onAuthSuccess={(loggedUser) => {
+          const targetIsProf = loggedUser
+            ? isProfessionalRole(loggedUser.role)
+            : initialAuthRole !== 'patient';
+          handleNavigateTab(getDefaultDashboardTab(targetIsProf), loggedUser ?? user);
         }}
       />
 

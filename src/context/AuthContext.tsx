@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, UserRole } from '../types';
+import { User, UserRole, ProfessionalType } from '../types';
 import { storage } from '../services/storage';
 import { auth, googleProvider, signInWithPopup, fbSignOut, onAuthStateChanged, FirebaseUser } from '../services/firebase';
 
@@ -8,53 +8,68 @@ interface AuthContextType {
   role: UserRole | null;
   firebaseUser: FirebaseUser | null;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => { success: boolean; error?: string };
-  register: (data: Omit<User, 'id' | 'joinedAt'>) => { success: boolean; error?: string };
-  signInWithGoogle: (preferredRole?: UserRole) => Promise<{ success: boolean; error?: string }>;
+  login: (email: string, password: string) => Promise<{ success: boolean; error?: string; user?: User }>;
+  register: (data: Omit<User, 'id' | 'joinedAt'>) => Promise<{ success: boolean; error?: string; user?: User }>;
+  signInWithGoogle: (preferredRole?: UserRole) => Promise<{ success: boolean; error?: string; user?: User }>;
   logout: () => Promise<void>;
-  switchDemoUser: (userId: string) => void;
   updateProfile: (updatedData: Partial<User>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(() => storage.getCurrentUser());
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+  const pendingGoogleRoleRef = React.useRef<UserRole | null>(null);
 
   useEffect(() => {
-    // 1. Initial check from storage
+    // 1. Sync initial check from storage
     const current = storage.getCurrentUser();
-    setUser(current);
+    if (current) {
+      setUser(current);
+    }
 
     // 2. Firebase Auth state listener
     const unsubscribe = onAuthStateChanged(auth, async (fbUser) => {
       setFirebaseUser(fbUser);
       if (fbUser) {
-        // Try to match or create user profile
-        const existingUsers = storage.getUsers();
-        let matched = existingUsers.find(
-          u => u.id === fbUser.uid || (fbUser.email && u.email.toLowerCase() === fbUser.email.toLowerCase())
-        );
+        let resolvedUser = await storage.fetchUserByIdFromFirestore(fbUser.uid);
+        if (!resolvedUser && fbUser.email) {
+          resolvedUser = await storage.fetchUserByEmailFromFirestore(fbUser.email);
+        }
 
-        if (!matched) {
-          matched = {
+        let finalUser: User;
+        if (!resolvedUser) {
+          const initialRole = pendingGoogleRoleRef.current || 'patient';
+          const mappedProfType: ProfessionalType =
+            initialRole === 'pastor' || initialRole === 'therapist' || initialRole === 'psychoanalyst'
+              ? initialRole
+              : 'psychologist';
+          finalUser = {
             id: fbUser.uid,
-            name: fbUser.displayName || 'Usuário Psiconnect',
+            name: fbUser.displayName || (initialRole === 'patient' ? 'Usuário Psiconnect' : 'Profissional Psiconnect'),
             email: fbUser.email || '',
             passwordHash: '',
-            role: 'patient',
+            role: initialRole,
+            ...(initialRole !== 'patient'
+              ? {
+                  professionalType: mappedProfType,
+                  careCategory: initialRole === 'pastor' ? 'biblical' : 'therapy',
+                }
+              : {}),
             avatar: fbUser.photoURL || undefined,
             joinedAt: new Date().toISOString(),
           };
-          await storage.saveUserToFirestore(matched);
-        } else if (matched.id !== fbUser.uid) {
-          matched = { ...matched, id: fbUser.uid, avatar: fbUser.photoURL || matched.avatar };
-          await storage.saveUserToFirestore(matched);
+          await storage.saveUserToFirestore(finalUser);
+        } else if (resolvedUser.id !== fbUser.uid) {
+          finalUser = { ...resolvedUser, id: fbUser.uid, avatar: fbUser.photoURL || resolvedUser.avatar };
+          await storage.saveUserToFirestore(finalUser);
+        } else {
+          finalUser = resolvedUser;
         }
 
-        storage.setCurrentUser(matched);
-        setUser(matched);
+        storage.setCurrentUser(finalUser);
+        setUser(finalUser);
       }
     });
 
@@ -77,6 +92,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           storage.setCurrentUser(latest);
           return latest;
         });
+      } else if (storage.isUsersLoaded() && !auth.currentUser) {
+        storage.setCurrentUser(null);
+        setUser(null);
       }
     });
 
@@ -86,40 +104,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
-  const signInWithGoogle = async (preferredRole: UserRole = 'patient'): Promise<{ success: boolean; error?: string }> => {
+  const signInWithGoogle = async (preferredRole: UserRole = 'patient'): Promise<{ success: boolean; error?: string; user?: User }> => {
+    pendingGoogleRoleRef.current = preferredRole;
     try {
       const res = await signInWithPopup(auth, googleProvider);
       const fbUser = res.user;
 
-      const existingUsers = storage.getUsers();
-      let matched = existingUsers.find(
-        u => u.id === fbUser.uid || (fbUser.email && u.email.toLowerCase() === fbUser.email.toLowerCase())
-      );
+      let resolvedUser = await storage.fetchUserByIdFromFirestore(fbUser.uid);
+      if (!resolvedUser && fbUser.email) {
+        resolvedUser = await storage.fetchUserByEmailFromFirestore(fbUser.email);
+      }
 
-      if (!matched) {
-        matched = {
+      let finalUser: User;
+      if (!resolvedUser) {
+        const mappedProfType: ProfessionalType =
+          preferredRole === 'pastor' || preferredRole === 'therapist' || preferredRole === 'psychoanalyst'
+            ? preferredRole
+            : 'psychologist';
+        finalUser = {
           id: fbUser.uid,
           name: fbUser.displayName || (preferredRole === 'psychologist' ? 'Dr(a). Psicólogo(a)' : 'Paciente'),
           email: fbUser.email || '',
           passwordHash: '',
           role: preferredRole,
+          ...(preferredRole !== 'patient'
+            ? {
+                professionalType: mappedProfType,
+                careCategory: preferredRole === 'pastor' ? 'biblical' : 'therapy',
+              }
+            : {}),
           avatar: fbUser.photoURL || undefined,
           joinedAt: new Date().toISOString(),
         };
-        await storage.saveUserToFirestore(matched);
+        await storage.saveUserToFirestore(finalUser);
+      } else {
+        finalUser = resolvedUser;
       }
 
-      storage.setCurrentUser(matched);
-      setUser(matched);
-      return { success: true };
+      storage.setCurrentUser(finalUser);
+      setUser(finalUser);
+      return { success: true, user: finalUser };
     } catch (err: any) {
       console.error('Google Sign In Error:', err);
       return { success: false, error: err?.message || 'Falha ao autenticar com conta Google.' };
+    } finally {
+      pendingGoogleRoleRef.current = null;
     }
   };
 
-  const login = (email: string, password: string): { success: boolean; error?: string } => {
-    const found = storage.findUserByEmail(email);
+  const login = async (email: string, password: string): Promise<{ success: boolean; error?: string; user?: User }> => {
+    const found = await storage.fetchUserByEmailFromFirestore(email);
     if (!found) {
       return { success: false, error: 'E-mail não encontrado no sistema.' };
     }
@@ -129,15 +163,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     storage.setCurrentUser(found);
     setUser(found);
-    return { success: true };
+    return { success: true, user: found };
   };
 
-  const register = (data: Omit<User, 'id' | 'joinedAt'>): { success: boolean; error?: string } => {
-    const res = storage.saveUser(data);
+  const register = async (data: Omit<User, 'id' | 'joinedAt'>): Promise<{ success: boolean; error?: string; user?: User }> => {
+    const res = await storage.saveUserAsync(data);
     if (res.success && res.user) {
       storage.setCurrentUser(res.user);
       setUser(res.user);
-      return { success: true };
+      return { success: true, user: res.user };
     }
     return { success: false, error: res.error || 'Erro ao realizar cadastro.' };
   };
@@ -151,15 +185,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     storage.setCurrentUser(null);
     setUser(null);
     setFirebaseUser(null);
-  };
-
-  const switchDemoUser = (userId: string) => {
-    const all = storage.getUsers();
-    const target = all.find(u => u.id === userId);
-    if (target) {
-      storage.setCurrentUser(target);
-      setUser(target);
-    }
   };
 
   const updateProfile = (updatedData: Partial<User>) => {
@@ -180,7 +205,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         register,
         signInWithGoogle,
         logout,
-        switchDemoUser,
         updateProfile,
       }}
     >

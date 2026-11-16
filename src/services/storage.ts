@@ -31,469 +31,20 @@ const STORAGE_KEYS = {
   CHAT: 'serpsi_chat_messages_v1',
 };
 
-// Initial Seed with realistic clinical & pastoral data across all professional types
-const INITIAL_USERS: User[] = [
-  {
-    id: 'psy_clara',
-    name: 'Dra. Clara Vasconcellos',
-    email: 'clara.psico@psiconnect.med.br',
-    passwordHash: 'senha123',
-    role: 'psychologist',
-    professionalType: 'psychologist',
-    careCategory: 'therapy',
-    phone: '(11) 98452-3310',
-    crp: 'CRP 06/138420',
-    registrationNumber: 'CRP 06/138420',
-    bio: 'Especialista em Terapia Cognitivo-Comportamental (TCC) e Mindfulness pela USP. Atuo há 12 anos no tratamento de transtornos de ansiedade, sobrecarga feminina, estresse ocupacional e conflitos conjugais com foco em evidências científicas e acolhimento humano.',
-    hourlyRate: 180,
-    sessionDuration: 50,
-    approaches: ['Terapia Cognitivo-Comportamental (TCC)', 'Transtornos de Ansiedade', 'Mindfulness', 'Burnout & Estresse', 'Crise de Meia-Idade'],
-    formations: ['Graduação em Psicologia - USP', 'Mestrado em Psicologia Clínica - PUC-SP'],
-    specializations: ['Terapia Cognitivo-Comportamental (TCC)', 'Transtornos de Ansiedade e Pânico', 'Terapia de Casal e Família'],
-    clinicalTags: ['Ansiedade', 'Burnout & Estresse', 'Relacionamentos', 'Crise de Meia-Idade', 'Maternidade & Paternidade'],
-    avatar: '/src/assets/images/avatar_psico_clara_1792608795986.jpg',
-    city: 'São Paulo',
-    state: 'SP',
-    defaultMeetingType: 'native',
-    externalMeetingUrl: 'https://meet.google.com/psiconnect-clara',
-    professionalProfile: {
-      ageGroup: '36-50',
-      approximateAge: 44,
-      maritalStatus: 'married',
-      hasChildren: true,
-      yearsOfExperience: 14,
-      formations: ['Graduação em Psicologia - USP', 'Mestrado em Psicologia Clínica - PUC-SP'],
-      specializations: ['Terapia Cognitivo-Comportamental (TCC)', 'Transtornos de Ansiedade e Pânico', 'Terapia de Casal e Família'],
-      affinityTags: [
-        'Crise de Meia-Idade',
-        'Casamento & Terapia de Casal',
-        'Maternidade Real & Puerpério',
-        'Família & Pais com Filhos',
-        'Burnout & Saúde Ocupacional',
-        'Ansiedade & Regulação Emocional',
-      ],
-      preferredPatientAgeGroups: ['36-50', '26-35', '51+'],
-      acceptsNewMatchedPatients: true,
-      welcomeIntro: 'Acolho mulheres e casais na meia-idade enfrentando sobrecarga emocional, conciliação familiar e transições de vida com escuta clínica empática.',
-      updatedAt: '2025-01-15T09:00:00Z',
-    },
-    joinedAt: '2025-01-15T09:00:00Z',
-  },
-  {
-    id: 'psy_marcos',
-    name: 'Dr. Marcos Alencar',
-    email: 'marcos.psico@psiconnect.med.br',
-    passwordHash: 'senha123',
-    role: 'psychologist',
-    professionalType: 'psychologist',
-    careCategory: 'therapy',
-    phone: '(11) 97120-4491',
-    crp: 'CRP 06/112504',
-    registrationNumber: 'CRP 06/112504',
-    bio: 'Psicólogo clínico com abordagem Fenomenológica-Existencial e Gestalt-terapia. Mestre em Psicologia pela PUC-SP. Experiência de 15 anos no acompanhamento de transições de vida, crises existenciais na meia-idade e relações interpessoais.',
-    hourlyRate: 195,
-    sessionDuration: 50,
-    approaches: ['Gestalt-terapia', 'Fenomenologia Existencial', 'Relacionamentos Interpessoais', 'Autoconhecimento'],
-    formations: ['Graduação em Psicologia - PUC-Campinas', 'Mestrado em Fenomenologia Clínica - PUC-SP'],
-    specializations: ['Gestalt-terapia', 'Luto e Crises Existenciais', 'Transições de Carreira e Meia-Idade'],
-    clinicalTags: ['Crise de Meia-Idade', 'Luto', 'Relacionamentos', 'Transições de Carreira', 'Autoestima'],
-    avatar: '/src/assets/images/avatar_psico_marcos_1792608796718.jpg',
-    city: 'Campinas',
-    state: 'SP',
-    defaultMeetingType: 'native',
-    externalMeetingUrl: 'https://meet.google.com/psiconnect-marcos',
-    professionalProfile: {
-      ageGroup: '36-50',
-      approximateAge: 46,
-      maritalStatus: 'married',
-      hasChildren: true,
-      yearsOfExperience: 15,
-      formations: ['Graduação em Psicologia - PUC-Campinas', 'Mestrado em Fenomenologia Clínica - PUC-SP'],
-      specializations: ['Gestalt-terapia', 'Luto e Crises Existenciais', 'Transições de Carreira e Meia-Idade'],
-      affinityTags: [
-        'Crise de Meia-Idade',
-        'Gestalt & Autoconhecimento',
-        'Transição de Carreira & Maturidade',
-        'Luto & Conflitos Existenciais',
-        'Família & Pais com Filhos',
-      ],
-      preferredPatientAgeGroups: ['36-50', '51+'],
-      acceptsNewMatchedPatients: true,
-      updatedAt: '2025-02-10T14:30:00Z',
-    },
-    joinedAt: '2025-02-10T14:30:00Z',
-  },
-  {
-    id: 'psy_renata',
-    name: 'Dra. Renata Mendonça',
-    email: 'renata.psico@psiconnect.med.br',
-    passwordHash: 'senha123',
-    role: 'psychoanalyst',
-    professionalType: 'psychoanalyst',
-    careCategory: 'therapy',
-    phone: '(21) 99318-6205',
-    bio: 'Psicanalista clínica com formação pelo Instituto Brasileiro de Psicanálise e doutora pela UFRJ. Acompanha adultos e mulheres em processos de luto, depressão, angústia e elaboração de conflitos inconscientes profundos.',
-    hourlyRate: 220,
-    sessionDuration: 50,
-    approaches: ['Psicanálise Freudiana & Lacaniana', 'Elaboração de Luto & Perdas', 'Depressão & Vazio', 'Conflitos Inconscientes'],
-    formations: ['Graduação em Psicologia - UFRJ', 'Doutorado em Teoria Psicanalítica - UFRJ'],
-    specializations: ['Psicanálise Freudiana & Lacaniana', 'Elaboração de Luto e Angústia', 'Trauma e Depressão'],
-    clinicalTags: ['Luto', 'Depressão', 'Relacionamentos', 'Trauma & TEPT'],
-    avatar: '/src/assets/images/avatar_psico_renata_1792608797120.jpg',
-    city: 'Rio de Janeiro',
-    state: 'RJ',
-    defaultMeetingType: 'native',
-    externalMeetingUrl: 'https://meet.google.com/psiconnect-renata',
-    professionalProfile: {
-      ageGroup: '36-50',
-      approximateAge: 42,
-      maritalStatus: 'divorced',
-      hasChildren: true,
-      yearsOfExperience: 13,
-      formations: ['Graduação em Psicologia - UFRJ', 'Doutorado em Teoria Psicanalítica - UFRJ'],
-      specializations: ['Psicanálise Freudiana & Lacaniana', 'Elaboração de Luto e Angústia', 'Trauma e Depressão'],
-      affinityTags: [
-        'Luto & Conflitos Existenciais',
-        'Depressão & Reestruturação Cognitiva',
-        'Crise de Meia-Idade',
-        'Família & Pais com Filhos',
-      ],
-      preferredPatientAgeGroups: ['26-35', '36-50', '51+'],
-      acceptsNewMatchedPatients: true,
-      updatedAt: '2025-03-01T10:00:00Z',
-    },
-    joinedAt: '2025-03-01T10:00:00Z',
-  },
-  {
-    id: 'ther_camila',
-    name: 'Camila Rezende',
-    email: 'camila.terapeuta@psiconnect.med.br',
-    passwordHash: 'senha123',
-    role: 'therapist',
-    professionalType: 'therapist',
-    careCategory: 'therapy',
-    phone: '(11) 98321-9980',
-    bio: 'Terapeuta Integrativa e Comportamental especializada em regulação emocional, alívio de estresse e desenvolvimento para jovens profissionais. Conduz atendimentos dinâmicos com foco em presença e autocompaixão.',
-    hourlyRate: 150,
-    sessionDuration: 50,
-    approaches: ['Terapia Emocional e Comportamental', 'Inteligência Emocional', 'Mindfulness & Respiração', 'Gestão do Estresse'],
-    formations: ['Graduação em Terapias Integrativas', 'Certificação Internacional em Mindfulness & PNL'],
-    specializations: ['Regulação Emocional e Redução do Estresse', 'Inteligência Emocional', 'Burnout e Saúde Ocupacional'],
-    clinicalTags: ['Ansiedade', 'Regulação Emocional', 'Autoestima', 'Burnout & Estresse'],
-    avatar: '/src/assets/images/avatar_terapeuta_camila_1793309224240.jpg',
-    city: 'Belo Horizonte',
-    state: 'MG',
-    defaultMeetingType: 'native',
-    externalMeetingUrl: 'https://meet.google.com/psiconnect-camila',
-    professionalProfile: {
-      ageGroup: '26-35',
-      approximateAge: 27,
-      maritalStatus: 'single',
-      hasChildren: false,
-      yearsOfExperience: 3,
-      formations: ['Graduação em Terapias Integrativas', 'Certificação Internacional em Mindfulness & PNL'],
-      specializations: ['Regulação Emocional e Redução do Estresse', 'Inteligência Emocional', 'Burnout e Saúde Ocupacional'],
-      affinityTags: [
-        'Jovens Adultos & Identidade',
-        'Ansiedade & Regulação Emocional',
-        'Burnout & Saúde Ocupacional',
-        'Autoestima & Relações Interpessoais',
-      ],
-      preferredPatientAgeGroups: ['18-25', '26-35'],
-      acceptsNewMatchedPatients: true,
-      welcomeIntro: 'Ajudo jovens adultos em início de trajetória profissional a lidarem com ansiedade e autocobrança.',
-      updatedAt: '2025-02-18T11:00:00Z',
-    },
-    joinedAt: '2025-02-18T11:00:00Z',
-  },
-  {
-    id: 'pas_david',
-    name: 'Pr. David Ferreira',
-    email: 'pastor.david@psiconnect.med.br',
-    passwordHash: 'senha123',
-    role: 'pastor',
-    professionalType: 'pastor',
-    careCategory: 'biblical',
-    phone: '(11) 97654-3210',
-    ministryOrChurch: 'Ministério Fé & Família / Comunidade Esperança',
-    bio: 'Pastor e conselheiro bíblico há 16 anos, com pós-graduação em Aconselhamento Pastoral e Família. Dedicado a acolher pessoas e casais em busca de conselho bíblico, conforto espiritual, restauração conjugal e discernimento sob a luz da Palavra de Deus.',
-    hourlyRate: 120,
-    sessionDuration: 50,
-    approaches: ['Aconselhamento Bíblico das Escrituras', 'Orientação Conjugal & Familiar', 'Princípios Bíblicos de Vida', 'Acolhimento Espiritual & Luto'],
-    formations: ['Bacharel em Teologia - Seminário Betel', 'Pós-Graduação em Aconselhamento Pastoral e Família'],
-    specializations: ['Aconselhamento Pré-Matrimonial e Conjugal', 'Restauração Familiar e Paternidade', 'Orientação Bíblica de Crises e Luto'],
-    clinicalTags: ['Aconselhamento Bíblico', 'Relacionamentos', 'Conflitos Conjugais', 'Luto', 'Família & Filhos'],
-    avatar: '/src/assets/images/avatar_pastor_david_1793309212629.jpg',
-    city: 'São Paulo',
-    state: 'SP',
-    defaultMeetingType: 'native',
-    externalMeetingUrl: 'https://meet.google.com/psiconnect-david',
-    professionalProfile: {
-      ageGroup: '36-50',
-      approximateAge: 50,
-      maritalStatus: 'married',
-      hasChildren: true,
-      yearsOfExperience: 16,
-      affinityTags: [
-        'Aconselhamento Bíblico & Família',
-        'Casamento & Terapia de Casal',
-        'Crise de Meia-Idade',
-        'Família & Pais com Filhos',
-      ],
-      preferredPatientAgeGroups: ['26-35', '36-50', '51+'],
-      acceptsNewMatchedPatients: true,
-      welcomeIntro: 'Acolhimento pastoral e bíblico para restauração de lares e fortalecimento do casamento.',
-      updatedAt: '2025-01-20T08:00:00Z',
-    },
-    joinedAt: '2025-01-20T08:00:00Z',
-  },
-  {
-    id: 'pat_luciana',
-    name: 'Luciana Ramos Silva',
-    email: 'luciana.ramos@gmail.com',
-    passwordHash: 'senha123',
-    role: 'patient',
-    phone: '(11) 98341-2299',
-    patientProfile: {
-      ageGroup: '36-50',
-      approximateAge: 43,
-      maritalStatus: 'married',
-      hasChildren: true,
-      childrenDetails: '2 filhos (10 e 14 anos)',
-      reasonsForCare: [
-        'Crise de Meia-Idade e Sentido de Vida',
-        'Conflitos Conjugais & Casamento',
-        'Burnout & Pressão Profissional',
-      ],
-      personalNote: 'Estou sentindo exaustão acumulada conciliando a rotina de trabalho com a criação dos filhos. Meu casamento está distante e sinto que cheguei aos 43 anos sem tempo para mim mesma. Gostaria de uma psicóloga experiente de meia-idade que compreenda este momento de vida.',
-      preferredCareCategory: 'therapy',
-      preferredGender: 'female',
-      completedAt: '2025-03-01T10:00:00Z',
-    },
-    joinedAt: '2025-03-01T10:00:00Z',
-  },
-  {
-    id: 'pat_patricia',
-    name: 'Patrícia Albuquerque',
-    email: 'patricia.maternidade@gmail.com',
-    passwordHash: 'senha123',
-    role: 'patient',
-    phone: '(11) 97651-4433',
-    patientProfile: {
-      ageGroup: '36-50',
-      approximateAge: 38,
-      maritalStatus: 'married',
-      hasChildren: true,
-      childrenDetails: '1 filha (5 anos)',
-      reasonsForCare: [
-        'Maternidade, Paternidade & Filhos',
-        'Ansiedade, Estresse Crônico & Pânico',
-      ],
-      personalNote: 'Sobrecarga com a maternidade e crises recorrentes de ansiedade após retornar ao trabalho presencial.',
-      preferredCareCategory: 'therapy',
-      preferredGender: 'female',
-      completedAt: '2025-03-05T14:00:00Z',
-    },
-    joinedAt: '2025-03-05T14:00:00Z',
-  },
-  {
-    id: 'pat_lucas',
-    name: 'Lucas Gabriel Ribeiro',
-    email: 'lucas.paciente@gmail.com',
-    passwordHash: 'senha123',
-    role: 'patient',
-    phone: '(11) 98712-4590',
-    patientProfile: {
-      ageGroup: '18-25',
-      approximateAge: 23,
-      maritalStatus: 'single',
-      hasChildren: false,
-      reasonsForCare: [
-        'Ansiedade, Estresse Crônico & Pânico',
-        'Transições de Vida e Carreira',
-        'Autoestima & Relações Interpessoais',
-      ],
-      personalNote: 'Cobrança excessiva no primeiro emprego após a faculdade e crises de ansiedade antes de apresentações.',
-      preferredCareCategory: 'therapy',
-      preferredGender: 'no_preference',
-      completedAt: '2025-03-10T11:00:00Z',
-    },
-    joinedAt: '2025-03-10T11:00:00Z',
-  },
-  {
-    id: 'pat_mariana',
-    name: 'Mariana Duarte Souza',
-    email: 'mariana.paciente@gmail.com',
-    passwordHash: 'senha123',
-    role: 'patient',
-    phone: '(11) 99124-7788',
-    patientProfile: {
-      ageGroup: '26-35',
-      approximateAge: 31,
-      maritalStatus: 'stable_union',
-      hasChildren: false,
-      reasonsForCare: [
-        'Transições de Vida e Carreira',
-        'Ansiedade, Estresse Crônico & Pânico',
-      ],
-      personalNote: 'Planejando transição de carreira e casamento nos próximos meses, buscando clareza e controle de estresse.',
-      preferredCareCategory: 'therapy',
-      completedAt: '2025-03-12T15:20:00Z',
-    },
-    joinedAt: '2025-03-12T15:20:00Z',
-  },
-  {
-    id: 'pat_roberto',
-    name: 'Roberto Caldeira',
-    email: 'roberto.familia@gmail.com',
-    passwordHash: 'senha123',
-    role: 'patient',
-    phone: '(11) 97112-9988',
-    patientProfile: {
-      ageGroup: '36-50',
-      approximateAge: 49,
-      maritalStatus: 'married',
-      hasChildren: true,
-      childrenDetails: '3 filhos adolescentes',
-      reasonsForCare: [
-        'Orientação Bíblica & Fé Familiar',
-        'Conflitos Conjugais & Casamento',
-        'Crise de Meia-Idade e Sentido de Vida',
-      ],
-      personalNote: 'Buscando orientação bíblica e reconciliação matrimonial para conduzir minha família com sabedoria e fé.',
-      preferredCareCategory: 'biblical',
-      completedAt: '2025-03-14T09:30:00Z',
-    },
-    joinedAt: '2025-03-14T09:30:00Z',
-  },
-];
-
-function getTodayFormatted(offsetDays = 0): string {
-  const d = new Date();
-  d.setDate(d.getDate() + offsetDays);
-  return d.toISOString().split('T')[0];
-}
-
-// Availability slots (0=Dom, 1=Seg, 2=Ter, 3=Qua, 4=Qui, 5=Sex, 6=Sáb)
-const INITIAL_SLOTS: AvailabilitySlot[] = [
-  { id: 'slot_1', psychologistId: 'psy_clara', dayOfWeek: 1, startTime: '09:00', endTime: '10:00', isActive: true, startDate: getTodayFormatted(0), endDate: getTodayFormatted(30) },
-  { id: 'slot_2', psychologistId: 'psy_clara', dayOfWeek: 1, startTime: '10:00', endTime: '11:00', isActive: true, startDate: getTodayFormatted(0), endDate: getTodayFormatted(30) },
-  { id: 'slot_3', psychologistId: 'psy_clara', dayOfWeek: 1, startTime: '14:00', endTime: '15:00', isActive: true, startDate: getTodayFormatted(0), endDate: getTodayFormatted(30), isSocial: true, socialRate: 40 },
-  { id: 'slot_4', psychologistId: 'psy_clara', dayOfWeek: 1, startTime: '16:00', endTime: '17:00', isActive: true, isSocial: true, socialRate: 40 },
-  { id: 'slot_5', psychologistId: 'psy_clara', dayOfWeek: 3, startTime: '09:00', endTime: '10:00', isActive: true, startDate: getTodayFormatted(0), endDate: getTodayFormatted(60) },
-  { id: 'slot_6', psychologistId: 'psy_clara', dayOfWeek: 3, startTime: '11:00', endTime: '12:00', isActive: true, startDate: getTodayFormatted(0), endDate: getTodayFormatted(60) },
-  { id: 'slot_7', psychologistId: 'psy_clara', dayOfWeek: 3, startTime: '15:00', endTime: '16:00', isActive: true, isSocial: true, socialRate: 40 },
-  { id: 'slot_8', psychologistId: 'psy_clara', dayOfWeek: 4, startTime: '14:00', endTime: '15:00', isActive: true },
-  { id: 'slot_9', psychologistId: 'psy_clara', dayOfWeek: 4, startTime: '15:00', endTime: '16:00', isActive: true },
-  { id: 'slot_10', psychologistId: 'psy_clara', dayOfWeek: 5, startTime: '10:00', endTime: '11:00', isActive: true },
-
-  { id: 'slot_11', psychologistId: 'psy_marcos', dayOfWeek: 2, startTime: '08:00', endTime: '09:00', isActive: true },
-  { id: 'slot_12', psychologistId: 'psy_marcos', dayOfWeek: 2, startTime: '10:00', endTime: '11:00', isActive: true, isSocial: true, socialRate: 50 },
-  { id: 'slot_13', psychologistId: 'psy_marcos', dayOfWeek: 2, startTime: '14:00', endTime: '15:00', isActive: true },
-  { id: 'slot_14', psychologistId: 'psy_marcos', dayOfWeek: 4, startTime: '09:00', endTime: '10:00', isActive: true },
-  { id: 'slot_15', psychologistId: 'psy_marcos', dayOfWeek: 4, startTime: '11:00', endTime: '12:00', isActive: true },
-  { id: 'slot_16', psychologistId: 'psy_marcos', dayOfWeek: 5, startTime: '13:00', endTime: '14:00', isActive: true, isSocial: true, socialRate: 50 },
-
-  { id: 'slot_17', psychologistId: 'psy_renata', dayOfWeek: 1, startTime: '14:00', endTime: '15:00', isActive: true },
-  { id: 'slot_18', psychologistId: 'psy_renata', dayOfWeek: 1, startTime: '16:00', endTime: '17:00', isActive: true },
-  { id: 'slot_19', psychologistId: 'psy_renata', dayOfWeek: 2, startTime: '15:00', endTime: '16:00', isActive: true, isSocial: true, socialRate: 60 },
-  { id: 'slot_20', psychologistId: 'psy_renata', dayOfWeek: 3, startTime: '10:00', endTime: '11:00', isActive: true },
-
-  { id: 'slot_21', psychologistId: 'ther_camila', dayOfWeek: 1, startTime: '11:00', endTime: '12:00', isActive: true, isSocial: true, socialRate: 35 },
-  { id: 'slot_22', psychologistId: 'ther_camila', dayOfWeek: 2, startTime: '14:00', endTime: '15:00', isActive: true },
-  { id: 'slot_23', psychologistId: 'ther_camila', dayOfWeek: 4, startTime: '16:00', endTime: '17:00', isActive: true },
-  { id: 'slot_24', psychologistId: 'ther_camila', dayOfWeek: 5, startTime: '09:00', endTime: '10:00', isActive: true, isSocial: true, socialRate: 35 },
-
-  { id: 'slot_25', psychologistId: 'pas_david', dayOfWeek: 2, startTime: '10:00', endTime: '11:00', isActive: true },
-  { id: 'slot_26', psychologistId: 'pas_david', dayOfWeek: 2, startTime: '15:00', endTime: '16:00', isActive: true },
-  { id: 'slot_27', psychologistId: 'pas_david', dayOfWeek: 4, startTime: '19:00', endTime: '20:00', isActive: true, isSocial: true, socialRate: 0 },
-  { id: 'slot_28', psychologistId: 'pas_david', dayOfWeek: 6, startTime: '09:00', endTime: '10:00', isActive: true, isSocial: true, socialRate: 0 },
-];
-
-const INITIAL_APPOINTMENTS: Appointment[] = [
-  {
-    id: 'apt_today_1',
-    psychologistId: 'psy_clara',
-    psychologistName: 'Dra. Clara Vasconcellos',
-    psychologistAvatar: '/src/assets/images/avatar_psico_clara_1792608795986.jpg',
-    psychologistCrp: 'CRP 06/138420',
-    patientId: 'pat_lucas',
-    patientName: 'Lucas Gabriel Ribeiro',
-    patientEmail: 'lucas.paciente@gmail.com',
-    patientPhone: '(11) 98712-4590',
-    date: getTodayFormatted(0),
-    time: '14:00',
-    endTime: '14:50',
-    status: 'scheduled',
-    meetingType: 'native',
-    notesFromPatient: 'Gostaria de focar nas crises de ansiedade recentes no trabalho e insônia.',
-    createdAt: new Date().toISOString(),
-  },
-  {
-    id: 'apt_past_1',
-    psychologistId: 'psy_clara',
-    psychologistName: 'Dra. Clara Vasconcellos',
-    psychologistAvatar: '/src/assets/images/avatar_psico_clara_1792608795986.jpg',
-    psychologistCrp: 'CRP 06/138420',
-    patientId: 'pat_lucas',
-    patientName: 'Lucas Gabriel Ribeiro',
-    patientEmail: 'lucas.paciente@gmail.com',
-    patientPhone: '(11) 98712-4590',
-    date: getTodayFormatted(-7),
-    time: '14:00',
-    endTime: '14:50',
-    status: 'completed',
-    meetingType: 'native',
-    notesFromPatient: 'Primeira sessão de acolhimento e anamnese.',
-    createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-  },
-  {
-    id: 'apt_upcoming_2',
-    psychologistId: 'psy_marcos',
-    psychologistName: 'Dr. Marcos Alencar',
-    psychologistAvatar: '/src/assets/images/avatar_psico_marcos_1792608796718.jpg',
-    psychologistCrp: 'CRP 06/112504',
-    patientId: 'pat_mariana',
-    patientName: 'Mariana Duarte Souza',
-    patientEmail: 'mariana.paciente@gmail.com',
-    patientPhone: '(11) 99124-7788',
-    date: getTodayFormatted(2),
-    time: '10:00',
-    endTime: '10:50',
-    status: 'scheduled',
-    meetingType: 'native',
-    notesFromPatient: 'Dificuldade de tomada de decisão sobre mudança de carreira.',
-    createdAt: new Date().toISOString(),
-  },
-];
-
-const INITIAL_RECORDS: MedicalRecord[] = [
-  {
-    id: 'rec_lucas_1',
-    appointmentId: 'apt_past_1',
-    patientId: 'pat_lucas',
-    patientName: 'Lucas Gabriel Ribeiro',
-    psychologistId: 'psy_clara',
-    sessionDate: getTodayFormatted(-7),
-    chiefComplaint: 'Relata episódios recorrentes de aperto no peito, taquicardia e pensamentos catastróficos vinculados a cobranças de metas na empresa.',
-    clinicalEvolution: 'Paciente cooperativo e lúcido. Boa capacidade reflexiva. Identificados gatilhos automáticos de autocobrança excessiva. Iniciada introdução ao modelo cognitivo (pensamento - emoção - comportamento).',
-    privateNotes: 'Apresenta esquema de perfeccionismo disfuncional. Observar histórico familiar de ansiedade generalizada na próxima sessão. Indicada técnica de respiração diafragmática 4-7-8.',
-    recommendations: 'Preencher Registro de Pensamentos Disfuncionais (RPD) quando sentir palpitação ou ansiedade acima de nível 6/10.',
-    updatedAt: new Date(Date.now() - 7 * 86400000).toISOString(),
-  },
-];
-
-const INITIAL_MESSAGES: ChatMessage[] = [
-  {
-    id: 'msg_1',
-    appointmentId: 'apt_today_1',
-    senderId: 'psy_clara',
-    senderName: 'Dra. Clara Vasconcellos',
-    senderRole: 'psychologist',
-    text: 'Olá Lucas! Já estou conectada na sala. Fique à vontade para entrar quando estiver pronto.',
-    timestamp: '13:58',
-  },
-];
+const REMOVED_DEMO_USER_IDS = new Set([
+  'psy_clara',
+  'psy_marcos',
+  'psy_renata',
+  'ther_camila',
+  'pas_david',
+  'pat_luciana',
+  'pat_patricia',
+  'pat_lucas',
+  'pat_mariana',
+  'pat_roberto',
+  'pat_enzo',
+  'pat_eduardo',
+]);
 
 class StorageService {
   private usersCache: User[] = [];
@@ -504,15 +55,24 @@ class StorageService {
 
   private listeners: Set<() => void> = new Set();
   private isInitialized = false;
+  private usersLoaded = false;
 
   constructor() {
-    // Clear legacy localStorage data stores so they are not used as reference
+    // Clear legacy localStorage data stores and any removed demo session
     try {
       localStorage.removeItem(STORAGE_KEYS.USERS);
       localStorage.removeItem(STORAGE_KEYS.SLOTS);
       localStorage.removeItem(STORAGE_KEYS.APPOINTMENTS);
       localStorage.removeItem(STORAGE_KEYS.RECORDS);
       localStorage.removeItem(STORAGE_KEYS.CHAT);
+
+      const storedUser = localStorage.getItem(STORAGE_KEYS.CURRENT_USER);
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser) as Partial<User>;
+        if (!parsed?.id || REMOVED_DEMO_USER_IDS.has(parsed.id)) {
+          localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+        }
+      }
     } catch {}
 
     // Initialize real-time synchronization with Firestore database
@@ -525,50 +85,41 @@ class StorageService {
       onSnapshot(collection(db, 'users'), (snapshot) => {
         const list: User[] = [];
         snapshot.forEach((d) => list.push(d.data() as User));
-        if (list.length > 0) {
-          this.usersCache = list;
-          this.notifyListeners();
-        }
+        this.usersCache = list;
+        this.usersLoaded = true;
+        this.notifyListeners();
       }, (err) => console.warn('Users listener:', err));
 
       // 2. Slots real-time listener
       onSnapshot(collection(db, 'slots'), (snapshot) => {
         const list: AvailabilitySlot[] = [];
         snapshot.forEach((d) => list.push(d.data() as AvailabilitySlot));
-        if (list.length > 0) {
-          this.slotsCache = list;
-          this.notifyListeners();
-        }
+        this.slotsCache = list;
+        this.notifyListeners();
       }, (err) => console.warn('Slots listener:', err));
 
       // 3. Appointments real-time listener
       onSnapshot(collection(db, 'appointments'), (snapshot) => {
         const list: Appointment[] = [];
         snapshot.forEach((d) => list.push(d.data() as Appointment));
-        if (list.length > 0) {
-          this.appointmentsCache = list;
-          this.notifyListeners();
-        }
+        this.appointmentsCache = list;
+        this.notifyListeners();
       }, (err) => console.warn('Appointments listener:', err));
 
       // 4. Medical records real-time listener
       onSnapshot(collection(db, 'medicalRecords'), (snapshot) => {
         const list: MedicalRecord[] = [];
         snapshot.forEach((d) => list.push(d.data() as MedicalRecord));
-        if (list.length > 0) {
-          this.recordsCache = list;
-          this.notifyListeners();
-        }
+        this.recordsCache = list;
+        this.notifyListeners();
       }, (err) => console.warn('MedicalRecords listener:', err));
 
       // 5. Messages real-time listener
       onSnapshot(collection(db, 'messages'), (snapshot) => {
         const list: ChatMessage[] = [];
         snapshot.forEach((d) => list.push(d.data() as ChatMessage));
-        if (list.length > 0) {
-          this.messagesCache = list;
-          this.notifyListeners();
-        }
+        this.messagesCache = list;
+        this.notifyListeners();
       }, (err) => console.warn('Messages listener:', err));
 
       this.isInitialized = true;
@@ -597,12 +148,54 @@ class StorageService {
     };
   }
 
+  isUsersLoaded(): boolean {
+    return this.usersLoaded;
+  }
+
   // --- Auth & Users ---
   getUsers(): User[] {
-    if (this.usersCache.length === 0) {
-      return INITIAL_USERS;
-    }
     return this.usersCache;
+  }
+
+  async fetchUsersFromFirestore(): Promise<User[]> {
+    try {
+      const snapshot = await getDocs(collection(db, 'users'));
+      const list: User[] = [];
+      snapshot.forEach((d) => list.push(d.data() as User));
+      this.usersCache = list;
+      this.usersLoaded = true;
+      this.notifyListeners();
+      return list;
+    } catch (err) {
+      console.warn('Erro ao buscar usuários no Firestore:', err);
+      return this.usersCache;
+    }
+  }
+
+  async fetchUserByIdFromFirestore(uid: string): Promise<User | null> {
+    const cached = this.usersCache.find(u => u.id === uid);
+    if (cached) return cached;
+    try {
+      const snap = await getDoc(doc(db, 'users', uid));
+      if (snap.exists()) {
+        const user = snap.data() as User;
+        this.usersCache = [user, ...this.usersCache.filter(u => u.id !== user.id)];
+        this.notifyListeners();
+        return user;
+      }
+      return null;
+    } catch (err) {
+      console.warn('Erro ao buscar usuário por ID no Firestore:', err);
+      return null;
+    }
+  }
+
+  async fetchUserByEmailFromFirestore(email: string): Promise<User | null> {
+    const normalized = email.trim().toLowerCase();
+    const cached = this.usersCache.find(u => u.email.toLowerCase() === normalized);
+    if (cached) return cached;
+    const users = this.usersLoaded ? this.usersCache : await this.fetchUsersFromFirestore();
+    return users.find(u => u.email.toLowerCase() === normalized) || null;
   }
 
   async saveUserToFirestore(user: User): Promise<void> {
@@ -610,12 +203,27 @@ class StorageService {
     try {
       const cleanData = stripUndefinedDeep(user);
       await setDoc(doc(db, 'users', user.id), cleanData);
-      const baseUsers = this.usersCache.length > 0 ? this.usersCache : INITIAL_USERS;
-      this.usersCache = [user, ...baseUsers.filter((u) => u.id !== user.id)];
+      this.usersCache = [user, ...this.usersCache.filter((u) => u.id !== user.id)];
       this.notifyListeners();
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, path);
     }
+  }
+
+  async saveUserAsync(newUser: Omit<User, 'id' | 'joinedAt'>): Promise<{ success: boolean; user?: User; error?: string }> {
+    const existing = await this.fetchUserByEmailFromFirestore(newUser.email);
+    if (existing) {
+      return { success: false, error: 'Já existe uma conta cadastrada com este e-mail.' };
+    }
+
+    const createdUser: User = {
+      ...newUser,
+      id: 'usr_' + Date.now().toString(36) + Math.random().toString(36).substring(2, 6),
+      joinedAt: new Date().toISOString(),
+    };
+
+    await this.saveUserToFirestore(createdUser);
+    return { success: true, user: createdUser };
   }
 
   saveUser(newUser: Omit<User, 'id' | 'joinedAt'>): { success: boolean; user?: User; error?: string } {
@@ -631,8 +239,7 @@ class StorageService {
       joinedAt: new Date().toISOString(),
     };
 
-    const baseUsers = this.usersCache.length > 0 ? this.usersCache : INITIAL_USERS;
-    this.usersCache = [createdUser, ...baseUsers.filter(u => u.id !== createdUser.id)];
+    this.usersCache = [createdUser, ...this.usersCache.filter(u => u.id !== createdUser.id)];
     this.notifyListeners();
 
     // Persist directly to Firestore database
@@ -644,11 +251,10 @@ class StorageService {
   }
 
   updateUser(updated: User): void {
-    const baseUsers = this.usersCache.length > 0 ? this.usersCache : INITIAL_USERS;
-    const existsInCache = baseUsers.some(u => u.id === updated.id);
+    const existsInCache = this.usersCache.some(u => u.id === updated.id);
     this.usersCache = existsInCache
-      ? baseUsers.map(u => (u.id === updated.id ? updated : u))
-      : [updated, ...baseUsers];
+      ? this.usersCache.map(u => (u.id === updated.id ? updated : u))
+      : [updated, ...this.usersCache];
     this.notifyListeners();
 
     const currentUser = this.getCurrentUser();
@@ -665,7 +271,7 @@ class StorageService {
   }
 
   findUserByEmail(email: string): User | undefined {
-    return this.getUsers().find(u => u.email.toLowerCase() === email.toLowerCase());
+    return this.getUsers().find(u => u.email.toLowerCase() === email.trim().toLowerCase());
   }
 
   getCurrentUser(): User | null {
@@ -674,7 +280,12 @@ class StorageService {
       if (!stored) {
         return null;
       }
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored) as User;
+      if (!parsed?.id || REMOVED_DEMO_USER_IDS.has(parsed.id)) {
+        localStorage.removeItem(STORAGE_KEYS.CURRENT_USER);
+        return null;
+      }
+      return parsed;
     } catch {
       return null;
     }
@@ -758,7 +369,7 @@ class StorageService {
 
   // --- Disponibilidade e Horários ---
   getAvailabilitySlots(psychologistId?: string): AvailabilitySlot[] {
-    const all = this.slotsCache.length > 0 ? this.slotsCache : INITIAL_SLOTS;
+    const all = this.slotsCache;
     if (!psychologistId) return all;
     return all.filter(s => s.psychologistId === psychologistId);
   }
@@ -845,7 +456,7 @@ class StorageService {
 
   // --- Agendamentos ---
   getAppointments(userId?: string, role?: 'psychologist' | 'patient'): Appointment[] {
-    const all = this.appointmentsCache.length > 0 ? this.appointmentsCache : INITIAL_APPOINTMENTS;
+    const all = this.appointmentsCache;
     if (!userId) return all;
     if (role === 'psychologist') {
       return all.filter(a => a.psychologistId === userId);
@@ -895,7 +506,7 @@ class StorageService {
 
   // --- Prontuário Eletrônico do Paciente (PEP) ---
   getMedicalRecords(psychologistId?: string, patientId?: string): MedicalRecord[] {
-    let records = this.recordsCache.length > 0 ? this.recordsCache : INITIAL_RECORDS;
+    let records = this.recordsCache;
     if (psychologistId) {
       records = records.filter(r => r.psychologistId === psychologistId);
     }
@@ -953,7 +564,7 @@ class StorageService {
 
   // --- Chat de Consulta em Tempo Real ---
   getChatMessages(appointmentId: string): ChatMessage[] {
-    const all = this.messagesCache.length > 0 ? this.messagesCache : INITIAL_MESSAGES;
+    const all = this.messagesCache;
     return all.filter(m => m.appointmentId === appointmentId);
   }
 

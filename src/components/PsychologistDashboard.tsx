@@ -136,28 +136,28 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
 
   // Unread forms count for real-time notification badge
   const [unreadFormsCount, setUnreadFormsCount] = useState<number>(() =>
-    clinicalFormStorage.getUnreadSubmissionsCount(user?.id || 'psy_clara')
+    user?.id ? clinicalFormStorage.getUnreadSubmissionsCount(user.id) : 0
   );
 
   React.useEffect(() => {
     const unsub = clinicalFormStorage.subscribe(() => {
-      setUnreadFormsCount(clinicalFormStorage.getUnreadSubmissionsCount(user?.id || 'psy_clara'));
+      setUnreadFormsCount(user?.id ? clinicalFormStorage.getUnreadSubmissionsCount(user.id) : 0);
     });
     return () => unsub();
   }, [user?.id]);
 
   // Psychological Records for Patient Journey D3 Chart
   const [psychologicalRecords, setPsychologicalRecords] = useState<PsychologicalRecord[]>(() =>
-    psychologicalRecordStorage.getRecordsByProfessional(user?.id || 'psy_clara')
+    user?.id ? psychologicalRecordStorage.getRecordsByProfessional(user.id) : []
   );
 
   React.useEffect(() => {
-    const profId = user?.id || 'psy_clara';
-    const recs = psychologicalRecordStorage.getRecordsByProfessional(profId);
+    const profId = user?.id || '';
+    const recs = profId ? psychologicalRecordStorage.getRecordsByProfessional(profId) : [];
     setPsychologicalRecords(recs);
 
     const unsubscribe = psychologicalRecordStorage.subscribe(allRecs => {
-      const filtered = allRecs.filter(r => r.professionalId === profId);
+      const filtered = profId ? allRecs.filter(r => r.professionalId === profId) : [];
       setPsychologicalRecords(filtered);
     });
     return () => unsubscribe();
@@ -220,26 +220,19 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
     existingProfProfile?.ageGroup || '36-50'
   );
   const [profApproximateAge, setProfApproximateAge] = useState<string>(
-    existingProfProfile?.approximateAge ? String(existingProfProfile.approximateAge) : '44'
+    existingProfProfile?.approximateAge ? String(existingProfProfile.approximateAge) : ''
   );
   const [profMaritalStatus, setProfMaritalStatus] = useState<MaritalStatus>(
     existingProfProfile?.maritalStatus || 'married'
   );
   const [profHasChildren, setProfHasChildren] = useState<boolean>(
-    existingProfProfile?.hasChildren ?? true
+    existingProfProfile?.hasChildren ?? false
   );
   const [profYearsOfExp, setProfYearsOfExp] = useState<string>(
-    existingProfProfile?.yearsOfExperience ? String(existingProfProfile.yearsOfExperience) : '12'
+    existingProfProfile?.yearsOfExperience ? String(existingProfProfile.yearsOfExperience) : ''
   );
   const [selectedAffinityTags, setSelectedAffinityTags] = useState<string[]>(
-    existingProfProfile?.affinityTags || [
-      'Crise de Meia-Idade',
-      'Casamento & Terapia de Casal',
-      'Maternidade Real & Puerpério',
-      'Família & Pais com Filhos',
-      'Ansiedade & Regulação Emocional',
-      'Burnout & Saúde Ocupacional',
-    ]
+    existingProfProfile?.affinityTags || []
   );
   const [welcomeIntro, setWelcomeIntro] = useState<string>(
     existingProfProfile?.welcomeIntro || ''
@@ -247,7 +240,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
 
   // Clinical tags state (ex: Ansiedade, Luto, Relacionamentos)
   const [profClinicalTags, setProfClinicalTags] = useState<string[]>(
-    user?.clinicalTags || ['Ansiedade', 'Luto', 'Relacionamentos']
+    user?.clinicalTags || []
   );
   const [customClinicalTagInput, setCustomClinicalTagInput] = useState('');
 
@@ -1267,8 +1260,8 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
                   onSelectPatient={patientId => setSelectedJourneyPatientId(patientId)}
                   onAddMilestone={milestone => {
                     const profMeta = {
-                      id: user?.id || 'psy_clara',
-                      name: user?.name || 'Dra. Clara Vasconcellos',
+                      id: user?.id || '',
+                      name: user?.name || 'Profissional',
                       role: (user?.professionalType as string) || 'psychologist',
                     };
                     psychologicalRecordStorage.addMilestoneToRecord(
@@ -1291,7 +1284,7 @@ export const PsychologistDashboard: React.FC<PsychologistDashboardProps> = ({
       {/* Tab Forms: Módulo de Formulários de Pesquisa & Acompanhamento Clínico */}
       {currentTab === 'forms' && (
         <ClinicalFormsModule
-          professionalId={user?.id || 'psy_clara'}
+          professionalId={user?.id || ''}
           professionalName={user?.name || 'Profissional'}
           initialPatientId={selectedProntuarioPatientId}
         />

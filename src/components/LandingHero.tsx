@@ -40,7 +40,7 @@ export const LandingHero: React.FC<LandingHeroProps> = ({
           {/* Left Text Column */}
           <div className="lg:col-span-7 flex flex-col justify-between space-y-6">
             <div className="space-y-4">
-              <div className="inline-flex items-center gap-2.5 px-3 py-1.5 bg-sky-50/80 dark:bg-sky-950/60 border border-sky-200/80 dark:border-sky-800/80 rounded-full text-xs font-semibold text-sky-900 dark:text-sky-300 shadow-xs">
+              <div className="inline-flex flex-wrap items-center gap-x-2 gap-y-1 max-w-full px-3 py-1.5 bg-sky-50/80 dark:bg-sky-950/60 border border-sky-200/80 dark:border-sky-800/80 rounded-2xl sm:rounded-full text-xs font-semibold text-sky-900 dark:text-sky-300 shadow-xs">
                 <span className="w-5 h-5 rounded-md overflow-hidden bg-white ring-1 ring-cyan-400/50 p-0.5 flex items-center justify-center shrink-0">
                   <img src={brainGlowBadge} alt="Cérebro com Circuitos" className="w-full h-full object-contain" />
                 </span>

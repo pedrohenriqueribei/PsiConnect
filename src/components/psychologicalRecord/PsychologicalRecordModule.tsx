@@ -44,11 +44,11 @@ export const PsychologicalRecordModule: React.FC<PsychologicalRecordModuleProps>
 
   // Current Professional meta
   const currentProfessional: ResponsibleProfessional & { role: string } = {
-    id: user?.id || 'psy_clara',
-    name: user?.name || 'Dra. Clara Vasconcellos',
+    id: user?.id || '',
+    name: user?.name || 'Profissional',
     type: (user?.professionalType as any) || (user?.role as any) || 'psychologist',
     role: (user?.role as string) || (user?.professionalType as string) || 'psychologist',
-    registration: user?.registrationNumber || user?.crp || 'CRP 06/138420',
+    registration: user?.registrationNumber || user?.crp || '',
     email: user?.email,
   };
 

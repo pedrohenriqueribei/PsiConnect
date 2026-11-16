@@ -95,180 +95,6 @@ export const INFLUENCE_FACTORS = [
   'Finanças',
 ];
 
-// Helper to generate dates relative to today
-const getRelativeDateStr = (daysAgo: number): string => {
-  const d = new Date();
-  d.setDate(d.getDate() - daysAgo);
-  return d.toISOString().split('T')[0];
-};
-
-const getRelativeDateTimeStr = (daysAgo: number, timeStr = '10:30'): string => {
-  const d = new Date();
-  d.setDate(d.getDate() - daysAgo);
-  const dateStr = d.toISOString().split('T')[0];
-  return `${dateStr}T${timeStr}:00.000Z`;
-};
-
-// Realistic seed history for demo patient 'pat_lucas' over the past 2 weeks
-const INITIAL_MOOD_ENTRIES: MoodEntry[] = [
-  {
-    id: 'mood_seed_1',
-    patientId: 'pat_lucas',
-    date: getRelativeDateStr(13),
-    timestamp: getRelativeDateTimeStr(13, '09:15'),
-    mood: 2,
-    energy: 'low',
-    feelings: ['Ansioso', 'Cansado', 'Sobrecarregado'],
-    factors: ['Trabalho / Estudos', 'Sono'],
-    note: 'Semana pesada no trabalho, dormi mal com preocupações na mente.',
-    createdAt: getRelativeDateTimeStr(13, '09:15'),
-  },
-  {
-    id: 'mood_seed_2',
-    patientId: 'pat_lucas',
-    date: getRelativeDateStr(12),
-    timestamp: getRelativeDateTimeStr(12, '14:20'),
-    mood: 2,
-    energy: 'low',
-    feelings: ['Cansado', 'Ansioso'],
-    factors: ['Sono', 'Trabalho / Estudos'],
-    note: 'Sensação de estagnação, mas consegui caminhar um pouco à tarde.',
-    createdAt: getRelativeDateTimeStr(12, '14:20'),
-  },
-  {
-    id: 'mood_seed_3',
-    patientId: 'pat_lucas',
-    date: getRelativeDateStr(11),
-    timestamp: getRelativeDateTimeStr(11, '20:00'),
-    mood: 3,
-    energy: 'moderate',
-    feelings: ['Em Paz', 'Aliviado'],
-    factors: ['Terapia / Aconselhamento', 'Descanso'],
-    note: 'Dia da sessão de acolhimento. Conversar abriu espaço para respirar melhor.',
-    createdAt: getRelativeDateTimeStr(11, '20:00'),
-  },
-  {
-    id: 'mood_seed_4',
-    patientId: 'pat_lucas',
-    date: getRelativeDateStr(10),
-    timestamp: getRelativeDateTimeStr(10, '11:00'),
-    mood: 3,
-    energy: 'moderate',
-    feelings: ['Esperançoso', 'Focado'],
-    factors: ['Trabalho / Estudos', 'Sono'],
-    note: 'Dia produtivo e mais calmo.',
-    createdAt: getRelativeDateTimeStr(10, '11:00'),
-  },
-  {
-    id: 'mood_seed_5',
-    patientId: 'pat_lucas',
-    date: getRelativeDateStr(9),
-    timestamp: getRelativeDateTimeStr(9, '18:45'),
-    mood: 4,
-    energy: 'high',
-    feelings: ['Grato', 'Confiante', 'Em Paz'],
-    factors: ['Família', 'Atividade Física', 'Espiritualidade / Oração'],
-    note: 'Fim de semana com a família. Momento de oração trouxe renovo.',
-    createdAt: getRelativeDateTimeStr(9, '18:45'),
-  },
-  {
-    id: 'mood_seed_6',
-    patientId: 'pat_lucas',
-    date: getRelativeDateStr(8),
-    timestamp: getRelativeDateTimeStr(8, '10:10'),
-    mood: 4,
-    energy: 'moderate',
-    feelings: ['Em Paz', 'Grato'],
-    factors: ['Lazer / Descanso', 'Sono'],
-    note: 'Dormi 8 horas completas pela primeira vez em semanas.',
-    createdAt: getRelativeDateTimeStr(8, '10:10'),
-  },
-  {
-    id: 'mood_seed_7',
-    patientId: 'pat_lucas',
-    date: getRelativeDateStr(7),
-    timestamp: getRelativeDateTimeStr(7, '16:30'),
-    mood: 3,
-    energy: 'moderate',
-    feelings: ['Focado', 'Cansado'],
-    factors: ['Trabalho / Estudos'],
-    note: 'Início de semana acelerado, porém consegui aplicar técnicas de respiração.',
-    createdAt: getRelativeDateTimeStr(7, '16:30'),
-  },
-  {
-    id: 'mood_seed_8',
-    patientId: 'pat_lucas',
-    date: getRelativeDateStr(6),
-    timestamp: getRelativeDateTimeStr(6, '21:15'),
-    mood: 4,
-    energy: 'high',
-    feelings: ['Esperançoso', 'Confiante'],
-    factors: ['Terapia / Aconselhamento', 'Atividade Física'],
-    note: 'Feedback da terapeuta me ajudou a identificar gatilhos.',
-    createdAt: getRelativeDateTimeStr(6, '21:15'),
-  },
-  {
-    id: 'mood_seed_9',
-    patientId: 'pat_lucas',
-    date: getRelativeDateStr(5),
-    timestamp: getRelativeDateTimeStr(5, '12:00'),
-    mood: 3,
-    energy: 'moderate',
-    feelings: ['Em Paz'],
-    factors: ['Trabalho / Estudos', 'Alimentação'],
-    note: 'Ritmo normal, sem crises de ansiedade.',
-    createdAt: getRelativeDateTimeStr(5, '12:00'),
-  },
-  {
-    id: 'mood_seed_10',
-    patientId: 'pat_lucas',
-    date: getRelativeDateStr(4),
-    timestamp: getRelativeDateTimeStr(4, '15:40'),
-    mood: 4,
-    energy: 'high',
-    feelings: ['Acolhido', 'Grato', 'Confiante'],
-    factors: ['Família', 'Relacionamento'],
-    note: 'Boa conversa com pessoas queridas.',
-    createdAt: getRelativeDateTimeStr(4, '15:40'),
-  },
-  {
-    id: 'mood_seed_11',
-    patientId: 'pat_lucas',
-    date: getRelativeDateStr(3),
-    timestamp: getRelativeDateTimeStr(3, '09:00'),
-    mood: 5,
-    energy: 'high',
-    feelings: ['Radiante', 'Grato', 'Esperançoso'],
-    factors: ['Espiritualidade / Oração', 'Sono', 'Atividade Física'],
-    note: 'Acordei com muita clareza mental e entusiasmo.',
-    createdAt: getRelativeDateTimeStr(3, '09:00'),
-  },
-  {
-    id: 'mood_seed_12',
-    patientId: 'pat_lucas',
-    date: getRelativeDateStr(2),
-    timestamp: getRelativeDateTimeStr(2, '17:20'),
-    mood: 4,
-    energy: 'moderate',
-    feelings: ['Em Paz', 'Focado'],
-    factors: ['Trabalho / Estudos', 'Lazer / Descanso'],
-    note: 'Consegui pausar para descansar sem culpa.',
-    createdAt: getRelativeDateTimeStr(2, '17:20'),
-  },
-  {
-    id: 'mood_seed_13',
-    patientId: 'pat_lucas',
-    date: getRelativeDateStr(1),
-    timestamp: getRelativeDateTimeStr(1, '20:10'),
-    mood: 4,
-    energy: 'moderate',
-    feelings: ['Grato', 'Aliviado'],
-    factors: ['Terapia / Aconselhamento', 'Família'],
-    note: 'Excelente progresso nas orientações de cuidado.',
-    createdAt: getRelativeDateTimeStr(1, '20:10'),
-  },
-];
-
 type MoodListener = (entries: MoodEntry[]) => void;
 
 class MoodTrackerStorage {
@@ -281,8 +107,16 @@ class MoodTrackerStorage {
   private init() {
     try {
       const existing = localStorage.getItem(STORAGE_KEY);
-      if (!existing) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_MOOD_ENTRIES));
+      if (existing) {
+        const parsed = JSON.parse(existing) as MoodEntry[];
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter(
+            e => !e.id?.startsWith('mood_seed_') && e.patientId !== 'pat_lucas'
+          );
+          if (cleaned.length !== parsed.length) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cleaned));
+          }
+        }
       }
     } catch (e) {
       console.warn('LocalStorage not available for mood entries init', e);
@@ -311,18 +145,22 @@ class MoodTrackerStorage {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
       if (data) {
-        return JSON.parse(data);
+        const parsed = JSON.parse(data);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
       }
     } catch {
       // fallback
     }
-    return INITIAL_MOOD_ENTRIES;
+    return [];
   }
 
   public getEntriesByPatient(patientId: string): MoodEntry[] {
+    if (!patientId) return [];
     const all = this.getAllEntries();
     return all
-      .filter(e => e.patientId === patientId || (!e.patientId && patientId === 'pat_lucas'))
+      .filter(e => e.patientId === patientId)
       .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   }
 

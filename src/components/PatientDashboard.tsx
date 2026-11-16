@@ -727,11 +727,26 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
 
       {/* Tab: Meus Questionários e Acompanhamento */}
       {currentTab === 'patient_forms' && (
-        <PatientFormList
-          patientId={user?.id || 'pat_lucas'}
-          patientName={user?.name || 'Paciente'}
-          patientEmail={user?.email}
-        />
+        !user ? (
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center shadow-xs">
+            <UserCheck className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Acesse sua conta para responder e acompanhar seus formulários clínicos
+            </p>
+            <button
+              onClick={onOpenAuth}
+              className="mt-3 px-4 py-2 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-500 rounded-lg shadow-xs"
+            >
+              Fazer Login
+            </button>
+          </div>
+        ) : (
+          <PatientFormList
+            patientId={user.id}
+            patientName={user.name}
+            patientEmail={user.email}
+          />
+        )
       )}
 
       {/* Tab 3: Orientações & Apoio */}
@@ -795,10 +810,25 @@ export const PatientDashboard: React.FC<PatientDashboardProps> = ({
 
       {/* Tab 4: Diário de Humor & Bem-Estar */}
       {currentTab === 'mood_tracker' && (
-        <PatientMoodTrackerView
-          patientId={user?.id || 'pat_lucas'}
-          patientName={user ? user.name.split(' ')[0] : 'Lucas'}
-        />
+        !user ? (
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center shadow-xs">
+            <UserCheck className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              Acesse sua conta para registrar e acompanhar seu diário de humor
+            </p>
+            <button
+              onClick={onOpenAuth}
+              className="mt-3 px-4 py-2 text-xs font-semibold text-white bg-sky-700 hover:bg-sky-800 dark:bg-sky-600 dark:hover:bg-sky-500 rounded-lg shadow-xs"
+            >
+              Fazer Login
+            </button>
+          </div>
+        ) : (
+          <PatientMoodTrackerView
+            patientId={user.id}
+            patientName={user.name.split(' ')[0] || user.name}
+          />
+        )
       )}
 
       {/* Modal de Agendamento */}

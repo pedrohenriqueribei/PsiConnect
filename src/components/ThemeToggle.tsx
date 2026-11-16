@@ -17,7 +17,11 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({
     <button
       type="button"
       onClick={toggleTheme}
-      className={`relative inline-flex items-center gap-2 px-2.5 py-1.5 rounded-xl border transition-all duration-200 cursor-pointer ${
+      className={`relative inline-flex items-center justify-center gap-2 rounded-xl border transition-all duration-200 cursor-pointer ${
+        showLabel
+          ? 'px-3 py-2 min-h-[40px]'
+          : 'w-11 h-11 md:w-auto md:h-auto md:px-2.5 md:py-1.5'
+      } ${
         isDark
           ? 'bg-slate-800 hover:bg-slate-700/80 text-amber-300 border-slate-700 hover:border-amber-400/40 shadow-xs'
           : 'bg-slate-100 hover:bg-slate-200/80 text-slate-700 border-slate-200/80 hover:border-slate-300 shadow-xs'

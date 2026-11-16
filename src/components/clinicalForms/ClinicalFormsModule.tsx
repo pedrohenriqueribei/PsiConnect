@@ -86,7 +86,7 @@ export const ClinicalFormsModule: React.FC<ClinicalFormsModuleProps> = ({
   // For Evolution Tab
   const allPatients: User[] = storage.getAllPatients();
   const [selectedPatientId, setSelectedPatientId] = useState<string>(
-    initialPatientId || (allPatients.length > 0 ? allPatients[0].id : 'pat_lucas')
+    initialPatientId || (allPatients.length > 0 ? allPatients[0].id : '')
   );
   const [selectedFormId, setSelectedFormId] = useState<string>(
     initialFormId || (forms.length > 0 ? forms[0].id : '')

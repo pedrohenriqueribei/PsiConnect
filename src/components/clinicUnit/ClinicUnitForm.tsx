@@ -557,7 +557,7 @@ export const ClinicUnitForm: React.FC<ClinicUnitFormProps> = ({
                 type="text"
                 value={technicalLeadName}
                 onChange={e => setTechnicalLeadName(e.target.value)}
-                placeholder="Ex: Dra. Clara Vasconcellos"
+                placeholder="Ex: Dr(a). Nome Completo"
                 className={`w-full px-3.5 py-2.5 text-xs bg-slate-50 dark:bg-slate-800/50 border rounded-xl focus:outline-none focus:ring-2 transition-all ${
                   formErrors.technicalLeadName
                     ? 'border-red-500 focus:ring-red-400'
@@ -746,7 +746,7 @@ export const ClinicUnitForm: React.FC<ClinicUnitFormProps> = ({
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-indigo-950 dark:text-indigo-200 flex items-center gap-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
-                    Galeria Demonstrativa de Consultórios & Recepções
+                    Galeria Sugerida de Consultórios & Recepções
                   </span>
                   <button
                     type="button"

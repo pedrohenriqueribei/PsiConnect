@@ -307,7 +307,7 @@ export const ClinicPhotoGallery: React.FC<ClinicPhotoGalleryProps> = ({
   const handleAddSample = (sample: ClinicUnitPhoto) => {
     if (!onUpdatePhotos) return;
     if (photos.some(p => p.url === sample.url)) {
-      showToast('Esta foto demonstrativa já está presente na unidade.');
+      showToast('Esta foto sugerida já está presente na unidade.');
       return;
     }
     const cloned: ClinicUnitPhoto = {
@@ -504,7 +504,7 @@ export const ClinicPhotoGallery: React.FC<ClinicPhotoGalleryProps> = ({
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
               <h4 className="text-xs font-bold text-indigo-950 dark:text-indigo-200">
-                Biblioteca de Fotos Demonstrativas de Consultórios & Recepções
+                Biblioteca de Fotos Sugeridas de Consultórios & Recepções
               </h4>
             </div>
             <button

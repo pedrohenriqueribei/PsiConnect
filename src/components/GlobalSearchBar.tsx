@@ -58,6 +58,7 @@ interface GlobalSearchBarProps {
   onSelectProfessional: (professional: User) => void;
   onOpenLogin: () => void;
   onOpenRegister: (role: 'patient' | 'psychologist') => void;
+  externalMobileOpenNonce?: number;
 }
 
 const normalizeText = (value: string): string =>
@@ -73,6 +74,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   onSelectProfessional,
   onOpenLogin,
   onOpenRegister,
+  externalMobileOpenNonce = 0,
 }) => {
   const { user, role } = useAuth();
   const isProf = isProfessionalRole(role);
@@ -121,7 +123,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     const handleGlobalKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        if (window.innerWidth < 640) {
+        if (window.innerWidth < 768) {
           setIsMobileOpen(true);
         } else {
           setIsDesktopOpen(true);
@@ -132,6 +134,12 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
     window.addEventListener('keydown', handleGlobalKey);
     return () => window.removeEventListener('keydown', handleGlobalKey);
   }, []);
+
+  useEffect(() => {
+    if (externalMobileOpenNonce > 0) {
+      setIsMobileOpen(true);
+    }
+  }, [externalMobileOpenNonce]);
 
   useEffect(() => {
     if (isMobileOpen) {
@@ -328,8 +336,8 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
       {
         id: 'visitor-login',
         title: 'Fazer Login (Acessar Conta)',
-        description: 'Entre na sua conta ou teste os perfis de demonstração da plataforma.',
-        keywords: ['login', 'entrar', 'acessar', 'conta', 'teste'],
+        description: 'Entre na sua conta para acessar suas consultas, prontuários e painel.',
+        keywords: ['login', 'entrar', 'acessar', 'conta'],
         badge: 'Acesso',
         icon: LogIn,
         action: { type: 'login' },
@@ -788,10 +796,10 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
 
   return (
     <>
-      {/* Desktop & Tablet Global Search Input (sm and up) */}
+      {/* Desktop & Tablet Global Search Input (md and up >= 768px) */}
       <div
         ref={desktopContainerRef}
-        className="hidden sm:block relative flex-1 max-w-xs md:max-w-sm xl:max-w-[230px] 2xl:max-w-xs min-w-0"
+        className="hidden md:block relative flex-1 max-w-xs lg:max-w-sm xl:max-w-[230px] 2xl:max-w-xs min-w-0"
       >
         <div
           className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border transition-all ${
@@ -846,21 +854,21 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
         )}
       </div>
 
-      {/* Mobile Search Trigger Button (< sm) */}
+      {/* Mobile Search Trigger Button (< md / < 768px) */}
       <button
         type="button"
         onClick={() => setIsMobileOpen(true)}
         aria-label="Abrir busca global"
         data-testid="mobile-global-search-button"
-        className="sm:hidden ml-auto p-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:text-sky-700 dark:hover:text-sky-400 transition-colors shrink-0"
+        className="md:hidden ml-auto w-11 h-11 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-100/90 dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:text-sky-700 dark:hover:text-sky-400 transition-colors shrink-0 cursor-pointer"
       >
         <Search className="w-4 h-4" />
       </button>
 
-      {/* Mobile Full-Width Global Search Overlay */}
+      {/* Mobile Full-Width Global Search Overlay (< 768px) */}
       {isMobileOpen && (
         <div
-          className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs sm:hidden flex flex-col"
+          className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs md:hidden flex flex-col"
           onClick={e => {
             if (e.target === e.currentTarget) closeSearch();
           }}

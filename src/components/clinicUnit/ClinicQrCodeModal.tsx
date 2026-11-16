@@ -33,7 +33,7 @@ export const ClinicQrCodeModal: React.FC<ClinicQrCodeModalProps> = ({
   const [qrType, setQrType] = useState<'checkin' | 'profile'>('checkin');
   const [copiedLink, setCopiedLink] = useState(false);
   const [showSimulatedPatientView, setShowSimulatedPatientView] = useState(false);
-  const [simulatedPatientName, setSimulatedPatientName] = useState('Ana Beatriz Ferreira');
+  const [simulatedPatientName, setSimulatedPatientName] = useState('');
   const [checkinConfirmed, setCheckinConfirmed] = useState(false);
 
   if (!isOpen) return null;
@@ -295,6 +295,7 @@ export const ClinicQrCodeModal: React.FC<ClinicQrCodeModalProps> = ({
                     <label className="text-[11px] font-semibold text-slate-600">Seu Nome Completo:</label>
                     <input
                       type="text"
+                      placeholder="Digite seu nome completo"
                       value={simulatedPatientName}
                       onChange={e => setSimulatedPatientName(e.target.value)}
                       className="w-full px-3 py-2 text-xs border border-slate-200 rounded-xl focus:ring-2 focus:ring-sky-600"
@@ -303,8 +304,9 @@ export const ClinicQrCodeModal: React.FC<ClinicQrCodeModalProps> = ({
 
                   <button
                     type="button"
+                    disabled={!simulatedPatientName.trim()}
                     onClick={() => setCheckinConfirmed(true)}
-                    className="w-full py-2.5 px-4 rounded-xl bg-sky-700 hover:bg-sky-800 text-white text-xs font-bold shadow-xs transition-colors"
+                    className="w-full py-2.5 px-4 rounded-xl bg-sky-700 hover:bg-sky-800 disabled:opacity-50 text-white text-xs font-bold shadow-xs transition-colors"
                   >
                     Confirmar Check-in na Recepção
                   </button>
@@ -349,7 +351,7 @@ export const ClinicQrCodeModal: React.FC<ClinicQrCodeModalProps> = ({
                     }}
                     className="w-full py-2 px-3 text-xs font-semibold text-slate-600 hover:bg-slate-100 rounded-xl"
                   >
-                    Fechar Demonstração
+                    Fechar Prévia
                   </button>
                 </div>
               )}

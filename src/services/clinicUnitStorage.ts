@@ -13,8 +13,7 @@ import {
 const STORAGE_KEY = 'psiconnect_clinic_units_v1';
 const FIRESTORE_COLLECTION = 'clinicUnits';
 
-// Curated high-resolution clinic photos for demo and quick selection
-// Curated high-resolution clinic photos for demo and quick selection
+// Curated high-resolution clinic photos for optional quick selection
 export const SAMPLE_CLINIC_PHOTOS: ClinicUnitPhoto[] = [
   {
     id: 'sample_fachada_1',
@@ -82,136 +81,11 @@ export const SAMPLE_CLINIC_PHOTOS: ClinicUnitPhoto[] = [
   },
 ];
 
-const INITIAL_CLINIC_UNITS: ClinicUnit[] = [
-  {
-    id: 'unit_jardins_matriz',
-    cnpj: '42.128.940/0001-85',
-    tradeName: 'Psiconnect Jardins & Instituto de Saúde Mental',
-    legalName: 'Psiconnect Serviços Clínicos e Terapêuticos Ltda.',
-    cnesNumber: '9841203',
-    technicalLeadName: 'Dra. Clara Vasconcellos',
-    technicalLeadCrp: 'CRP 06/138420',
-    landlinePhone: '(11) 3254-8800',
-    receptionWhatsapp: '(11) 98452-3310',
-    institutionalEmail: 'recepcao.jardins@psiconnect.med.br',
-    photos: [
-      SAMPLE_CLINIC_PHOTOS[0],
-      SAMPLE_CLINIC_PHOTOS[1],
-      SAMPLE_CLINIC_PHOTOS[2],
-      SAMPLE_CLINIC_PHOTOS[3],
-    ],
-    zipCode: '01414-001',
-    street: 'Alameda Santos',
-    number: '1820',
-    complement: 'Conjunto 142 - 14º Andar',
-    neighborhood: 'Cerqueira César',
-    city: 'São Paulo',
-    state: 'SP',
-    coordinates: {
-      lat: -23.55775,
-      lng: -46.66134,
-    },
-    operatingHours: 'Segunda a Sexta das 08h às 21h | Sábados das 08h às 14h',
-    accessibilityItems: [
-      'rampa',
-      'elevador',
-      'banheiro_adaptado',
-      'piso_tatile',
-      'portas_largas',
-      'vagas_reservadas',
-      'sinalizacao_braille',
-    ],
-    serviceTypes: [
-      'presencial',
-      'teleconsulta',
-      'infantil_atipicidades',
-      'casal_familia',
-      'grupo',
-    ],
-    createdAt: '2025-01-10T10:00:00Z',
-    updatedAt: '2025-02-01T15:00:00Z',
-  },
-  {
-    id: 'unit_alphaville_saude',
-    cnpj: '38.419.055/0001-22',
-    tradeName: 'Centro Clínico de Psicoterapia Alphaville',
-    legalName: 'Alphaville Saúde Mental Integrada Eireli',
-    cnesNumber: '7458921',
-    technicalLeadName: 'Dr. Marcos Alencar',
-    technicalLeadCrp: 'CRP 06/112504',
-    landlinePhone: '(11) 4195-2240',
-    receptionWhatsapp: '(11) 97120-4491',
-    institutionalEmail: 'contato@psicoalphaville.com.br',
-    photos: [
-      SAMPLE_CLINIC_PHOTOS[1],
-      SAMPLE_CLINIC_PHOTOS[2],
-      SAMPLE_CLINIC_PHOTOS[4],
-    ],
-    zipCode: '06454-000',
-    street: 'Alameda Rio Negro',
-    number: '585',
-    complement: 'Bloco B - Sala 804',
-    neighborhood: 'Alphaville Centro Industrial',
-    city: 'Barueri',
-    state: 'SP',
-    coordinates: {
-      lat: -23.49840,
-      lng: -46.85290,
-    },
-    operatingHours: 'Segunda a Sexta das 07h30 às 20h30',
-    accessibilityItems: [
-      'rampa',
-      'elevador',
-      'banheiro_adaptado',
-      'portas_largas',
-      'vagas_reservadas',
-    ],
-    serviceTypes: [
-      'presencial',
-      'teleconsulta',
-      'casal_familia',
-    ],
-    createdAt: '2025-01-20T11:00:00Z',
-    updatedAt: '2025-02-10T09:30:00Z',
-  },
-  {
-    id: 'unit_botafogo_acolhe',
-    cnpj: '50.892.311/0001-70',
-    tradeName: 'Espaço Psicanálise & Acolhimento Botafogo',
-    legalName: 'Botafogo Terapias & Clínica Psicanalítica Ltda.',
-    cnesNumber: '8192304',
-    technicalLeadName: 'Dra. Renata Mendonça',
-    technicalLeadCrp: 'CRP 05/44912',
-    landlinePhone: '(21) 2537-9100',
-    receptionWhatsapp: '(21) 99318-6205',
-    institutionalEmail: 'acolhimento.botafogo@psiconnect.med.br',
-    photos: [
-      SAMPLE_CLINIC_PHOTOS[0],
-      SAMPLE_CLINIC_PHOTOS[2],
-    ],
-    zipCode: '22260-001',
-    street: 'Rua Voluntários da Pátria',
-    number: '190',
-    complement: 'Sala 603',
-    neighborhood: 'Botafogo',
-    city: 'Rio de Janeiro',
-    state: 'RJ',
-    operatingHours: 'Segunda a Sexta das 08h às 20h',
-    accessibilityItems: [
-      'rampa',
-      'elevador',
-      'banheiro_adaptado',
-      'portas_largas',
-    ],
-    serviceTypes: [
-      'presencial',
-      'teleconsulta',
-      'grupo',
-    ],
-    createdAt: '2025-02-01T14:00:00Z',
-    updatedAt: '2025-02-15T18:00:00Z',
-  },
-];
+const REMOVED_SEED_UNIT_IDS = new Set([
+  'unit_jardins_matriz',
+  'unit_alphaville_saude',
+  'unit_botafogo_acolhe',
+]);
 
 class ClinicUnitStorageService {
   private inMemoryCache: ClinicUnit[] | null = null;
@@ -225,18 +99,20 @@ class ClinicUnitStorageService {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          this.inMemoryCache = parsed;
-          return parsed;
+        if (Array.isArray(parsed)) {
+          const cleaned = parsed.filter((u: ClinicUnit) => !REMOVED_SEED_UNIT_IDS.has(u.id));
+          if (cleaned.length !== parsed.length) {
+            this.persistLocally(cleaned);
+          }
+          this.inMemoryCache = cleaned;
+          return cleaned;
         }
       }
     } catch (err) {
       console.warn('Erro ao ler clinic units do localStorage:', err);
     }
 
-    // Seed initial
-    this.inMemoryCache = [...INITIAL_CLINIC_UNITS];
-    this.persistLocally(this.inMemoryCache);
+    this.inMemoryCache = [];
     return this.inMemoryCache;
   }
 
@@ -249,14 +125,12 @@ class ClinicUnitStorageService {
     try {
       const colRef = collection(db, FIRESTORE_COLLECTION);
       const snapshot = await getDocs(colRef);
-      if (!snapshot.empty) {
-        const remoteUnits: ClinicUnit[] = snapshot.docs.map(d => d.data() as ClinicUnit);
-        if (remoteUnits.length > 0) {
-          this.inMemoryCache = remoteUnits;
-          this.persistLocally(remoteUnits);
-          return remoteUnits;
-        }
-      }
+      const remoteUnits: ClinicUnit[] = snapshot.docs
+        .map(d => d.data() as ClinicUnit)
+        .filter(u => !REMOVED_SEED_UNIT_IDS.has(u.id));
+      this.inMemoryCache = remoteUnits;
+      this.persistLocally(remoteUnits);
+      return remoteUnits;
     } catch (err) {
       console.warn('Aviso ao consultar Firestore para clinicUnits:', err);
     }

@@ -86,7 +86,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
           {subtitleText && (
             <p
-              className={`font-medium tracking-normal mt-0.5 ${currentSize.sub} hidden sm:block ${
+              className={`font-medium tracking-normal mt-0.5 ${currentSize.sub} hidden md:block ${
                 textDark ? 'text-slate-500 dark:text-slate-400' : 'text-slate-300'
               }`}
             >

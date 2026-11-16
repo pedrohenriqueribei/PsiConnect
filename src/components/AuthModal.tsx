@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import {
+  User,
   UserRole,
   ProfessionalType,
   PROFESSIONAL_TYPES_CONFIG,
@@ -38,7 +39,7 @@ interface AuthModalProps {
   onClose: () => void;
   initialRole?: UserRole;
   initialMode?: 'login' | 'register';
-  onAuthSuccess?: () => void;
+  onAuthSuccess?: (user?: User) => void;
   onPatientRegistered?: () => void;
 }
 
@@ -50,7 +51,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   onAuthSuccess,
   onPatientRegistered,
 }) => {
-  const { login, register, signInWithGoogle, switchDemoUser } = useAuth();
+  const { login, register, signInWithGoogle } = useAuth();
   const [mode, setMode] = useState<'login' | 'register'>(initialMode);
   const [accountCategory, setAccountCategory] = useState<'patient' | 'professional'>(
     initialRole === 'patient' ? 'patient' : 'professional'
@@ -198,23 +199,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     const res = await signInWithGoogle(resolvedRole);
     setLoading(false);
     if (res.success) {
-      onAuthSuccess?.();
+      onAuthSuccess?.(res.user);
       onClose();
     } else {
       setErrorMessage(res.error || 'Erro ao conectar via Google.');
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
     setLoading(true);
 
     if (mode === 'login') {
-      const res = login(email, password);
+      const res = await login(email, password);
       setLoading(false);
       if (res.success) {
-        onAuthSuccess?.();
+        onAuthSuccess?.(res.user);
         onClose();
       } else {
         setErrorMessage(res.error || 'Erro ao efetuar login.');
@@ -241,7 +242,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           new Set([approach, ...selectedClinicalTags])
         );
 
-        const res = register({
+        const res = await register({
           name,
           email,
           passwordHash: password,
@@ -276,14 +277,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         setLoading(false);
         if (res.success) {
-          onAuthSuccess?.();
+          onAuthSuccess?.(res.user);
           onClose();
         } else {
           setErrorMessage(res.error || 'Erro ao realizar cadastro.');
         }
       } else {
         // Patient registration
-        const res = register({
+        const res = await register({
           name,
           email,
           passwordHash: password,
@@ -294,19 +295,13 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         setLoading(false);
         if (res.success) {
           onPatientRegistered?.();
-          onAuthSuccess?.();
+          onAuthSuccess?.(res.user);
           onClose();
         } else {
           setErrorMessage(res.error || 'Erro ao realizar cadastro.');
         }
       }
     }
-  };
-
-  const handleSelectDemo = (userId: string) => {
-    switchDemoUser(userId);
-    onAuthSuccess?.();
-    onClose();
   };
 
   return (
@@ -1035,66 +1030,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             {loading ? 'Processando...' : mode === 'login' ? 'Entrar com Senha' : 'Concluir Cadastro'}
           </button>
         </form>
-
-        {/* Demo Fast Access Bar */}
-        <div className="mx-6 mb-6 px-3.5 py-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-sky-700" />
-              Acesso Rápido de Teste (Clique para Alternar):
-            </span>
-          </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-[11px]">
-            <button
-              type="button"
-              onClick={() => handleSelectDemo('psy_clara')}
-              className="py-1 px-2 bg-white hover:bg-sky-50 text-sky-900 border border-slate-200 rounded text-left font-medium transition-colors truncate"
-              title="Dra. Clara - Psicóloga (TCC)"
-            >
-              🧠 Dra. Clara (Psicóloga)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSelectDemo('ther_camila')}
-              className="py-1 px-2 bg-white hover:bg-emerald-50 text-emerald-900 border border-slate-200 rounded text-left font-medium transition-colors truncate"
-              title="Camila Rezende - Terapeuta Integrativa"
-            >
-              🌿 Camila (Terapeuta)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSelectDemo('psy_renata')}
-              className="py-1 px-2 bg-white hover:bg-purple-50 text-purple-900 border border-slate-200 rounded text-left font-medium transition-colors truncate"
-              title="Dra. Renata - Psicanalista"
-            >
-              🔍 Dra. Renata (Psicanalista)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSelectDemo('pas_david')}
-              className="py-1 px-2 bg-white hover:bg-amber-50 text-amber-950 border border-amber-200 rounded text-left font-semibold transition-colors truncate"
-              title="Pr. David Ferreira - Aconselhamento Bíblico"
-            >
-              📖 Pr. David (Pastor Bíblico)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSelectDemo('pat_lucas')}
-              className="py-1 px-2 bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 rounded text-left font-medium transition-colors truncate"
-              title="Lucas - Paciente"
-            >
-              👤 Lucas (Paciente Terapia)
-            </button>
-            <button
-              type="button"
-              onClick={() => handleSelectDemo('pat_mariana')}
-              className="py-1 px-2 bg-white hover:bg-slate-100 text-slate-800 border border-slate-200 rounded text-left font-medium transition-colors truncate"
-              title="Mariana - Paciente Aconselhamento"
-            >
-              👤 Mariana (Paciente Bíblico)
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   </div>

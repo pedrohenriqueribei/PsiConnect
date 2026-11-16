@@ -174,8 +174,6 @@ export const PublicClinicModal: React.FC<PublicClinicModalProps> = ({
                       <option value={unit.technicalLeadName}>
                         {unit.technicalLeadName} ({unit.technicalLeadCrp}) - Responsável Técnico
                       </option>
-                      <option value="Dra. Renata Mendonça">Dra. Renata Mendonça (Psicóloga Clínica)</option>
-                      <option value="Dr. Marcos Andrade">Dr. Marcos Andrade (Neuropsicólogo)</option>
                       <option value="Outro Profissional / Recepção Geral">Outro Profissional / Recepção Geral</option>
                     </select>
                   </div>

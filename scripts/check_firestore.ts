@@ -2,10 +2,7 @@ import { initializeApp } from 'firebase/app';
 import {
   getFirestore,
   collection,
-  doc,
-  setDoc,
   getDocs,
-  getDoc,
 } from 'firebase/firestore';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -20,7 +17,7 @@ console.log('Target Database ID:', firebaseConfig.firestoreDatabaseId);
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 
-async function checkAndSeed() {
+async function checkDatabaseState() {
   console.log('--- Checking current database state ---');
   const usersSnap = await getDocs(collection(db, 'users'));
   console.log(`Current users in Firestore (${firebaseConfig.firestoreDatabaseId}):`, usersSnap.size);
@@ -35,7 +32,7 @@ async function checkAndSeed() {
   console.log(`Current appointments in Firestore:`, aptSnap.size);
 }
 
-checkAndSeed()
+checkDatabaseState()
   .then(() => {
     console.log('Check finished successfully.');
     process.exit(0);

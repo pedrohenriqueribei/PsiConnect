@@ -53,20 +53,6 @@ import { CameraCaptureModal } from './CameraCaptureModal';
 import { processImageFile } from '../utils/imageUtils';
 import { maskPhone } from '../utils/maskUtils';
 
-import avatarClara from '../assets/images/avatar_psico_clara_1792608795986.jpg';
-import avatarMarcos from '../assets/images/avatar_psico_marcos_1792608796718.jpg';
-import avatarRenata from '../assets/images/avatar_psico_renata_1792608797120.jpg';
-import avatarCamila from '../assets/images/avatar_terapeuta_camila_1793309224240.jpg';
-import avatarDavid from '../assets/images/avatar_pastor_david_1793309212629.jpg';
-
-const CURATED_AVATARS = [
-  { id: 'clara', label: 'Dra. Clara', src: avatarClara },
-  { id: 'marcos', label: 'Dr. Marcos', src: avatarMarcos },
-  { id: 'renata', label: 'Dra. Renata', src: avatarRenata },
-  { id: 'camila', label: 'Camila', src: avatarCamila },
-  { id: 'david', label: 'Pr. David', src: avatarDavid },
-];
-
 const AGE_GROUP_LABELS: Record<AgeGroup, string> = {
   '18-25': '18 a 25 anos (Jovem Adulto)',
   '26-35': '26 a 35 anos (Adulto)',
@@ -646,44 +632,6 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onBack, initia
           </div>
 
           <div className="space-y-3 pt-1 border-t border-sky-100 dark:border-sky-900/60">
-            <p className="text-xs font-semibold text-slate-700 dark:text-slate-300">
-              Ou escolha um dos avatares ilustrativos disponíveis:
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3">
-              {CURATED_AVATARS.map(item => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => {
-                    setAvatar(item.src);
-                    setCustomAvatarUrl('');
-                    setAvatarFeedbackMsg(`Avatar de ${item.label} selecionado!`);
-                    setTimeout(() => setAvatarFeedbackMsg(null), 3000);
-                  }}
-                  className={`relative p-1 rounded-2xl border-2 transition-all ${
-                    avatar === item.src
-                      ? 'border-sky-600 ring-2 ring-sky-400/50 scale-105'
-                      : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 bg-white dark:bg-slate-900'
-                  }`}
-                >
-                  <img
-                    src={item.src}
-                    alt={item.label}
-                    className="w-12 h-12 rounded-xl object-cover"
-                  />
-                  {avatar === item.src && (
-                    <span className="absolute -top-1 -right-1 bg-sky-700 text-white rounded-full p-0.5">
-                      <Check className="w-3 h-3" />
-                    </span>
-                  )}
-                  <span className="block text-[10px] text-center mt-1 font-medium text-slate-700 dark:text-slate-300">
-                    {item.label}
-                  </span>
-                </button>
-              ))}
-            </div>
-
             <div className="pt-2 flex items-center gap-2">
               <input
                 type="url"
