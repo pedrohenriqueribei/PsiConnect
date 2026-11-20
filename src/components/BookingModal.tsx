@@ -240,7 +240,9 @@ export const BookingModal: React.FC<BookingModalProps> = ({
           ) : (
             <div className="flex items-center gap-1.5 font-semibold text-sky-900 dark:text-sky-300">
               <DollarSign className="w-4 h-4 text-sky-700 dark:text-sky-400" />
-              <span>Valor: R$ {psychologist.hourlyRate || currentProfConfig.defaultRate},00 / sessão</span>
+              <span>
+                Valor: R$ {(psychologist.hourlyRate ?? currentProfConfig.defaultRate).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} / sessão
+              </span>
             </div>
           )}
           <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400 tabular-nums">

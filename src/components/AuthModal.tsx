@@ -5,6 +5,7 @@ import {
   UserRole,
   ProfessionalType,
   PROFESSIONAL_TYPES_CONFIG,
+  MAIN_APPROACH_OPTIONS,
   CLINICAL_EXPERIENCE_TAGS,
   SUGGESTED_FORMATIONS_BY_TYPE,
   SUGGESTED_SPECIALIZATIONS_BY_TYPE,
@@ -66,6 +67,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       : 'psychologist'
   );
 
+  const CUSTOM_APPROACH_VALUE = '__custom__';
+
   // Form states
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -73,10 +76,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [phone, setPhone] = useState('');
   const [registrationNumber, setRegistrationNumber] = useState('');
   const [ministryOrChurch, setMinistryOrChurch] = useState('');
-  const [approach, setApproach] = useState('');
-  const [hourlyRate, setHourlyRate] = useState<number>(180);
+  const [approach, setApproach] = useState('Terapia Cognitivo-Comportamental (TCC)');
+  const [customApproach, setCustomApproach] = useState('');
+  const [hourlyRate, setHourlyRate] = useState<string>('180,00');
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const handleHourlyRateChange = (rawValue: string) => {
+    const sanitized = rawValue.replace(/[^\d.,]/g, '');
+    const match = sanitized.match(/^(\d*)([.,]\d{0,2})?/);
+    if (match) {
+      setHourlyRate(`${match[1] || ''}${match[2] || ''}`);
+    }
+  };
 
   // Formações acadêmicas e cursos formativos (+ de 1)
   const [formations, setFormations] = useState<string[]>([
@@ -151,8 +163,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   // Update default approach and rate when professional type changes
   React.useEffect(() => {
     const config = PROFESSIONAL_TYPES_CONFIG[selectedProfessionalType];
-    setApproach(config.defaultApproaches[0]);
-    setHourlyRate(config.defaultRate);
+    if (selectedProfessionalType === 'psychoanalyst') {
+      setApproach('Psicanálise (Freudiana, Lacaniana, Winnicottiana, Kleiniana)');
+    } else if (selectedProfessionalType === 'psychologist') {
+      setApproach('Terapia Cognitivo-Comportamental (TCC)');
+    } else {
+      setApproach(config.defaultApproaches[0]);
+    }
+    setCustomApproach('');
+    setHourlyRate(config.defaultRate.toFixed(2).replace('.', ','));
     const defaultForm = SUGGESTED_FORMATIONS_BY_TYPE[selectedProfessionalType]?.[0];
     const defaultSpec = SUGGESTED_SPECIALIZATIONS_BY_TYPE[selectedProfessionalType]?.[0];
     setFormations(prev => (prev.length === 0 && defaultForm ? [defaultForm] : prev));
@@ -187,9 +206,21 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   }, [isOpen, mode, accountCategory, selectedProfessionalType]);
 
-  if (!isOpen) return null;
-
   const currentProfConfig = PROFESSIONAL_TYPES_CONFIG[selectedProfessionalType];
+
+  const availableApproaches = React.useMemo(() => {
+    if (selectedProfessionalType === 'pastor') {
+      return currentProfConfig.defaultApproaches;
+    }
+    if (selectedProfessionalType === 'therapist') {
+      return Array.from(
+        new Set([...MAIN_APPROACH_OPTIONS, ...currentProfConfig.defaultApproaches])
+      );
+    }
+    return MAIN_APPROACH_OPTIONS;
+  }, [selectedProfessionalType, currentProfConfig]);
+
+  if (!isOpen) return null;
 
   const handleGoogleAuth = async () => {
     setErrorMessage('');
@@ -236,10 +267,31 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
         const careCategory = selectedProfessionalType === 'pastor' ? 'biblical' : 'therapy';
         const finalCrp = selectedProfessionalType === 'psychologist' ? registrationNumber.trim() : undefined;
+        const finalApproach =
+          approach === CUSTOM_APPROACH_VALUE ? customApproach.trim() : approach.trim();
 
-        // Combina a abordagem principal com as tags de experiência clínica
+        if (!finalApproach) {
+          setErrorMessage(
+            selectedProfessionalType === 'pastor'
+              ? 'Por favor, informe sua área de aconselhamento.'
+              : 'Por favor, escreva sua abordagem principal.'
+          );
+          setLoading(false);
+          return;
+        }
+
+        const normalizedRate = hourlyRate.trim().replace(',', '.');
+        const parsedHourlyRate = normalizedRate ? Number(normalizedRate) : NaN;
+        if (!Number.isFinite(parsedHourlyRate) || parsedHourlyRate < 0 || parsedHourlyRate > 1000) {
+          setErrorMessage('Por favor, informe um valor válido para o honorário da sessão (entre R$ 0,00 e R$ 1.000,00).');
+          setLoading(false);
+          return;
+        }
+        const finalHourlyRate = Math.round(parsedHourlyRate * 100) / 100;
+
+        // Combina a abordagem principal com as tags de experiência clínicas
         const combinedApproaches = Array.from(
-          new Set([approach, ...selectedClinicalTags])
+          new Set([finalApproach, ...selectedClinicalTags])
         );
 
         const res = await register({
@@ -263,14 +315,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             maritalStatus: 'married',
             hasChildren: false,
             yearsOfExperience: 5,
-            affinityTags: selectedClinicalTags.length > 0 ? selectedClinicalTags : [approach],
+            affinityTags: selectedClinicalTags.length > 0 ? selectedClinicalTags : [finalApproach],
             formations: formations,
             specializations: specializations,
             acceptsNewMatchedPatients: true,
             updatedAt: new Date().toISOString(),
           },
           isAcceptingNewPatients: true,
-          hourlyRate: Number(hourlyRate),
+          hourlyRate: finalHourlyRate,
           sessionDuration: 50,
           defaultMeetingType: 'native',
         });
@@ -700,39 +752,84 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    {selectedProfessionalType === 'pastor' ? 'Área de Aconselhamento' : 'Abordagem Principal'}
-                  </label>
-                  <select
-                    value={approach}
-                    onChange={e => setApproach(e.target.value)}
-                    className="w-full px-2.5 py-2 text-xs border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600 bg-white"
-                  >
-                    {currentProfConfig.defaultApproaches.map((ap, i) => (
-                      <option key={i} value={ap}>
-                        {ap}
+              <div className="space-y-2.5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      {selectedProfessionalType === 'pastor' ? 'Área de Aconselhamento' : 'Abordagem Principal'}
+                    </label>
+                    <select
+                      value={approach}
+                      onChange={e => setApproach(e.target.value)}
+                      className="w-full px-2.5 py-2 text-xs border border-slate-300 dark:border-slate-700 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white"
+                    >
+                      {availableApproaches.map((ap, i) => (
+                        <option key={i} value={ap}>
+                          {ap}
+                        </option>
+                      ))}
+                      <option value={CUSTOM_APPROACH_VALUE}>
+                        Outra (adicionar por escrito)...
                       </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Honorário da Sessão (R$)
-                  </label>
-                  <div className="relative">
-                    <DollarSign className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-slate-400" />
-                    <input
-                      type="number"
-                      min={0}
-                      max={1000}
-                      value={hourlyRate}
-                      onChange={e => setHourlyRate(Number(e.target.value))}
-                      className="w-full pl-8 pr-2 py-2 text-xs border border-slate-300 rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
-                    />
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (approach === CUSTOM_APPROACH_VALUE) {
+                          setApproach(availableApproaches[0]);
+                          setCustomApproach('');
+                        } else {
+                          setApproach(CUSTOM_APPROACH_VALUE);
+                        }
+                      }}
+                      className="mt-1 text-[11px] font-medium text-sky-700 dark:text-sky-400 hover:underline text-left"
+                    >
+                      {approach === CUSTOM_APPROACH_VALUE
+                        ? '← Voltar para a lista de abordagens'
+                        : 'Não encontrou na lista? Adicione por escrito'}
+                    </button>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1">
+                      Honorário da Sessão (R$)
+                    </label>
+                    <div className="relative">
+                      <DollarSign className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-slate-400" />
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        required
+                        value={hourlyRate}
+                        onChange={e => handleHourlyRateChange(e.target.value)}
+                        placeholder="Ex: 180,00"
+                        className="w-full pl-8 pr-2 py-2 text-xs border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600 tabular-nums"
+                      />
+                    </div>
                   </div>
                 </div>
+
+                {approach === CUSTOM_APPROACH_VALUE && (
+                  <div className="p-3 bg-sky-50/70 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800 rounded-xl space-y-1.5">
+                    <label className="block text-xs font-semibold text-sky-900 dark:text-sky-200">
+                      {selectedProfessionalType === 'pastor'
+                        ? 'Escreva sua área de aconselhamento'
+                        : 'Escreva sua abordagem principal'}{' '}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={customApproach}
+                      onChange={e => setCustomApproach(e.target.value)}
+                      placeholder={
+                        selectedProfessionalType === 'pastor'
+                          ? 'Ex: Aconselhamento para Jovens, Capelania Hospitalar...'
+                          : 'Ex: Esquizoanálise, Psicologia Positiva, Terapia Somática...'
+                      }
+                      className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-sky-300 dark:border-sky-700 text-slate-900 dark:text-white rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
+                    />
+                  </div>
+                )}
               </div>
 
               {/* 1. Formações Acadêmicas e Cursos Formativos (+ de 1) */}

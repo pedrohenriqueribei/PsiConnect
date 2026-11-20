@@ -23,6 +23,29 @@ export interface ProfessionalTypeMeta {
   defaultApproaches: string[];
 }
 
+export const MAIN_APPROACH_OPTIONS: string[] = [
+  'Análise do Comportamento',
+  'Terapia Cognitivo-Comportamental (TCC)',
+  'Terapia do Esquema (TE)',
+  'Terapia de Aceitação e Compromisso (ACT)',
+  'Terapia Comportamental Dialética (DBT)',
+  'Psicoterapia Analítica Funcional (FAP)',
+  'Terapia Cognitiva Baseada em Mindfulness (MBCT)',
+  'Terapia Focada na Compaixão (TFC)',
+  'Psicanálise (Freudiana, Lacaniana, Winnicottiana, Kleiniana)',
+  'Psicologia Analítica (Junguiana)',
+  'Psicologia Individual (Adleriana)',
+  'Psicoterapia Breve Psicodinâmica',
+  'Abordagem Centrada na Pessoa (ACP)',
+  'Gestalt-terapia',
+  'Psicologia Fenomenológico-Existencial',
+  'Logoterapia',
+  'Psicodrama',
+  'Terapia Sistêmica (Familiar e de Casal)',
+  'Terapia Narrativa',
+  'Terapia Focada nas Emoções (EFT)',
+];
+
 export const PROFESSIONAL_TYPES_CONFIG: Record<ProfessionalType, ProfessionalTypeMeta> = {
   psychologist: {
     type: 'psychologist',

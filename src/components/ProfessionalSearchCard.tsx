@@ -253,7 +253,7 @@ export const ProfessionalSearchCard: React.FC<ProfessionalSearchCardProps> = ({
             Sessão de 50 min
           </span>
           <span className="text-sm font-bold text-slate-900 dark:text-white tabular-nums">
-            R$ {professional.hourlyRate || 180},00
+            R$ {(professional.hourlyRate ?? 180).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </span>
         </div>
 
