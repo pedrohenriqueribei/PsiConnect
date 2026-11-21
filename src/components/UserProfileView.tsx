@@ -7,6 +7,7 @@ import {
   AgeGroup, 
   MaritalStatus,
   PROFESSIONAL_TYPES_CONFIG,
+  MAIN_APPROACH_OPTIONS,
   SUGGESTED_FORMATIONS_BY_TYPE,
   SUGGESTED_SPECIALIZATIONS_BY_TYPE,
   CLINICAL_EXPERIENCE_TAGS,
@@ -192,8 +193,61 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onBack, initia
   const [ministryOrChurch, setMinistryOrChurch] = useState(user.ministryOrChurch || '');
   const [hourlyRate, setHourlyRate] = useState<number>(user.hourlyRate ?? 160);
   const [sessionDuration, setSessionDuration] = useState<number>(user.sessionDuration ?? 50);
+  const CUSTOM_APPROACH_VALUE = '__custom__';
+  const availableApproaches =
+    selectedType === 'pastor'
+      ? PROFESSIONAL_TYPES_CONFIG.pastor.defaultApproaches
+      : selectedType === 'therapist'
+      ? Array.from(
+          new Set([
+            ...MAIN_APPROACH_OPTIONS,
+            ...PROFESSIONAL_TYPES_CONFIG.therapist.defaultApproaches,
+          ])
+        )
+      : MAIN_APPROACH_OPTIONS;
+
+  const initialPrimaryApproach = user.approaches?.[0]?.trim() || '';
+  const initialApproachInList = availableApproaches.includes(initialPrimaryApproach);
+
   const [bio, setBio] = useState(user.bio || '');
-  const [approachesText, setApproachesText] = useState(user.approaches?.join(', ') || '');
+  const [primaryApproach, setPrimaryApproach] = useState<string>(() => {
+    if (initialPrimaryApproach) {
+      return initialApproachInList ? initialPrimaryApproach : CUSTOM_APPROACH_VALUE;
+    }
+    return selectedType === 'psychoanalyst'
+      ? 'Psicanálise (Freudiana, Lacaniana, Winnicottiana, Kleiniana)'
+      : selectedType === 'psychologist'
+      ? 'Terapia Cognitivo-Comportamental (TCC)'
+      : availableApproaches[0];
+  });
+  const [customApproach, setCustomApproach] = useState<string>(() =>
+    initialPrimaryApproach && !initialApproachInList ? initialPrimaryApproach : ''
+  );
+
+  const handleSelectType = (nextType: ProfessionalType) => {
+    setSelectedType(nextType);
+    const nextAvailable =
+      nextType === 'pastor'
+        ? PROFESSIONAL_TYPES_CONFIG.pastor.defaultApproaches
+        : nextType === 'therapist'
+        ? Array.from(
+            new Set([
+              ...MAIN_APPROACH_OPTIONS,
+              ...PROFESSIONAL_TYPES_CONFIG.therapist.defaultApproaches,
+            ])
+          )
+        : MAIN_APPROACH_OPTIONS;
+
+    if (primaryApproach !== CUSTOM_APPROACH_VALUE && !nextAvailable.includes(primaryApproach)) {
+      setPrimaryApproach(
+        nextType === 'psychoanalyst'
+          ? 'Psicanálise (Freudiana, Lacaniana, Winnicottiana, Kleiniana)'
+          : nextType === 'psychologist'
+          ? 'Terapia Cognitivo-Comportamental (TCC)'
+          : nextAvailable[0]
+      );
+    }
+  };
   const [defaultMeetingType, setDefaultMeetingType] = useState<'native' | 'external'>(
     user.defaultMeetingType || 'native'
   );
@@ -293,8 +347,23 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onBack, initia
     e.preventDefault();
     setSaveLoading(true);
 
-    const updatedApproaches = approachesText
-      ? approachesText.split(',').map(s => s.trim()).filter(Boolean)
+    const resolvedPrimaryApproach =
+      primaryApproach === CUSTOM_APPROACH_VALUE
+        ? customApproach.trim()
+        : primaryApproach.trim();
+
+    if (isProf && !resolvedPrimaryApproach) {
+      setSaveLoading(false);
+      return;
+    }
+
+    const existingSecondaryApproaches = (user.approaches || [])
+      .slice(1)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    const updatedApproaches = resolvedPrimaryApproach
+      ? Array.from(new Set([resolvedPrimaryApproach, ...existingSecondaryApproaches]))
       : user.approaches || [];
 
     const updatedData: Partial<User> = {
@@ -943,7 +1012,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onBack, initia
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     <button
                       type="button"
-                      onClick={() => setSelectedType('psychologist')}
+                      onClick={() => handleSelectType('psychologist')}
                       className={`p-3 rounded-2xl border text-xs font-semibold transition-all text-left ${
                         selectedType === 'psychologist'
                           ? 'border-sky-600 bg-sky-50 dark:bg-sky-950/60 text-sky-900 dark:text-sky-200 ring-2 ring-sky-500/40'
@@ -961,7 +1030,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onBack, initia
 
                     <button
                       type="button"
-                      onClick={() => setSelectedType('therapist')}
+                      onClick={() => handleSelectType('therapist')}
                       className={`p-3 rounded-2xl border text-xs font-semibold transition-all text-left ${
                         selectedType === 'therapist'
                           ? 'border-emerald-600 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-900 dark:text-emerald-200 ring-2 ring-emerald-500/40'
@@ -979,7 +1048,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onBack, initia
 
                     <button
                       type="button"
-                      onClick={() => setSelectedType('psychoanalyst')}
+                      onClick={() => handleSelectType('psychoanalyst')}
                       className={`p-3 rounded-2xl border text-xs font-semibold transition-all text-left ${
                         selectedType === 'psychoanalyst'
                           ? 'border-purple-600 bg-purple-50 dark:bg-purple-950/60 text-purple-900 dark:text-purple-200 ring-2 ring-purple-500/40'
@@ -997,7 +1066,7 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onBack, initia
 
                     <button
                       type="button"
-                      onClick={() => setSelectedType('pastor')}
+                      onClick={() => handleSelectType('pastor')}
                       className={`p-3 rounded-2xl border text-xs font-semibold transition-all text-left ${
                         selectedType === 'pastor'
                           ? 'border-amber-600 bg-amber-50 dark:bg-amber-950/60 text-amber-900 dark:text-amber-200 ring-2 ring-amber-500/40'
@@ -1154,18 +1223,68 @@ export const UserProfileView: React.FC<UserProfileViewProps> = ({ onBack, initia
                   />
                 </div>
 
-                {/* Abordagens */}
-                <div>
-                  <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
-                    Abordagens Clínicas e Metodologias (separadas por vírgula)
-                  </label>
-                  <input
-                    type="text"
-                    value={approachesText}
-                    onChange={e => setApproachesText(e.target.value)}
-                    placeholder="Ex: TCC, Ansiedade, Mindfulness, Terapia de Casal"
-                    className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white"
-                  />
+                {/* Abordagem Principal */}
+                <div className="space-y-2.5">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                      {selectedType === 'pastor'
+                        ? 'Área Principal de Aconselhamento'
+                        : 'Abordagem Principal'}
+                    </label>
+                    <select
+                      value={primaryApproach}
+                      onChange={e => setPrimaryApproach(e.target.value)}
+                      className="w-full px-3 py-2 text-xs bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-sky-600"
+                    >
+                      {availableApproaches.map((ap, i) => (
+                        <option key={i} value={ap}>
+                          {ap}
+                        </option>
+                      ))}
+                      <option value={CUSTOM_APPROACH_VALUE}>
+                        Outra (adicionar por escrito)...
+                      </option>
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (primaryApproach === CUSTOM_APPROACH_VALUE) {
+                          setPrimaryApproach(availableApproaches[0]);
+                          setCustomApproach('');
+                        } else {
+                          setPrimaryApproach(CUSTOM_APPROACH_VALUE);
+                        }
+                      }}
+                      className="mt-1.5 text-[11px] font-medium text-sky-700 dark:text-sky-400 hover:underline text-left"
+                    >
+                      {primaryApproach === CUSTOM_APPROACH_VALUE
+                        ? '← Voltar para a lista de abordagens'
+                        : 'Não encontrou na lista? Adicione por escrito'}
+                    </button>
+                  </div>
+
+                  {primaryApproach === CUSTOM_APPROACH_VALUE && (
+                    <div className="p-3 bg-sky-50/70 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800 rounded-xl space-y-1.5">
+                      <label className="block text-xs font-semibold text-sky-900 dark:text-sky-200">
+                        {selectedType === 'pastor'
+                          ? 'Escreva sua área de aconselhamento'
+                          : 'Escreva sua abordagem principal'}{' '}
+                        <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={customApproach}
+                        onChange={e => setCustomApproach(e.target.value)}
+                        placeholder={
+                          selectedType === 'pastor'
+                            ? 'Ex: Aconselhamento para Jovens, Capelania Hospitalar...'
+                            : 'Ex: Esquizoanálise, Psicologia Positiva, Terapia Somática...'
+                        }
+                        className="w-full px-3 py-2 text-xs bg-white dark:bg-slate-800 border border-sky-300 dark:border-sky-700 text-slate-900 dark:text-white rounded-lg focus:outline-hidden focus:ring-2 focus:ring-sky-600"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 {/* Critérios de Vivência Pessoal para o Matching Inteligente */}
